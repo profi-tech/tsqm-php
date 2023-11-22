@@ -76,7 +76,7 @@ class Event
         return new self(
             $data['id'],
             $data['run_id'],
-            new DateTime($data['dt']),
+            new DateTime($data['ts']),
             $data['type'],
             $data['task_id'],
             $payload,

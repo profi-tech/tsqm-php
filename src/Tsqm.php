@@ -315,7 +315,7 @@ class Tsqm
             }
             // Otherwise we just crash
             else {
-                throw new TaskCrashed(null, null, $e);
+                throw new TaskCrashed("", 0, $e);
             }
         }
     }

@@ -18,7 +18,7 @@ class Invoice implements JsonSerializable
         return $this->amount;
     }
 
-    public function jsonSerialize()
+    public function jsonSerialize(): array
     {
         return [
             "amount" => $this->amount,

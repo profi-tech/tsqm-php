@@ -41,7 +41,7 @@ class EventRepository implements EventRepositoryInterface
             ]);
             return $event;
         } catch (Exception $e) {
-            throw new RepositoryError("Failed to add event: " . $e->getMessage(), null, $e);
+            throw new RepositoryError("Failed to add event: " . $e->getMessage(), 0, $e);
         }
     }
 
@@ -62,7 +62,7 @@ class EventRepository implements EventRepositoryInterface
             $data = $st->fetch(PDO::FETCH_ASSOC);
             return $data ? Event::fromArray($data) : null;
         } catch (Exception $e) {
-            throw new RepositoryError("Failed to get completed event: " . $e->getMessage(), null, $e);
+            throw new RepositoryError("Failed to get completed event: " . $e->getMessage(), 0, $e);
         }
     }
 
@@ -81,7 +81,7 @@ class EventRepository implements EventRepositoryInterface
             }
             return $rows;
         } catch (Exception $e) {
-            throw new RepositoryError("Failed to get started events: " . $e->getMessage(), null, $e);
+            throw new RepositoryError("Failed to get started events: " . $e->getMessage(), 0, $e);
         }
     }
 
@@ -100,7 +100,7 @@ class EventRepository implements EventRepositoryInterface
             }
             return $rows;
         } catch (Exception $e) {
-            throw new RepositoryError("Failed to get failed events: " . $e->getMessage(), null, $e);
+            throw new RepositoryError("Failed to get failed events: " . $e->getMessage(), 0, $e);
         }
     }
 }
