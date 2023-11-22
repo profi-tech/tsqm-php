@@ -1,0 +1,5 @@
+{
+    "intelephense.references.exclude": [],
+    "intelephense.environment.phpVersion": "7.4.10",
+    "editor.formatOnSave": true
+}
