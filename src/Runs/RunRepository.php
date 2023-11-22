@@ -44,7 +44,7 @@ class RunRepository implements RunRepositoryInterface
 
             return $run;
         } catch (Exception $e) {
-            throw new RepositoryError("Failed to create run: " . $e->getMessage(), null, $e);
+            throw new RepositoryError("Failed to create run: " . $e->getMessage(), 0, $e);
         }
     }
 
@@ -56,7 +56,7 @@ class RunRepository implements RunRepositoryInterface
             $data = $st->fetch(PDO::FETCH_ASSOC);
             return $data ? Run::fromArray($data) : null;
         } catch (Exception $e) {
-            throw new RepositoryError("Failed to get run: " . $e->getMessage(), null, $e);
+            throw new RepositoryError("Failed to get run: " . $e->getMessage(), 0, $e);
         }
     }
 
@@ -70,7 +70,7 @@ class RunRepository implements RunRepositoryInterface
                 'status' => $status,
             ]);
         } catch (Exception $e) {
-            throw new RepositoryError("Failed to update run status: " . $e->getMessage(), null, $e);
+            throw new RepositoryError("Failed to update run status: " . $e->getMessage(), 0, $e);
         }
     }
 
@@ -84,7 +84,7 @@ class RunRepository implements RunRepositoryInterface
                 'scheduled_for' => $scheduledFor->format('Y-m-d H:i:s.v'),
             ]);
         } catch (Exception $e) {
-            throw new RepositoryError("Failed to update run scheduled for: " . $e->getMessage(), null, $e);
+            throw new RepositoryError("Failed to update run scheduled for: " . $e->getMessage(), 0, $e);
         }
     }
 
@@ -107,7 +107,7 @@ class RunRepository implements RunRepositoryInterface
             }
             return $runIds;
         } catch (Exception $e) {
-            throw new RepositoryError("Failed to get scheduled run ids: " . $e->getMessage(), null, $e);
+            throw new RepositoryError("Failed to get scheduled run ids: " . $e->getMessage(), 0, $e);
         }
     }
 }

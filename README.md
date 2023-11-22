@@ -2,7 +2,7 @@
 
 Simple and reliable task runner for PHP applications.
 
-## Warning
+## :warning: Warning
 
 The library is in development preview mode and not ready for any kind of production use.
 

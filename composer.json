@@ -1,5 +1,7 @@
 {
     "name": "em1nx/tsqm",
+    "description": "Simple and reliable task runner",
+    "license": "MIT",    
     "type": "library",
     "autoload": {
         "psr-4": {

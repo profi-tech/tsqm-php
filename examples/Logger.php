@@ -20,14 +20,14 @@ class Logger extends ConsoleLogger
     public function log($level, $message, array $context = [])
     {
         /** @var Task */
-        $task = $context['task'] && $context['task'] instanceof Task ? $context['task'] : null;
+        $task = (isset($context['task']) && $context['task'] instanceof Task) ? $context['task'] : null;
         $taskResult = $context['taskResult'] ?? null;
 
         /** @var Run */
-        $run = $context['run'] && $context['run'] instanceof Run ? $context['run'] : null;
+        $run = (isset($context['run']) && $context['run'] instanceof Run) ? $context['run'] : null;
 
         /** @var Exception */
-        $exception = $context['exception'] && $context['exception'] instanceof Exception ? $context['exception'] : null;
+        $exception = (isset($context['exception']) && $context['exception'] instanceof Exception) ? $context['exception'] : null;
 
         $dt = (new DateTime())->format("Y-m-d\TH:i:s.v");
 
