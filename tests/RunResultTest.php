@@ -4,7 +4,7 @@ namespace Tests;
 
 use Examples\Greeter\Greeting;
 use Examples\Greeter\Greeter;
-use Tsqm\Tasks\TaskDecorator;
+use Tsqm\TsqmTasks;
 use Tsqm\Tasks\Task;
 use Examples\Greeter\GreeterError;
 use Tsqm\Tasks\TaskRetryPolicy;
@@ -12,12 +12,12 @@ use Tsqm\Tasks\TaskRetryPolicy;
 class RunResultTest extends TestCase
 {
     /** @var Greeter */
-    private $greeter;
+    private $greeterTasks;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->greeter = new TaskDecorator(
+        $this->greeterTasks = new TsqmTasks(
             $this->container->get(Greeter::class)
         );
     }
@@ -25,7 +25,7 @@ class RunResultTest extends TestCase
     public function testSuccessfulRunResult()
     {
         /** @var Task */
-        $task = $this->greeter->simpleGreet('John Doe');
+        $task = $this->greeterTasks->simpleGreet('John Doe');
         $run = $this->tsqm->createRun($task);
         $result = $this->tsqm->performRun($run);
 
@@ -38,7 +38,7 @@ class RunResultTest extends TestCase
     public function testTaskSuccessSecondRun()
     {
         /** @var Task */
-        $task = $this->greeter->simpleGreet('John Doe');
+        $task = $this->greeterTasks->simpleGreet('John Doe');
         $run = $this->tsqm->createRun($task);
         $result = $this->tsqm->performRun($run);
 
@@ -55,7 +55,7 @@ class RunResultTest extends TestCase
     public function testTaskFailSecondRun()
     {
         /** @var Task */
-        $task = $this->greeter->simpleGreetWith3Fails('John Doe');
+        $task = $this->greeterTasks->simpleGreetWith3Fails('John Doe');
         $task->setRetryPolicy((new TaskRetryPolicy)->setMaxRetries(0));
         $run = $this->tsqm->createRun($task);
 

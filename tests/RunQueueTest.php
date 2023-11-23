@@ -5,7 +5,7 @@ namespace Tests;
 use DateTime;
 use Examples\Container;
 use Examples\Greeter\Greeter;
-use Tsqm\Tasks\TaskDecorator;
+use Tsqm\TsqmTasks;
 use Tsqm\Tsqm;
 use Tsqm\TsqmConfig;
 use Tsqm\Runs\Queue\RunQueueInterface;
@@ -18,7 +18,7 @@ class RunQueueTest extends TestCase
     protected Tsqm $tsqm;
 
     /** @var Greeter */
-    private $greeter;
+    private $greeterTasks;
 
     private $queue;
 
@@ -33,7 +33,7 @@ class RunQueueTest extends TestCase
                 ->setRunQueue($this->queue)
         );
 
-        $this->greeter = new TaskDecorator(
+        $this->greeterTasks = new TsqmTasks(
             $this->container->get(Greeter::class)
         );
     }
@@ -41,7 +41,7 @@ class RunQueueTest extends TestCase
     public function testEnqueueForAsyncRun()
     {
         /** @var Task */
-        $task = $this->greeter->simpleGreet('John Doe');
+        $task = $this->greeterTasks->simpleGreet('John Doe');
         $run = $this->tsqm->createRun($task);
 
         $this->queue->expects($this->once())->method('enqueueRun')->with(
@@ -58,7 +58,7 @@ class RunQueueTest extends TestCase
     public function testEnqueueForScheduledRun()
     {
         /** @var Task */
-        $task = $this->greeter->simpleGreet('John Doe');
+        $task = $this->greeterTasks->simpleGreet('John Doe');
         $scheduledFor = (new DateTime())->modify('+1 day');
         $run = $this->tsqm->createRun($task, $scheduledFor);
 
@@ -76,7 +76,7 @@ class RunQueueTest extends TestCase
     public function testEnqueueForRetry()
     {
         /** @var Task */
-        $task = $this->greeter->simpleGreetWith3Fails('John Doe');
+        $task = $this->greeterTasks->simpleGreetWith3Fails('John Doe');
         $task->setRetryPolicy((new TaskRetryPolicy)->setMinInterval(1500)->setMaxRetries(1));
         $run = $this->tsqm->createRun($task);
 

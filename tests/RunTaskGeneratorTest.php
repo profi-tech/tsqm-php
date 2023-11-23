@@ -3,7 +3,7 @@
 namespace Tests;
 
 use Examples\Greeter\Greeting;
-use Tsqm\Tasks\TaskDecorator;
+use Tsqm\TsqmTasks;
 use Tsqm\Tasks\Task;
 use Examples\Greeter\Greeter;
 use Examples\Greeter\GreeterError;
@@ -12,12 +12,12 @@ use Tsqm\Tasks\TaskRetryPolicy;
 class RunTaskGeneratorTest extends TestCase
 {
     /** @var Greeter */
-    private $greeter;
+    private $greeterTasks;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->greeter = new TaskDecorator(
+        $this->greeterTasks = new TsqmTasks(
             $this->container->get(Greeter::class)
         );
     }
@@ -25,7 +25,7 @@ class RunTaskGeneratorTest extends TestCase
     public function testTaskSuccess()
     {
         /** @var Task */
-        $task = $this->greeter->greet('John Doe');
+        $task = $this->greeterTasks->greet('John Doe');
         $run = $this->tsqm->createRun($task);
         $result = $this->tsqm->performRun($run);
 
@@ -37,7 +37,7 @@ class RunTaskGeneratorTest extends TestCase
     public function testTaskSuccessFlow()
     {
         /** @var Task */
-        $task = $this->greeter->greet('x');
+        $task = $this->greeterTasks->greet('x');
         $run = $this->tsqm->createRun($task);
         $result = $this->tsqm->performRun($run);
 
@@ -49,7 +49,7 @@ class RunTaskGeneratorTest extends TestCase
     public function testTaskFail()
     {
         /** @var Task */
-        $task = $this->greeter->greetWith3Fails('John Doe');
+        $task = $this->greeterTasks->greetWith3Fails('John Doe');
         $task->setRetryPolicy((new TaskRetryPolicy)->setMaxRetries(0));
         $run = $this->tsqm->createRun($task);
 
@@ -63,7 +63,7 @@ class RunTaskGeneratorTest extends TestCase
     public function testTaskFailRetrySuccess()
     {
         /** @var Task */
-        $task = $this->greeter->greetWith3Fails('John Doe');
+        $task = $this->greeterTasks->greetWith3Fails('John Doe');
         $task->setRetryPolicy((new TaskRetryPolicy)->setMaxRetries(3));
         $run = $this->tsqm->createRun($task);
 
@@ -81,7 +81,7 @@ class RunTaskGeneratorTest extends TestCase
     public function testTaskFailRetryFail()
     {
         /** @var Task */
-        $task = $this->greeter->greetWith3Fails('John Doe');
+        $task = $this->greeterTasks->greetWith3Fails('John Doe');
         $task->setRetryPolicy((new TaskRetryPolicy)->setMaxRetries(2));
         $run = $this->tsqm->createRun($task);
 
@@ -100,7 +100,7 @@ class RunTaskGeneratorTest extends TestCase
     public function testTaskInnerFailRetrySuccess()
     {
         /** @var Task */
-        $task = $this->greeter->greetWith3PurchaseFailsAnd3Retries('John Doe');
+        $task = $this->greeterTasks->greetWith3PurchaseFailsAnd3Retries('John Doe');
         $task->setRetryPolicy((new TaskRetryPolicy)->setMaxRetries(0));
         $run = $this->tsqm->createRun($task);
 
@@ -118,7 +118,7 @@ class RunTaskGeneratorTest extends TestCase
     public function testTaskInnerFailRetryFail()
     {
         /** @var Task */
-        $task = $this->greeter->greetWith3PurchaseFailsAnd2Retries('John Doe');
+        $task = $this->greeterTasks->greetWith3PurchaseFailsAnd2Retries('John Doe');
         $task->setRetryPolicy((new TaskRetryPolicy)->setMaxRetries(0));
         $run = $this->tsqm->createRun($task);
 
@@ -137,7 +137,7 @@ class RunTaskGeneratorTest extends TestCase
     public function testTaskInnerFailRetryRevert()
     {
         /** @var Task */
-        $task = $this->greeter->complexGreetWith3PurchaseFailsAndRevert('John Doe');
+        $task = $this->greeterTasks->complexGreetWith3PurchaseFailsAndRevert('John Doe');
         $task->setRetryPolicy((new TaskRetryPolicy)->setMaxRetries(0));
         $run = $this->tsqm->createRun($task);
 

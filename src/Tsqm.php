@@ -64,7 +64,7 @@ class Tsqm
             $scheduledFor
         );
         $this->logger->debug("Run created", ['run' => $run]);
-        return $this->runRepository->getRun($run->getId());
+        return $run;
     }
 
     /**

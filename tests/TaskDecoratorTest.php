@@ -3,7 +3,7 @@
 namespace Tests;
 
 use Examples\Greeter\Greeter;
-use Tsqm\Tasks\TaskDecorator;
+use Tsqm\TsqmTasks;
 use Tsqm\Tasks\Task;
 use Tsqm\Tasks\TaskRetryPolicy;
 use Tsqm\Helpers\SerializationHelper;
@@ -12,12 +12,12 @@ use Tsqm\Helpers\UuidHelper;
 class TaskDecoratorTest extends TestCase
 {
     /** @var Greeter */
-    private $greeter;
+    private $greeterTasks;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->greeter = new TaskDecorator(
+        $this->greeterTasks = new TsqmTasks(
             $this->container->get(Greeter::class)
         );
     }
@@ -25,7 +25,7 @@ class TaskDecoratorTest extends TestCase
     public function testCheckClassAndMethod()
     {
         /** @var Task */
-        $task = $this->greeter->simpleGreet('John Doe');
+        $task = $this->greeterTasks->simpleGreet('John Doe');
 
         $this->assertEquals(Greeter::class, $task->getClassName());
         $this->assertEquals('simpleGreet', $task->getMethod());
@@ -35,7 +35,7 @@ class TaskDecoratorTest extends TestCase
     public function testCheckWithRetryPolicy()
     {
         /** @var Task */
-        $task = $this->greeter->simpleGreet('John Doe');
+        $task = $this->greeterTasks->simpleGreet('John Doe');
         $task->setRetryPolicy(
             (new TaskRetryPolicy())->setMaxRetries(3)
         );
@@ -49,7 +49,7 @@ class TaskDecoratorTest extends TestCase
     public function testCheckId()
     {
         /** @var Task */
-        $task = $this->greeter->simpleGreet('John Doe');
+        $task = $this->greeterTasks->simpleGreet('John Doe');
         $this->assertEquals(
             UuidHelper::named(implode('::', [
                 Greeter::class,

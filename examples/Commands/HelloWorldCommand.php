@@ -8,7 +8,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Examples\Helpers\DbHelper;
-use Tsqm\Tasks\TaskDecorator;
+use Tsqm\TsqmTasks;
 use Tsqm\Tsqm;
 use Tsqm\TsqmConfig;
 use Examples\Greeter\Greeter;
@@ -42,12 +42,12 @@ class HelloWorldCommand extends Command
         );
 
         /** @var Greeter */
-        $greeter = new TaskDecorator(
+        $greeterTasks = new TsqmTasks(
             $container->get(Greeter::class)
         );
 
         /** @var Task */
-        $task = $greeter->greetWithRandomFail($input->getArgument("name"));
+        $task = $greeterTasks->greetWithRandomFail($input->getArgument("name"));
         $run = $tsqm->createRun($task);
         $result = $tsqm->performRun($run);
         $logger->logRunResult($result);
