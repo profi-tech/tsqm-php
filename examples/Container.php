@@ -4,7 +4,7 @@ namespace Examples;
 
 use Psr\Container\ContainerInterface;
 use DI\ContainerBuilder;
-use Examples\Greeter\Authorizer;
+use Examples\Greeter\Validator;
 use Examples\Greeter\Greeter;
 use Examples\Greeter\Messenger;
 use Examples\Greeter\Purchaser;
@@ -19,7 +19,7 @@ class Container
 
             Repository::class => fn () => new Repository(),
 
-            Authorizer::class => fn () => new Authorizer(),
+            Validator::class => fn () => new Validator(),
 
             Purchaser::class => fn () => new Purchaser(),
 
@@ -29,7 +29,7 @@ class Container
 
             Greeter::class => fn (ContainerInterface $c) => new Greeter(
                 $c->get(Repository::class),
-                $c->get(Authorizer::class),
+                $c->get(Validator::class),
                 $c->get(Purchaser::class),
                 $c->get(Messenger::class),
                 $c->get(Reverter::class)
