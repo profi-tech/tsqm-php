@@ -165,7 +165,7 @@ class Greeter
         return $this->messenger->sendGreeting($greeting);
     }
 
-    public function simpleGreetWith3Fails(string $name)
+    public function simpleGreetWith3Fails(string $name): Greeting
     {
         if ($this->failsCount++ < 3) {
             throw new GreeterError("Greet failed", 1700403919);

@@ -37,7 +37,7 @@ class RunRepository implements RunRepositoryInterface
             ")->execute([
                 'id' => $run->getId(),
                 'created_at' => $run->getCreatedAt()->format('Y-m-d H:i:s.u'),
-                'scheduled_for' => $run->getScheduledFor() ? $run->getScheduledFor()->format('Y-m-d H:i:s.v') : null,
+                'scheduled_for' => $run->getScheduledFor()->format('Y-m-d H:i:s.v'),
                 'task' => SerializationHelper::serialize($run->getTask()),
                 'status' => $run->getStatus(),
             ]);

@@ -31,7 +31,10 @@ class RunTaskGeneratorTest extends TestCase
 
         $this->assertTrue($result->isReady());
         $this->assertFalse($result->hasError());
-        $this->assertEquals((new Greeting("Hello, John Doe!"))->setSent(true), $result->getData());
+        $this->assertEquals(
+            (new Greeting("Hello, John Doe!"))->setPurchased(true)->setSent(true),
+            $result->getData()
+        );
     }
 
     public function testTaskSuccessFlow()
@@ -112,7 +115,10 @@ class RunTaskGeneratorTest extends TestCase
         $result = $this->tsqm->performRun($run);
         $this->assertTrue($result->isReady());
         $this->assertFalse($result->hasError());
-        $this->assertEquals((new Greeting("Hello, John Doe!"))->setSent(true), $result->getData());
+        $this->assertEquals(
+            (new Greeting("Hello, John Doe!"))->setPurchased(true)->setSent(true),
+            $result->getData()
+        );
     }
 
     public function testTaskInnerFailRetryFail()

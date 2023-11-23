@@ -1,7 +1,7 @@
 {
     "name": "profi-tech/tsqm",
     "description": "Simple and reliable task runner",
-    "license": "MIT",    
+    "license": "MIT",
     "type": "library",
     "autoload": {
         "psr-4": {
@@ -21,6 +21,8 @@
     },
     "require": {
         "php": ">=7.4",
+        "ext-pdo": "*",
+        "ext-json": "*",
         "ramsey/uuid": "^4.2",
         "php-di/php-di": "^6.4",
         "psr/log": "^1.1"
