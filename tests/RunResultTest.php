@@ -4,7 +4,7 @@ namespace Tests;
 
 use Examples\Greeter\Greeting;
 use Examples\Greeter\Greeter;
-use Tsqm\Tasks\TaskDecorator;
+use Tsqm\TsqmTasks;
 use Tsqm\Tasks\Task;
 use Examples\Greeter\GreeterError;
 use Tsqm\Tasks\TaskRetryPolicy;
@@ -17,7 +17,7 @@ class RunResultTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->greeter = new TaskDecorator(
+        $this->greeter = new TsqmTasks(
             $this->container->get(Greeter::class)
         );
     }

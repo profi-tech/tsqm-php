@@ -1,8 +1,10 @@
 <?php
 
-namespace Tsqm\Tasks;
+namespace Tsqm;
 
-class TaskDecorator
+use Tsqm\Tasks\Task;
+
+class TsqmTasks
 {
     private object $object;
 

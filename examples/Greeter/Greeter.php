@@ -4,7 +4,7 @@ namespace Examples\Greeter;
 
 use Exception;
 use Tsqm\Tasks\TaskRetryPolicy;
-use Tsqm\Tasks\TaskDecorator;
+use Tsqm\TsqmTasks;
 use Tsqm\Tasks\Task;
 
 class Greeter
@@ -45,11 +45,11 @@ class Greeter
         $this->messenger = $messenger;
         $this->reverter = $reverter;
 
-        $this->repositoryTask = new TaskDecorator($repository);
-        $this->authorizerTask = new TaskDecorator($authorizer);
-        $this->purchaserTask = new TaskDecorator($purchaser);
-        $this->messengerTask = new TaskDecorator($messenger);
-        $this->reverterTask = new TaskDecorator($reverter);
+        $this->repositoryTask = new TsqmTasks($repository);
+        $this->authorizerTask = new TsqmTasks($authorizer);
+        $this->purchaserTask = new TsqmTasks($purchaser);
+        $this->messengerTask = new TsqmTasks($messenger);
+        $this->reverterTask = new TsqmTasks($reverter);
     }
 
     public function greet(string $name)

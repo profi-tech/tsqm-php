@@ -3,7 +3,7 @@
 namespace Tests;
 
 use DateTime;
-use Tsqm\Tasks\TaskDecorator;
+use Tsqm\TsqmTasks;
 use Tsqm\Tasks\Task;
 use Examples\Greeter\Greeter;
 use Tsqm\Tasks\TaskRetryPolicy;
@@ -16,7 +16,7 @@ class RunSchedulerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->greeter = new TaskDecorator(
+        $this->greeter = new TsqmTasks(
             $this->container->get(Greeter::class)
         );
     }

@@ -5,7 +5,7 @@ namespace Tests;
 use DateTime;
 use Examples\Container;
 use Examples\Greeter\Greeter;
-use Tsqm\Tasks\TaskDecorator;
+use Tsqm\TsqmTasks;
 use Tsqm\Tsqm;
 use Tsqm\TsqmConfig;
 use Tsqm\Runs\Queue\RunQueueInterface;
@@ -33,7 +33,7 @@ class RunQueueTest extends TestCase
                 ->setRunQueue($this->queue)
         );
 
-        $this->greeter = new TaskDecorator(
+        $this->greeter = new TsqmTasks(
             $this->container->get(Greeter::class)
         );
     }
