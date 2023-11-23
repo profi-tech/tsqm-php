@@ -195,7 +195,6 @@ class Tsqm
         // We are checking if this task was already completed (or crashed). If so — we just return the payload.
         $completionEvent = $this->eventRepository->getCompletedEvent($run->getId(), $task->getId());
         if ($completionEvent) {
-            $this->eventValidator->validateEventTaskId($completionEvent, $task->getId());
             $this->logger->debug("Task completed from cache", ['run' => $run, 'task' => $task, 'taskResult' => $completionEvent->getPayload()]);
             return $completionEvent->getPayload();
         }
