@@ -59,6 +59,22 @@ class RunSchedulerTest extends TestCase
         );
     }
 
+    public function testRunScheduledRun()
+    {
+        /** @var Task */
+        $task = $this->greeter->simpleGreet('John Doe');
+        $run = $this->tsqm->createRun($task);
+        $result = $this->tsqm->performRun($run, true);
+
+        $this->assertFalse($result->isReady());
+
+        // Get run from DB to check if it will perform successfully
+        $run = $this->tsqm->getRun($run->getId());
+        $result = $this->tsqm->performRun($run);
+
+        $this->assertTrue($result->isReady());
+    }
+
     public function testListScheduledRuns()
     {
         /** @var Task */
