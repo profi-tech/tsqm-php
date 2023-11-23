@@ -8,7 +8,6 @@ use Generator;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use Tsqm\Errors\ThrowMe;
-use Tsqm\Errors\TsqmError;
 use Tsqm\Errors\InvalidGenerator;
 use Tsqm\Errors\StopTheRun;
 use Tsqm\Errors\RunNotFound;
@@ -153,7 +152,7 @@ class Tsqm
     }
 
     /**
-     * Return all the scheduled run ids which is not started of finished
+     * Return all the scheduled run ids which is not finished
      * @param DateTime $until 
      * @param int $limit 
      * @return string[]
