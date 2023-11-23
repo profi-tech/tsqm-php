@@ -2,9 +2,9 @@
 
 namespace Examples\Greeter;
 
-class Authorizer
+class Validator
 {
-    public function isGreetingAllowed(string $name)
+    public function validateName(string $name)
     {
         return mb_strlen(trim($name)) > 1;
     }

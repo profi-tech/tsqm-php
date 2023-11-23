@@ -10,7 +10,7 @@ use Tsqm\Tasks\Task;
 class Greeter
 {
     private Repository $repository;
-    private Authorizer $authorizer;
+    private Validator $validator;
     private Purchaser $purchaser;
     private Messenger $messenger;
     private Reverter $reverter;
@@ -18,8 +18,8 @@ class Greeter
     /** @var Repository */
     private $repositoryTasks;
 
-    /** @var Authorizer */
-    private $authorizerTasks;
+    /** @var Validator */
+    private $validatorTasks;
 
     /** @var Purchaser */
     private $purchaserTasks;
@@ -34,19 +34,19 @@ class Greeter
 
     public function __construct(
         Repository $repository,
-        Authorizer $authorizer,
+        Validator $validator,
         Purchaser $purchaser,
         Messenger $messenger,
         Reverter $reverter
     ) {
         $this->repository = $repository;
-        $this->authorizer = $authorizer;
+        $this->validator = $validator;
         $this->purchaser = $purchaser;
         $this->messenger = $messenger;
         $this->reverter = $reverter;
 
         $this->repositoryTasks = new TsqmTasks($repository);
-        $this->authorizerTasks = new TsqmTasks($authorizer);
+        $this->validatorTasks = new TsqmTasks($validator);
         $this->purchaserTasks = new TsqmTasks($purchaser);
         $this->messengerTasks = new TsqmTasks($messenger);
         $this->reverterTasks = new TsqmTasks($reverter);
@@ -54,8 +54,8 @@ class Greeter
 
     public function greet(string $name)
     {
-        $isAuthorized = yield $this->authorizerTasks->isGreetingAllowed($name);
-        if (!$isAuthorized) {
+        $valid = yield $this->validatorTasks->validateName($name);
+        if (!$valid) {
             return false;
         }
         $greeting = yield $this->repositoryTasks->createGreeing($name);
@@ -65,8 +65,8 @@ class Greeter
 
     public function greetWithRandomFail(string $name)
     {
-        $isAuthorized = yield $this->authorizerTasks->isGreetingAllowed($name);
-        if (!$isAuthorized) {
+        $valid = yield $this->validatorTasks->validateName($name);
+        if (!$valid) {
             return false;
         }
         $greeting = yield $this->repositoryTasks->createGreeing($name);
@@ -87,8 +87,8 @@ class Greeter
 
     public function greetWith3Fails(string $name)
     {
-        $isAuthorized = yield $this->authorizerTasks->isGreetingAllowed($name);
-        if (!$isAuthorized) {
+        $valid = yield $this->validatorTasks->validateName($name);
+        if (!$valid) {
             return false;
         }
         $greeting = yield $this->repositoryTasks->createGreeing($name);
@@ -100,8 +100,8 @@ class Greeter
 
     public function greetWith3PurchaseFailsAnd3Retries(string $name)
     {
-        $isAuthorized = yield $this->authorizerTasks->isGreetingAllowed($name);
-        if (!$isAuthorized) {
+        $valid = yield $this->validatorTasks->validateName($name);
+        if (!$valid) {
             return false;
         }
         $greeting = yield $this->repositoryTasks->createGreeing($name);
@@ -116,8 +116,8 @@ class Greeter
 
     public function greetWith3PurchaseFailsAnd2Retries(string $name)
     {
-        $isAuthorized = yield $this->authorizerTasks->isGreetingAllowed($name);
-        if (!$isAuthorized) {
+        $valid = yield $this->validatorTasks->validateName($name);
+        if (!$valid) {
             return false;
         }
         $greeting = yield $this->repositoryTasks->createGreeing($name);
@@ -133,8 +133,8 @@ class Greeter
 
     public function complexGreetWith3PurchaseFailsAndRevert(string $name)
     {
-        $isAuthorized = yield $this->authorizerTasks->isGreetingAllowed($name);
-        if (!$isAuthorized) {
+        $valid = yield $this->validatorTasks->validateName($name);
+        if (!$valid) {
             return false;
         }
         $greeting = yield $this->repositoryTasks->createGreeing($name);
