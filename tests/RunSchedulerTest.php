@@ -11,12 +11,12 @@ use Tsqm\Tasks\TaskRetryPolicy;
 class RunSchedulerTest extends TestCase
 {
     /** @var Greeter */
-    private $greeter;
+    private $greeterTasks;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->greeter = new TsqmTasks(
+        $this->greeterTasks = new TsqmTasks(
             $this->container->get(Greeter::class)
         );
     }
@@ -24,7 +24,7 @@ class RunSchedulerTest extends TestCase
     public function testDefaultScheduledFor()
     {
         /** @var Task */
-        $task = $this->greeter->simpleGreet('John Doe');
+        $task = $this->greeterTasks->simpleGreet('John Doe');
         $run = $this->tsqm->createRun($task);
 
         $this->assertTrue(
@@ -35,7 +35,7 @@ class RunSchedulerTest extends TestCase
     public function testScheduledFor()
     {
         /** @var Task */
-        $task = $this->greeter->simpleGreet('John Doe');
+        $task = $this->greeterTasks->simpleGreet('John Doe');
         $scheduleFor = (new DateTime())->modify('+1 day');
         $run = $this->tsqm->createRun($task, $scheduleFor);
 
@@ -45,7 +45,7 @@ class RunSchedulerTest extends TestCase
     public function testRetryScheduleFor()
     {
         /** @var Task */
-        $task = $this->greeter->simpleGreetWith3Fails('John Doe');
+        $task = $this->greeterTasks->simpleGreetWith3Fails('John Doe');
         $task->setRetryPolicy((new TaskRetryPolicy)
                 ->setMaxRetries(3)
                 ->setMinInterval(1500)
@@ -62,7 +62,7 @@ class RunSchedulerTest extends TestCase
     public function testRunScheduledRun()
     {
         /** @var Task */
-        $task = $this->greeter->simpleGreet('John Doe');
+        $task = $this->greeterTasks->simpleGreet('John Doe');
         $run = $this->tsqm->createRun($task);
         $result = $this->tsqm->performRun($run, true);
 
@@ -78,7 +78,7 @@ class RunSchedulerTest extends TestCase
     public function testListScheduledRuns()
     {
         /** @var Task */
-        $task = $this->greeter->simpleGreetWith3Fails('John Doe');
+        $task = $this->greeterTasks->simpleGreetWith3Fails('John Doe');
         $run1 = $this->tsqm->createRun($task);
         $run2 = $this->tsqm->createRun($task);
         $run3 = $this->tsqm->createRun($task);
@@ -91,7 +91,7 @@ class RunSchedulerTest extends TestCase
     public function testListScheduledRunsUntil()
     {
         /** @var Task */
-        $task = $this->greeter->simpleGreetWith3Fails('John Doe');
+        $task = $this->greeterTasks->simpleGreetWith3Fails('John Doe');
         $this->tsqm->createRun($task);
         $this->tsqm->createRun($task);
         $this->tsqm->createRun($task);
@@ -103,7 +103,7 @@ class RunSchedulerTest extends TestCase
     public function testListScheduledRunsLimit()
     {
         /** @var Task */
-        $task = $this->greeter->simpleGreetWith3Fails('John Doe');
+        $task = $this->greeterTasks->simpleGreetWith3Fails('John Doe');
         $run1 = $this->tsqm->createRun($task);
         $run2 = $this->tsqm->createRun($task);
         $this->tsqm->createRun($task);

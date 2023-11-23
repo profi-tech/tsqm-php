@@ -16,19 +16,19 @@ class Greeter
     private Reverter $reverter;
 
     /** @var Repository */
-    private $repositoryTask;
+    private $repositoryTasks;
 
     /** @var Authorizer */
-    private $authorizerTask;
+    private $authorizerTasks;
 
     /** @var Purchaser */
-    private $purchaserTask;
+    private $purchaserTasks;
 
     /** @var Messenger */
-    private $messengerTask;
+    private $messengerTasks;
 
     /** @var Reverter */
-    private $reverterTask;
+    private $reverterTasks;
 
     private $failsCount = 0;
 
@@ -45,109 +45,109 @@ class Greeter
         $this->messenger = $messenger;
         $this->reverter = $reverter;
 
-        $this->repositoryTask = new TsqmTasks($repository);
-        $this->authorizerTask = new TsqmTasks($authorizer);
-        $this->purchaserTask = new TsqmTasks($purchaser);
-        $this->messengerTask = new TsqmTasks($messenger);
-        $this->reverterTask = new TsqmTasks($reverter);
+        $this->repositoryTasks = new TsqmTasks($repository);
+        $this->authorizerTasks = new TsqmTasks($authorizer);
+        $this->purchaserTasks = new TsqmTasks($purchaser);
+        $this->messengerTasks = new TsqmTasks($messenger);
+        $this->reverterTasks = new TsqmTasks($reverter);
     }
 
     public function greet(string $name)
     {
-        $isAuthorized = yield $this->authorizerTask->isGreetingAllowed($name);
+        $isAuthorized = yield $this->authorizerTasks->isGreetingAllowed($name);
         if (!$isAuthorized) {
             return false;
         }
-        $greeting = yield $this->repositoryTask->createGreeing($name);
-        yield $this->purchaserTask->purchase($greeting);
-        return yield $this->messengerTask->sendGreeting($greeting);
+        $greeting = yield $this->repositoryTasks->createGreeing($name);
+        yield $this->purchaserTasks->purchase($greeting);
+        return yield $this->messengerTasks->sendGreeting($greeting);
     }
 
     public function greetWithRandomFail(string $name)
     {
-        $isAuthorized = yield $this->authorizerTask->isGreetingAllowed($name);
+        $isAuthorized = yield $this->authorizerTasks->isGreetingAllowed($name);
         if (!$isAuthorized) {
             return false;
         }
-        $greeting = yield $this->repositoryTask->createGreeing($name);
+        $greeting = yield $this->repositoryTasks->createGreeing($name);
         try {
             /** @var Task */
-            $task = $this->purchaserTask->purchaseWithRandomFail($greeting);
+            $task = $this->purchaserTasks->purchaseWithRandomFail($greeting);
             yield $task->setRetryPolicy(
                 (new TaskRetryPolicy())->setMaxRetries(3)->setMinInterval(10000)
             );
         } catch (Exception $e) {
-            yield $this->reverterTask->revertGreeting($greeting);
+            yield $this->reverterTasks->revertGreeting($greeting);
             return false;
         }
 
-        yield $this->messengerTask->sendGreeting($greeting);
+        yield $this->messengerTasks->sendGreeting($greeting);
         return $greeting;
     }
 
     public function greetWith3Fails(string $name)
     {
-        $isAuthorized = yield $this->authorizerTask->isGreetingAllowed($name);
+        $isAuthorized = yield $this->authorizerTasks->isGreetingAllowed($name);
         if (!$isAuthorized) {
             return false;
         }
-        $greeting = yield $this->repositoryTask->createGreeing($name);
+        $greeting = yield $this->repositoryTasks->createGreeing($name);
         if ($this->failsCount++ < 3) {
             throw new GreeterError("Greet failed", 1700409195);
         }
-        return yield $this->messengerTask->sendGreeting($greeting);
+        return yield $this->messengerTasks->sendGreeting($greeting);
     }
 
     public function greetWith3PurchaseFailsAnd3Retries(string $name)
     {
-        $isAuthorized = yield $this->authorizerTask->isGreetingAllowed($name);
+        $isAuthorized = yield $this->authorizerTasks->isGreetingAllowed($name);
         if (!$isAuthorized) {
             return false;
         }
-        $greeting = yield $this->repositoryTask->createGreeing($name);
+        $greeting = yield $this->repositoryTasks->createGreeing($name);
 
         /** @var Task */
-        $task = $this->purchaserTask->purchaseWith3Fails($greeting);
+        $task = $this->purchaserTasks->purchaseWith3Fails($greeting);
         yield $task->setRetryPolicy(
             (new TaskRetryPolicy)->setMaxRetries(3)
         );
-        return yield $this->messengerTask->sendGreeting($greeting);
+        return yield $this->messengerTasks->sendGreeting($greeting);
     }
 
     public function greetWith3PurchaseFailsAnd2Retries(string $name)
     {
-        $isAuthorized = yield $this->authorizerTask->isGreetingAllowed($name);
+        $isAuthorized = yield $this->authorizerTasks->isGreetingAllowed($name);
         if (!$isAuthorized) {
             return false;
         }
-        $greeting = yield $this->repositoryTask->createGreeing($name);
+        $greeting = yield $this->repositoryTasks->createGreeing($name);
 
         /** @var Task */
-        $task = $this->purchaserTask->purchaseWith3Fails($greeting);
+        $task = $this->purchaserTasks->purchaseWith3Fails($greeting);
         yield $task->setRetryPolicy(
             (new TaskRetryPolicy)->setMaxRetries(2)
         );
-        $greeting = yield $this->messengerTask->sendGreeting($greeting);
+        $greeting = yield $this->messengerTasks->sendGreeting($greeting);
         return $greeting;
     }
 
     public function complexGreetWith3PurchaseFailsAndRevert(string $name)
     {
-        $isAuthorized = yield $this->authorizerTask->isGreetingAllowed($name);
+        $isAuthorized = yield $this->authorizerTasks->isGreetingAllowed($name);
         if (!$isAuthorized) {
             return false;
         }
-        $greeting = yield $this->repositoryTask->createGreeing($name);
+        $greeting = yield $this->repositoryTasks->createGreeing($name);
         try {
             /** @var Task */
-            $task = $this->purchaserTask->purchaseWith3Fails($greeting);
+            $task = $this->purchaserTasks->purchaseWith3Fails($greeting);
             yield $task->setRetryPolicy(
                 (new TaskRetryPolicy)->setMaxRetries(2)
             );
         } catch (Exception $e) {
-            return yield $this->reverterTask->revertGreeting($greeting);
+            return yield $this->reverterTasks->revertGreeting($greeting);
         }
-        return yield $this->messengerTask->sendGreeting($greeting);
+        return yield $this->messengerTasks->sendGreeting($greeting);
     }
 
     public function simpleGreet(string $name): Greeting

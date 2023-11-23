@@ -42,12 +42,12 @@ class HelloWorldSimpleCommand extends Command
         );
 
         /** @var Greeter */
-        $greeter = new TsqmTasks(
+        $greeterTasks = new TsqmTasks(
             $container->get(Greeter::class)
         );
 
         /** @var Task */
-        $task = $greeter->simpleGreetWithRandomFail($input->getArgument("name"));
+        $task = $greeterTasks->simpleGreetWithRandomFail($input->getArgument("name"));
         $run = $tsqm->createRun($task);
         $result = $tsqm->performRun($run);
         $logger->logRunResult($result);

@@ -10,12 +10,12 @@ use Examples\Greeter\Greeter;
 class RunStatusTest extends TestCase
 {
     /** @var Greeter */
-    private $greeter;
+    private $greeterTasks;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->greeter = new TsqmTasks(
+        $this->greeterTasks = new TsqmTasks(
             $this->container->get(Greeter::class)
         );
     }
@@ -23,7 +23,7 @@ class RunStatusTest extends TestCase
     public function testTaskSucceed()
     {
         /** @var Task */
-        $task = $this->greeter->simpleGreet('John Doe');
+        $task = $this->greeterTasks->simpleGreet('John Doe');
         $run = $this->tsqm->createRun($task);
         $result = $this->tsqm->performRun($run);
         $run = $this->tsqm->getRun($run->getId());
@@ -35,7 +35,7 @@ class RunStatusTest extends TestCase
     public function testTaskFails()
     {
         /** @var Task */
-        $task = $this->greeter->simpleGreetWith3Fails('John Doe');
+        $task = $this->greeterTasks->simpleGreetWith3Fails('John Doe');
         $run = $this->tsqm->createRun($task);
         $result = $this->tsqm->performRun($run);
         $run = $this->tsqm->getRun($run->getId());
@@ -47,7 +47,7 @@ class RunStatusTest extends TestCase
     public function testAsyncRun()
     {
         /** @var Task */
-        $task = $this->greeter->simpleGreet('John Doe');
+        $task = $this->greeterTasks->simpleGreet('John Doe');
         $run = $this->tsqm->createRun($task);
         $result = $this->tsqm->performRun($run, true);
         $run = $this->tsqm->getRun($run->getId());
@@ -59,7 +59,7 @@ class RunStatusTest extends TestCase
     public function testScheduledRun()
     {
         /** @var Task */
-        $task = $this->greeter->simpleGreet('John Doe');
+        $task = $this->greeterTasks->simpleGreet('John Doe');
         $run = $this->tsqm->createRun($task, (new \DateTime())->modify('+1 day'));
         $result = $this->tsqm->performRun($run);
         $run = $this->tsqm->getRun($run->getId());
