@@ -26,7 +26,7 @@ use Tsqm\Helpers\UuidHelper;
 
 class Tsqm
 {
-    const GENERATOR_LIMIT = 1000;
+    const GENERATOR_CB_LIMIT = 1000;
 
     private ContainerInterface $container;
     private RunRepositoryInterface $runRepository;
@@ -226,21 +226,21 @@ class Tsqm
             if ($result instanceof Generator) {
                 $this->logger->debug("Generator started", ['run' => $run, 'task' => $task]);
 
-                $c = 0; // Circuit breaker just in case
-                $cache = [];
+                $cb = 0; // Circuit breaker counter just in case
+                $fastForwardYields = [];
 
                 // This is the tricky part.
                 // @todo explain algorigthm
-                while ($c++ < self::GENERATOR_LIMIT) {
+                while ($cb++ < self::GENERATOR_CB_LIMIT) {
                     /** @var Generator */
                     $generator = $this->runTaskMethod($task);
 
-                    if ($cache) {
-                        $this->logger->debug("Generator fast forward " . count($cache) . " items", ['run' => $run, 'task' => $task]);
+                    if ($fastForwardYields) {
+                        $this->logger->debug("Generator fast forward " . count($fastForwardYields) . " items", ['run' => $run, 'task' => $task]);
                     }
 
-                    foreach ($cache as $cached) {
-                        [$genTask, $genTaskResult] = $cached;
+                    foreach ($fastForwardYields as $fastForwardYield) {
+                        [$genTask, $genTaskResult] = $fastForwardYield;
                         if ($genTaskResult instanceof ThrowMe) {
                             $this->logger->warning("Generator throw", ['run' => $run, 'task' => $genTask, 'exception' => $genTaskResult->getException()]);
                             $generator->throw($genTaskResult->getException());
@@ -254,7 +254,7 @@ class Tsqm
                         $genTask = $generator->current();
                         if ($genTask instanceof Task) {
                             $genTaskResult = $this->runTask($run, $genTask, $history, true);
-                            $cache[] = [$genTask, $genTaskResult];
+                            $fastForwardYields[] = [$genTask, $genTaskResult];
                         } else {
                             throw new InvalidGenerator("Invalid generator item");
                         }
@@ -264,7 +264,7 @@ class Tsqm
                         break;
                     }
                 }
-                if ($c === self::GENERATOR_LIMIT) {
+                if ($cb === self::GENERATOR_CB_LIMIT) {
                     throw new InvalidGenerator("Generator limit reached");
                 }
             }
