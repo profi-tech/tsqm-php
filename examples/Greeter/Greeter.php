@@ -63,7 +63,6 @@ class Greeter
         if (!$valid) {
             return false;
         }
-        throw new Exception("Fuck shit");
 
         $greeting = yield $this->repositoryTasks->createGreeing($name);
         try {
