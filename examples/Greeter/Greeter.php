@@ -68,7 +68,7 @@ class Greeter
             /** @var Task */
             $task = $this->purchaserTasks->purchaseWithRandomFail($greeting);
             yield $task->setRetryPolicy(
-                (new TaskRetryPolicy())->setMaxRetries(3)->setMinInterval(1000)
+                (new TaskRetryPolicy())->setMaxRetries(3)->setMinInterval(10000)
             );
         } catch (Exception $e) {
             yield $this->reverterTasks->revertGreeting($greeting);
