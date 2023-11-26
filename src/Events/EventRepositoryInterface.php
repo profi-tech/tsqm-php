@@ -8,7 +8,7 @@ interface EventRepositoryInterface
 
     public function getStartedEvents(string $runId): array;
 
-    public function getCompletedEvent(string $runId, string $taskId): ?Event;
+    public function getCompletionEvent(string $runId, string $taskId): ?Event;
 
     public function getFailedEvents(string $runId, string $taskId);
 }

@@ -8,7 +8,7 @@ use Generator;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use Tsqm\Errors\ThrowMe;
-use Tsqm\Errors\InvalidGenerator;
+use Tsqm\Errors\InvalidGeneratorItem;
 use Tsqm\Errors\StopTheRun;
 use Tsqm\Errors\RunNotFound;
 use Tsqm\Errors\TaskClassDefinitionNotFound;
@@ -144,7 +144,7 @@ class Tsqm
      */
     public function getRunResult(Run $run): RunResult
     {
-        $event = $this->eventRepository->getCompletedEvent(
+        $event = $this->eventRepository->getCompletionEvent(
             $run->getId(),
             $run->getTask()->getId()
         );
@@ -176,8 +176,8 @@ class Tsqm
         // First we need to check task for the deterministic constraints.
         // So we take the first entry of the history, and validate it's type and taskId.
         // If there is no event (first run) we just create it.
-        $event = $history->current();
-        if (!$event) {
+        $historyEvent = $history->current();
+        if (!$historyEvent) {
             $this->logger->debug("Task started", ['run' => $run, 'task' => $task]);
             $this->eventRepository->addEvent(
                 $run->getId(),
@@ -186,25 +186,24 @@ class Tsqm
                 $task,
             );
         } else {
-            $this->eventValidator->validateEventType($event, [Event::TYPE_TASK_STARTED]);
-            $this->eventValidator->validateEventTaskId($event, $task->getId());
+            $this->eventValidator->validateEventType($historyEvent, [Event::TYPE_TASK_STARTED]);
+            $this->eventValidator->validateEventTaskId($historyEvent, $task->getId());
             $this->logger->debug("Task validated", ['run' => $run, 'task' => $task]);
             $history->next();
         }
 
         // We are checking if this task was already completed (or crashed). If so — we just return the payload.
-        $completionEvent = $this->eventRepository->getCompletedEvent($run->getId(), $task->getId());
+        $completionEvent = $this->eventRepository->getCompletionEvent($run->getId(), $task->getId());
         if ($completionEvent) {
             $this->logger->debug("Task completed from cache", ['run' => $run, 'task' => $task, 'taskResult' => $completionEvent->getPayload()]);
             return $completionEvent->getPayload();
         }
 
-        // Now we need to collect all failed events for the given task and run to check if we could retry a task in case of a failure.
         $failedEvents = $this->eventRepository->getFailedEvents($run->getId(), $task->getId());
         $failedEventsCount = count($failedEvents);
 
-        // Also it is nice to have a particular event to track retries
         if ($failedEventsCount > 0) {
+            $this->logger->notice("Task retry started", ['run' => $run, 'task' => $task]);
             $this->eventRepository->addEvent(
                 $run->getId(),
                 Event::TYPE_TASK_RETRY_STARTED,
@@ -212,7 +211,6 @@ class Tsqm
                 null,
                 UuidHelper::random(),
             );
-            $this->logger->notice("Task retry started", ['run' => $run, 'task' => $task]);
         }
 
         // This is the major try-catch block which is reponsible for handling errors and performing retries.
@@ -227,36 +225,24 @@ class Tsqm
                 $this->logger->debug("Generator started", ['run' => $run, 'task' => $task]);
 
                 $cb = 0; // Circuit breaker counter just in case
-                $fastForwardYields = [];
+
+                /** @var Generator */
+                $generator = $result;
 
                 // This is the tricky part.
                 // @todo explain algorigthm
                 while ($cb++ < self::GENERATOR_CB_LIMIT) {
-                    /** @var Generator */
-                    $generator = $this->runTaskMethod($task);
-
-                    if ($fastForwardYields) {
-                        $this->logger->debug("Generator fast forward " . count($fastForwardYields) . " items", ['run' => $run, 'task' => $task]);
-                    }
-
-                    foreach ($fastForwardYields as $fastForwardYield) {
-                        [$genTask, $genTaskResult] = $fastForwardYield;
-                        if ($genTaskResult instanceof ThrowMe) {
-                            $this->logger->warning("Generator throw", ['run' => $run, 'task' => $genTask, 'exception' => $genTaskResult->getException()]);
-                            $generator->throw($genTaskResult->getException());
-                        } else {
-                            $this->logger->debug("Generator send", ['run' => $run, 'task' => $genTask, 'taskResult' => $genTaskResult]);
-                            $generator->send($genTaskResult);
-                        }
-                    }
-
                     if ($generator->valid()) {
                         $genTask = $generator->current();
                         if ($genTask instanceof Task) {
                             $genTaskResult = $this->runTask($run, $genTask, $history, true);
-                            $fastForwardYields[] = [$genTask, $genTaskResult];
+                            if ($genTaskResult instanceof ThrowMe) {
+                                $generator->throw($genTaskResult->getException());
+                            } else {
+                                $generator->send($genTaskResult);
+                            }
                         } else {
-                            throw new InvalidGenerator("Invalid generator item");
+                            throw new InvalidGeneratorItem();
                         }
                     } else {
                         $this->logger->debug("Generator completed", ['run' => $run, 'task' => $task]);
@@ -265,7 +251,7 @@ class Tsqm
                     }
                 }
                 if ($cb === self::GENERATOR_CB_LIMIT) {
-                    throw new InvalidGenerator("Generator limit reached");
+                    throw new InvalidGeneratorItem("Generator limit reached");
                 }
             }
 

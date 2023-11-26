@@ -10,10 +10,7 @@ use Tsqm\Tasks\Task;
 class Greeter
 {
     private Repository $repository;
-    private Validator $validator;
-    private Purchaser $purchaser;
     private Messenger $messenger;
-    private Reverter $reverter;
 
     /** @var Repository */
     private $repositoryTasks;
@@ -40,10 +37,7 @@ class Greeter
         Reverter $reverter
     ) {
         $this->repository = $repository;
-        $this->validator = $validator;
-        $this->purchaser = $purchaser;
         $this->messenger = $messenger;
-        $this->reverter = $reverter;
 
         $this->repositoryTasks = new TsqmTasks($repository);
         $this->validatorTasks = new TsqmTasks($validator);
@@ -74,7 +68,7 @@ class Greeter
             /** @var Task */
             $task = $this->purchaserTasks->purchaseWithRandomFail($greeting);
             yield $task->setRetryPolicy(
-                (new TaskRetryPolicy())->setMaxRetries(3)->setMinInterval(10000)
+                (new TaskRetryPolicy())->setMaxRetries(3)->setMinInterval(1000)
             );
         } catch (Exception $e) {
             yield $this->reverterTasks->revertGreeting($greeting);
