@@ -61,7 +61,7 @@ class Logger extends ConsoleLogger
     {
         $this->log(
             $result->hasError() ? self::ERROR : self::INFO,
-            "RunResult for {$result->getRunId()}: status=" . ($result->isReady() ? "ready, data=" . json_encode($result->getData()) : "scheduled")
+            "RunResult for run {$result->getRunId()}: status=" . ($result->isReady() ? "ready, data=" . json_encode($result->getData()) : "scheduled")
         );
     }
 }

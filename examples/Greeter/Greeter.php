@@ -10,10 +10,7 @@ use Tsqm\Tasks\Task;
 class Greeter
 {
     private Repository $repository;
-    private Validator $validator;
-    private Purchaser $purchaser;
     private Messenger $messenger;
-    private Reverter $reverter;
 
     /** @var Repository */
     private $repositoryTasks;
@@ -40,10 +37,7 @@ class Greeter
         Reverter $reverter
     ) {
         $this->repository = $repository;
-        $this->validator = $validator;
-        $this->purchaser = $purchaser;
         $this->messenger = $messenger;
-        $this->reverter = $reverter;
 
         $this->repositoryTasks = new TsqmTasks($repository);
         $this->validatorTasks = new TsqmTasks($validator);

@@ -45,7 +45,7 @@ class EventRepository implements EventRepositoryInterface
         }
     }
 
-    public function getCompletedEvent(string $runId, string $taskId): ?Event
+    public function getCompletionEvent(string $runId, string $taskId): ?Event
     {
         try {
             $st = $this->pdo->prepare("
