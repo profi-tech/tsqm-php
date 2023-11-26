@@ -63,6 +63,7 @@ class Greeter
         if (!$valid) {
             return false;
         }
+
         $greeting = yield $this->repositoryTasks->createGreeing($name);
         try {
             /** @var Task */
