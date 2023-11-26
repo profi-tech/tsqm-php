@@ -21,7 +21,6 @@ CREATE TABLE
         `type` enum(
             'taskStarted',
             'taskFailed',
-            'taskRetryStarted',
             'taskCompleted',
             'taskCrashed'
         ) NOT NULL,

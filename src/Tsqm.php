@@ -173,12 +173,13 @@ class Tsqm
      */
     private function runTask(Run $run, Task $task, Generator $history, bool $inGenerator = false)
     {
+        $this->logger->debug("Task started", ['run' => $run, 'task' => $task]);
+
         // First we need to check task for the deterministic constraints.
         // So we take the first entry of the history, and validate it's type and taskId.
         // If there is no event (first run) we just create it.
         $historyEvent = $history->current();
         if (!$historyEvent) {
-            $this->logger->debug("Task started", ['run' => $run, 'task' => $task]);
             $this->eventRepository->addEvent(
                 $run->getId(),
                 Event::TYPE_TASK_STARTED,
@@ -203,14 +204,7 @@ class Tsqm
         $failedEventsCount = count($failedEvents);
 
         if ($failedEventsCount > 0) {
-            $this->logger->notice("Task retry started", ['run' => $run, 'task' => $task]);
-            $this->eventRepository->addEvent(
-                $run->getId(),
-                Event::TYPE_TASK_RETRY_STARTED,
-                $task->getId(),
-                null,
-                UuidHelper::random(),
-            );
+            $this->logger->debug("Task failover started", ['run' => $run, 'task' => $task]);
         }
 
         // This is the major try-catch block which is reponsible for handling errors and performing retries.
@@ -289,7 +283,7 @@ class Tsqm
 
             // This is ok — we wrote down a faile event and we are ready to retry
             if ($retryAt) {
-                $this->logger->notice("Task retry scheduled for " . $retryAt->format('Y-m-d H:i:s.v'), ['run' => $run, 'task' => $task]);
+                $this->logger->debug("Task failover scheduled for " . $retryAt->format('Y-m-d H:i:s.v'), ['run' => $run, 'task' => $task]);
                 $this->runScheduler->scheduleRun($run, $retryAt);
                 throw new StopTheRun();
             }

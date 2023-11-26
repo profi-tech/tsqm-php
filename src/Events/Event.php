@@ -9,7 +9,6 @@ class Event
 {
     const TYPE_TASK_STARTED = 'taskStarted';
     const TYPE_TASK_FAILED = 'taskFailed';
-    const TYPE_TASK_RETRY_STARTED = 'taskRetryStarted';
     const TYPE_TASK_COMPLETED = 'taskCompleted';
     const TYPE_TASK_CRASHED = 'taskCrashed';
 
