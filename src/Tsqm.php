@@ -12,7 +12,7 @@ use Tsqm\Errors\InvalidGeneratorItem;
 use Tsqm\Errors\StopTheRun;
 use Tsqm\Errors\RunNotFound;
 use Tsqm\Errors\TaskClassDefinitionNotFound;
-use Tsqm\Errors\TaskCrashed;
+use Tsqm\Errors\CrashTheRun;
 use Tsqm\Events\Event;
 use Tsqm\Events\EventRepositoryInterface;
 use Tsqm\Runs\Run;
@@ -69,15 +69,15 @@ class Tsqm
     /**
      * Starting a Run
      * @param Run $run 
-     * @param bool $async
+     * @param bool $forceAsync
      * @return RunResult 
      * @throws Exception
      */
-    public function performRun(Run $run, bool $async = false): RunResult
+    public function performRun(Run $run, bool $forceAsync = false): RunResult
     {
         $task = $run->getTask();
 
-        if ($async || $run->getScheduledFor() > new DateTime()) {
+        if ($forceAsync || $run->getScheduledFor() > new DateTime()) {
             $this->runScheduler->scheduleRun($run, $run->getScheduledFor());
             $this->logger->debug("Run scheduled for " . $run->getScheduledFor()->format('Y-m-d H:i:s.v'), ['run' => $run]);
             return new RunResult($run->getId(), null);
@@ -101,9 +101,9 @@ class Tsqm
         try {
             $this->runTask($run, $task, $history);
             $this->finishRun($run);
-        }
-        // This means that task code itself didn't properly catch and handle exceptions, so we need to perform hard-stop
-        catch (TaskCrashed $e) {
+        } catch (StopTheRun $e) {
+            $this->logger->notice("Run stopped", ['run' => $run]);
+        } catch (CrashTheRun $e) {
             $this->logger->critical("Run crashed", ['run' => $run]);
             $this->eventRepository->addEvent(
                 $run->getId(),
@@ -113,13 +113,7 @@ class Tsqm
             );
             $this->finishRun($run);
             throw $e->getPrevious();
-        }
-        // Some fail happened and we just stop the run
-        catch (StopTheRun $e) {
-            $this->logger->notice("Run stopped", ['run' => $run]);
-        }
-        // Log all the other exceptions and rethrow them
-        catch (Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error($e->getMessage(), ['run' => $run]);
             throw $e;
         }
@@ -293,7 +287,7 @@ class Tsqm
             }
             // Otherwise we just crash
             else {
-                throw new TaskCrashed("", 0, $e);
+                throw new CrashTheRun("", 0, $e);
             }
         }
     }
