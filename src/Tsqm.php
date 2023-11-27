@@ -69,15 +69,15 @@ class Tsqm
     /**
      * Starting a Run
      * @param Run $run 
-     * @param bool $async
+     * @param bool $forceAsync
      * @return RunResult 
      * @throws Exception
      */
-    public function performRun(Run $run, bool $async = false): RunResult
+    public function performRun(Run $run, bool $forceAsync = false): RunResult
     {
         $task = $run->getTask();
 
-        if ($async || $run->getScheduledFor() > new DateTime()) {
+        if ($forceAsync || $run->getScheduledFor() > new DateTime()) {
             $this->runScheduler->scheduleRun($run, $run->getScheduledFor());
             $this->logger->debug("Run scheduled for " . $run->getScheduledFor()->format('Y-m-d H:i:s.v'), ['run' => $run]);
             return new RunResult($run->getId(), null);
