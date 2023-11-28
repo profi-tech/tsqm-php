@@ -63,12 +63,15 @@ class EventRepository implements EventRepositoryInterface
                 WHERE run_id=:run_id AND task_id=:task_id AND type in (:type1, :type2)
                 ORDER BY id DESC LIMIT 1
              ");
-            $st->execute([
+            $res = $st->execute([
                 'run_id' => $runId,
                 'task_id' => $taskId,
                 'type1' => Event::TYPE_TASK_COMPLETED,
                 'type2' => Event::TYPE_TASK_CRASHED,
             ]);
+            if (!$res) {
+                throw new RepositoryError("Failed to get completion event: execute() returned false");
+            }
 
             $data = $st->fetch(PDO::FETCH_ASSOC);
             return $data ? Event::fromArray($data) : null;
@@ -85,7 +88,11 @@ class EventRepository implements EventRepositoryInterface
                 WHERE run_id = :run_id and type = :type
                 ORDER BY id 
             ");
-            $st->execute(['run_id' => $runId, 'type' => Event::TYPE_TASK_STARTED]);
+            $res = $st->execute(['run_id' => $runId, 'type' => Event::TYPE_TASK_STARTED]);
+            if (!$res) {
+                throw new RepositoryError("Failed to get started events: execute() returned false");
+            }
+
             $rows = [];
             while ($row = $st->fetch(PDO::FETCH_ASSOC)) {
                 $rows[] = Event::fromArray($row);
@@ -105,7 +112,11 @@ class EventRepository implements EventRepositoryInterface
                 WHERE run_id = :run_id and task_id = :task_id and type = :type
                 ORDER BY id 
             ");
-            $st->execute(['run_id' => $runId, 'task_id' => $taskId, 'type' => Event::TYPE_TASK_FAILED]);
+            $res = $st->execute(['run_id' => $runId, 'task_id' => $taskId, 'type' => Event::TYPE_TASK_FAILED]);
+            if (!$res) {
+                throw new RepositoryError("Failed to get failed events: execute() returned false");
+            }
+
             $rows = [];
             while ($row = $st->fetch(PDO::FETCH_ASSOC)) {
                 $rows[] = Event::fromArray($row);

@@ -56,7 +56,11 @@ class RunRepository implements RunRepositoryInterface
     {
         try {
             $st = $this->pdo->prepare("SELECT * FROM runs WHERE id=?");
-            $st->execute([$runId]);
+            $res = $st->execute([$runId]);
+            if (!$res) {
+                throw new RepositoryError("Failed to get run: execute() returned false");
+            }
+
             $data = $st->fetch(PDO::FETCH_ASSOC);
             return $data ? Run::fromArray($data) : null;
         } catch (Exception $e) {
@@ -73,7 +77,6 @@ class RunRepository implements RunRepositoryInterface
                 'id' => $runId,
                 'status' => $status,
             ]);
-
             if (!$res) {
                 throw new RepositoryError("Failed to update run status: execute() returned false");
             }
@@ -109,10 +112,13 @@ class RunRepository implements RunRepositoryInterface
                 ORDER BY scheduled_for ASC
                 LIMIT $limit
             ");
-            $st->execute([
+            $res = $st->execute([
                 'until' => $until->format('Y-m-d H:i:s.v'),
                 'status' => Run::STATUS_FINISHED,
             ]);
+            if (!$res) {
+                throw new RepositoryError("Failed to get scheduled run ids: execute() returned false");
+            }
 
             $runIds = [];
             while ($runId = $st->fetch(PDO::FETCH_COLUMN)) {
