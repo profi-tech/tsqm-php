@@ -1,6 +1,6 @@
 # TSQM
 
-Simple and reliable task runner for PHP applications.
+Simple and reliable transaction engine for PHP applications.
 
 ## :warning: Warning
 
