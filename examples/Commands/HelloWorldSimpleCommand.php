@@ -48,6 +48,9 @@ class HelloWorldSimpleCommand extends Command
 
         /** @var Task */
         $task = $greeterTasks->simpleGreetWithRandomFail($input->getArgument("name"));
+        $task->setRetryPolicy(
+            $task->getRetryPolicy()->setMaxRetries(3)
+        );
         $run = $tsqm->createRun($task);
         $result = $tsqm->performRun($run);
         $logger->logRunResult($result);

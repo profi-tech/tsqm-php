@@ -6,7 +6,7 @@ use DateTime;
 
 class TaskRetryPolicy
 {
-    private int $maxRetries = 3;
+    private int $maxRetries = 0;
 
     /** @var int Minimum time between retries in milliseconds */
     private int $minInterval = 100;
