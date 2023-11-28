@@ -11,7 +11,7 @@ class TaskRetryPolicyTest extends TestCase
     {
         $retryPolicy = new TaskRetryPolicy();
 
-        $this->assertEquals(3, $retryPolicy->getMaxRetries());
+        $this->assertEquals(0, $retryPolicy->getMaxRetries());
         $this->assertEquals(100, $retryPolicy->getMinInterval());
     }
 

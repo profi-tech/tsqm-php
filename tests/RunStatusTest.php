@@ -32,11 +32,13 @@ class RunStatusTest extends TestCase
         $this->assertTrue($result->isReady());
     }
 
-    public function testTaskFails()
+    public function testTaskFaildAndScheduled()
     {
         /** @var Task */
         $task = $this->greeterTasks->simpleGreetWith3Fails('John Doe');
-        $run = $this->tsqm->createRun($task);
+        $run = $this->tsqm->createRun($task->setRetryPolicy(
+            $task->getRetryPolicy()->setMaxRetries(1)
+        ));
         $result = $this->tsqm->performRun($run);
         $run = $this->tsqm->getRun($run->getId());
 
