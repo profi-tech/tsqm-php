@@ -34,6 +34,13 @@ class Event
         return $this->id;
     }
 
+    public function withId(int $id)
+    {
+        $cloned = clone $this;
+        $cloned->id = $id;
+        return $cloned;
+    }
+
     public function getRunId()
     {
         return $this->runId;

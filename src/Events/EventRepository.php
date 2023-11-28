@@ -28,7 +28,7 @@ class EventRepository implements EventRepositoryInterface
                 $taskId,
                 $payload,
             );
-            $this->pdo->prepare("
+            $res = $this->pdo->prepare("
                 INSERT INTO events (run_id, ts, type, task_id, payload, hash) 
                 VALUES(:run_id, :ts, :type, :task_id, :payload, :hash)
             ")->execute([
@@ -39,7 +39,17 @@ class EventRepository implements EventRepositoryInterface
                 'payload' => SerializationHelper::serialize($event->getPayload()),
                 'hash' => $event->getHash($salt),
             ]);
-            return $event;
+
+            if (!$res) {
+                throw new RepositoryError("Failed to add event: execute() returned false");
+            }
+
+            $id = $this->pdo->lastInsertId();
+            if (!$id) {
+                throw new RepositoryError("Failed to add event: lastInsertId() returned 0");
+            }
+
+            return $event->withId($id);
         } catch (Exception $e) {
             throw new RepositoryError("Failed to add event: " . $e->getMessage(), 0, $e);
         }
@@ -59,6 +69,7 @@ class EventRepository implements EventRepositoryInterface
                 'type1' => Event::TYPE_TASK_COMPLETED,
                 'type2' => Event::TYPE_TASK_CRASHED,
             ]);
+
             $data = $st->fetch(PDO::FETCH_ASSOC);
             return $data ? Event::fromArray($data) : null;
         } catch (Exception $e) {
@@ -79,6 +90,7 @@ class EventRepository implements EventRepositoryInterface
             while ($row = $st->fetch(PDO::FETCH_ASSOC)) {
                 $rows[] = Event::fromArray($row);
             }
+
             return $rows;
         } catch (Exception $e) {
             throw new RepositoryError("Failed to get started events: " . $e->getMessage(), 0, $e);
@@ -98,6 +110,7 @@ class EventRepository implements EventRepositoryInterface
             while ($row = $st->fetch(PDO::FETCH_ASSOC)) {
                 $rows[] = Event::fromArray($row);
             }
+
             return $rows;
         } catch (Exception $e) {
             throw new RepositoryError("Failed to get failed events: " . $e->getMessage(), 0, $e);
