@@ -38,7 +38,6 @@ class RunTaskTest extends TestCase
     {
         /** @var Task */
         $task = $this->greeterTasks->simpleGreetWith3Fails('John Doe');
-        $task->setRetryPolicy((new TaskRetryPolicy)->setMaxRetries(0));
         $run = $this->tsqm->createRun($task);
 
         $this->expectException(GreeterError::class);

@@ -126,7 +126,7 @@ class Greeter
         return $greeting;
     }
 
-    public function complexGreetWith3PurchaseFailsAndRevert(string $name)
+    public function greetWith3PurchaseFailsAndRevert(string $name)
     {
         $valid = yield $this->validatorTasks->validateName($name);
         if (!$valid) {
@@ -143,6 +143,13 @@ class Greeter
             return yield $this->reverterTasks->revertGreeting($greeting);
         }
         return yield $this->messengerTasks->sendGreeting($greeting);
+    }
+
+    public function greetWithDuplicatedTask(string $name)
+    {
+        yield $this->repositoryTasks->createGreeing($name);
+        yield $this->repositoryTasks->createGreeing($name);
+        return true;
     }
 
     public function simpleGreet(string $name): Greeting
