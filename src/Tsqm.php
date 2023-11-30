@@ -13,6 +13,7 @@ use Tsqm\Errors\StopTheRun;
 use Tsqm\Errors\RunNotFound;
 use Tsqm\Errors\TaskClassDefinitionNotFound;
 use Tsqm\Errors\CrashTheRun;
+use Tsqm\Errors\DuplicatedTask;
 use Tsqm\Events\Event;
 use Tsqm\Events\EventRepositoryInterface;
 use Tsqm\Runs\Run;
@@ -20,6 +21,7 @@ use Tsqm\Runs\RunRepositoryInterface;
 use Tsqm\Runs\RunResult;
 use Tsqm\Runs\RunSchedulerInterface;
 use Tsqm\Events\EventValidatorInterface;
+use Tsqm\Helpers\PdoHelper;
 use Tsqm\Tasks\Task;
 use Tsqm\Tasks\TaskError;
 use Tsqm\Helpers\UuidHelper;
@@ -177,12 +179,21 @@ class Tsqm
         // If there is no event (first run) we just create it.
         $historyEvent = $history->current();
         if (!$historyEvent) {
-            $this->eventRepository->addEvent(
-                $run->getId(),
-                Event::TYPE_TASK_STARTED,
-                $task->getId(),
-                $task,
-            );
+            try {
+                $this->eventRepository->addEvent(
+                    $run->getId(),
+                    Event::TYPE_TASK_STARTED,
+                    $task->getId(),
+                    $task,
+                );
+            } catch (Exception $e) {
+                if (PdoHelper::isIntegrityConstraintViolation($e)) {
+                    throw new DuplicatedTask("Task already started", 0, $e);
+                } else {
+                    throw $e;
+                }
+                throw $e;
+            }
         } else {
             $this->eventValidator->validateEventType($historyEvent, [Event::TYPE_TASK_STARTED]);
             $this->eventValidator->validateEventTaskId($historyEvent, $task->getId());
@@ -246,12 +257,20 @@ class Tsqm
                 }
             }
 
-            $this->eventRepository->addEvent(
-                $run->getId(),
-                Event::TYPE_TASK_COMPLETED,
-                $task->getId(),
-                $result,
-            );
+            try {
+                $this->eventRepository->addEvent(
+                    $run->getId(),
+                    Event::TYPE_TASK_COMPLETED,
+                    $task->getId(),
+                    $result,
+                );
+            } catch (Exception $e) {
+                if (PdoHelper::isIntegrityConstraintViolation($e)) {
+                    throw new DuplicatedTask("Task already completed", 0, $e);
+                } else {
+                    throw $e;
+                }
+            }
 
             $this->logger->debug("Task completed", ['run' => $run, 'task' => $task]);
 

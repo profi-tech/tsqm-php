@@ -7,6 +7,7 @@ use Tsqm\TsqmTasks;
 use Tsqm\Tasks\Task;
 use Examples\Greeter\Greeter;
 use Examples\Greeter\GreeterError;
+use Tsqm\Errors\DuplicatedTask;
 use Tsqm\Tasks\TaskRetryPolicy;
 
 class RunTaskGeneratorTest extends TestCase
@@ -53,7 +54,6 @@ class RunTaskGeneratorTest extends TestCase
     {
         /** @var Task */
         $task = $this->greeterTasks->greetWith3Fails('John Doe');
-        $task->setRetryPolicy((new TaskRetryPolicy)->setMaxRetries(0));
         $run = $this->tsqm->createRun($task);
 
         $this->expectException(GreeterError::class);
@@ -104,7 +104,6 @@ class RunTaskGeneratorTest extends TestCase
     {
         /** @var Task */
         $task = $this->greeterTasks->greetWith3PurchaseFailsAnd3Retries('John Doe');
-        $task->setRetryPolicy((new TaskRetryPolicy)->setMaxRetries(0));
         $run = $this->tsqm->createRun($task);
 
         for ($i = 1; $i <= 3; $i++) {
@@ -125,7 +124,6 @@ class RunTaskGeneratorTest extends TestCase
     {
         /** @var Task */
         $task = $this->greeterTasks->greetWith3PurchaseFailsAnd2Retries('John Doe');
-        $task->setRetryPolicy((new TaskRetryPolicy)->setMaxRetries(0));
         $run = $this->tsqm->createRun($task);
 
         for ($i = 1; $i <= 2; $i++) {
@@ -143,8 +141,7 @@ class RunTaskGeneratorTest extends TestCase
     public function testTaskInnerFailRetryRevert()
     {
         /** @var Task */
-        $task = $this->greeterTasks->complexGreetWith3PurchaseFailsAndRevert('John Doe');
-        $task->setRetryPolicy((new TaskRetryPolicy)->setMaxRetries(0));
+        $task = $this->greeterTasks->greetWith3PurchaseFailsAndRevert('John Doe');
         $run = $this->tsqm->createRun($task);
 
         for ($i = 1; $i <= 2; $i++) {
@@ -156,5 +153,17 @@ class RunTaskGeneratorTest extends TestCase
         $this->assertTrue($result->isReady());
         $this->assertFalse($result->hasError());
         $this->assertEquals((new Greeting("Hello, John Doe!"))->setReverted(true), $result->getData());
+    }
+
+    public function testDuplicatedTask()
+    {
+        /** @var Task */
+        $task = $this->greeterTasks->greetWithDuplicatedTask('John Doe');
+        $run = $this->tsqm->createRun($task);
+
+        $this->expectException(DuplicatedTask::class);
+        $this->expectExceptionMessage("Task already started");
+
+        $this->tsqm->performRun($run);
     }
 }
