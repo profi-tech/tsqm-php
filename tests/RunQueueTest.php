@@ -10,6 +10,7 @@ use Tsqm\Tsqm;
 use Tsqm\TsqmConfig;
 use Tsqm\Runs\Queue\RunQueueInterface;
 use Tsqm\Runs\Run;
+use Tsqm\Runs\RunOptions;
 use Tsqm\Tasks\Task;
 use Tsqm\Tasks\TaskRetryPolicy;
 
@@ -52,7 +53,7 @@ class RunQueueTest extends TestCase
                 }
             )
         );
-        $this->tsqm->performRun($run, true);
+        $this->tsqm->performRun($run, (new RunOptions)->setForceAsync(true));
     }
 
     public function testEnqueueForScheduledRun()
@@ -70,7 +71,7 @@ class RunQueueTest extends TestCase
                 }
             )
         );
-        $this->tsqm->performRun($run, true);
+        $this->tsqm->performRun($run, (new RunOptions)->setForceAsync(true));
     }
 
     public function testEnqueueForRetry()

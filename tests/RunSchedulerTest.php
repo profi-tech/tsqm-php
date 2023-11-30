@@ -6,6 +6,7 @@ use DateTime;
 use Tsqm\TsqmTasks;
 use Tsqm\Tasks\Task;
 use Examples\Greeter\Greeter;
+use Tsqm\Runs\RunOptions;
 use Tsqm\Tasks\TaskRetryPolicy;
 
 class RunSchedulerTest extends TestCase
@@ -64,7 +65,7 @@ class RunSchedulerTest extends TestCase
         /** @var Task */
         $task = $this->greeterTasks->simpleGreet('John Doe');
         $run = $this->tsqm->createRun($task);
-        $result = $this->tsqm->performRun($run, true);
+        $result = $this->tsqm->performRun($run, (new RunOptions)->setForceAsync(true));
 
         $this->assertFalse($result->isReady());
 
