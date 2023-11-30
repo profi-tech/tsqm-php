@@ -189,8 +189,6 @@ class Tsqm
             } catch (Exception $e) {
                 if (PdoHelper::isIntegrityConstraintViolation($e)) {
                     throw new DuplicatedTask("Task already started", 0, $e);
-                } else {
-                    throw $e;
                 }
                 throw $e;
             }
