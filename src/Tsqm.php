@@ -23,6 +23,7 @@ use Tsqm\Events\EventValidatorInterface;
 use Tsqm\Tasks\Task;
 use Tsqm\Tasks\TaskError;
 use Tsqm\Helpers\UuidHelper;
+use Tsqm\Runs\RunOptions;
 
 class Tsqm
 {
@@ -73,11 +74,13 @@ class Tsqm
      * @return RunResult 
      * @throws Exception
      */
-    public function performRun(Run $run, bool $forceAsync = false): RunResult
+    public function performRun(Run $run, ?RunOptions $options = null): RunResult
     {
+        $options = $options ?? new RunOptions();
+
         $task = $run->getTask();
 
-        if ($forceAsync || $run->getScheduledFor() > new DateTime()) {
+        if ($options->getForceAsync() || $run->getScheduledFor() > new DateTime()) {
             $this->runScheduler->scheduleRun($run, $run->getScheduledFor());
             $this->logger->debug("Run scheduled for " . $run->getScheduledFor()->format('Y-m-d H:i:s.v'), ['run' => $run]);
             return new RunResult($run->getId(), null);

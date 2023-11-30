@@ -5,7 +5,7 @@ namespace Tests;
 use Tsqm\TsqmTasks;
 use Tsqm\Tasks\Task;
 use Examples\Greeter\Greeter;
-
+use Tsqm\Runs\RunOptions;
 
 class RunStatusTest extends TestCase
 {
@@ -51,7 +51,7 @@ class RunStatusTest extends TestCase
         /** @var Task */
         $task = $this->greeterTasks->simpleGreet('John Doe');
         $run = $this->tsqm->createRun($task);
-        $result = $this->tsqm->performRun($run, true);
+        $result = $this->tsqm->performRun($run, (new RunOptions)->setForceAsync(true));
         $run = $this->tsqm->getRun($run->getId());
 
         $this->assertEquals('created', $run->getStatus());
