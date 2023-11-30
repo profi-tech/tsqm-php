@@ -6,6 +6,7 @@ use DateTime;
 use Exception;
 use PDO;
 use Tsqm\Errors\RepositoryError;
+use Tsqm\Helpers\PdoHelper;
 use Tsqm\Tasks\Task;
 use Tsqm\Helpers\SerializationHelper;
 use Tsqm\Helpers\UuidHelper;
@@ -34,17 +35,18 @@ class RunRepository implements RunRepositoryInterface
             $res = $this->pdo->prepare("
                 INSERT INTO runs (id, created_at, scheduled_for, task, status)
                 VALUES(:id, :created_at, :scheduled_for, :task, :status)
-            ")->execute([
+            ");
+            if (!$res) {
+                throw new Exception(PdoHelper::formatErrorInfo($this->pdo->errorInfo()));
+            }
+
+            $res->execute([
                 'id' => $run->getId(),
                 'created_at' => $run->getCreatedAt()->format('Y-m-d H:i:s.u'),
                 'scheduled_for' => $run->getScheduledFor()->format('Y-m-d H:i:s.v'),
                 'task' => SerializationHelper::serialize($run->getTask()),
                 'status' => $run->getStatus(),
             ]);
-
-            if (!$res) {
-                throw new RepositoryError("Failed to create run: execute() returned false");
-            }
 
             return $run;
         } catch (Exception $e) {
@@ -55,13 +57,13 @@ class RunRepository implements RunRepositoryInterface
     public function getRun(string $runId): ?Run
     {
         try {
-            $st = $this->pdo->prepare("SELECT * FROM runs WHERE id=?");
-            $res = $st->execute([$runId]);
+            $res = $this->pdo->prepare("SELECT * FROM runs WHERE id=?");
             if (!$res) {
-                throw new RepositoryError("Failed to get run: execute() returned false");
+                throw new Exception(PdoHelper::formatErrorInfo($this->pdo->errorInfo()));
             }
 
-            $data = $st->fetch(PDO::FETCH_ASSOC);
+            $res->execute([$runId]);
+            $data = $res->fetch(PDO::FETCH_ASSOC);
             return $data ? Run::fromArray($data) : null;
         } catch (Exception $e) {
             throw new RepositoryError("Failed to get run: " . $e->getMessage(), 0, $e);
@@ -73,13 +75,15 @@ class RunRepository implements RunRepositoryInterface
         try {
             $res = $this->pdo->prepare("
                 UPDATE runs SET status = :status WHERE id = :id
-            ")->execute([
+            ");
+            if (!$res) {
+                throw new Exception(PdoHelper::formatErrorInfo($this->pdo->errorInfo()));
+            }
+
+            $res->execute([
                 'id' => $runId,
                 'status' => $status,
             ]);
-            if (!$res) {
-                throw new RepositoryError("Failed to update run status: execute() returned false");
-            }
         } catch (Exception $e) {
             throw new RepositoryError("Failed to update run status: " . $e->getMessage(), 0, $e);
         }
@@ -90,14 +94,15 @@ class RunRepository implements RunRepositoryInterface
         try {
             $res = $this->pdo->prepare("
                 UPDATE runs SET scheduled_for = :scheduled_for WHERE id = :id
-            ")->execute([
+            ");
+            if (!$res) {
+                throw new Exception(PdoHelper::formatErrorInfo($this->pdo->errorInfo()));
+            }
+
+            $res->execute([
                 'id' => $runId,
                 'scheduled_for' => $scheduledFor->format('Y-m-d H:i:s.v'),
             ]);
-
-            if (!$res) {
-                throw new RepositoryError("Failed to update run schedule: execute() returned false");
-            }
         } catch (Exception $e) {
             throw new RepositoryError("Failed to update run scheduled for: " . $e->getMessage(), 0, $e);
         }
@@ -106,22 +111,23 @@ class RunRepository implements RunRepositoryInterface
     public function getScheduledRunIds(DateTime $until, int $limit): array
     {
         try {
-            $st = $this->pdo->prepare("
+            $res = $this->pdo->prepare("
                 SELECT id FROM runs
                 WHERE scheduled_for <= :until AND status != :status
                 ORDER BY scheduled_for ASC
                 LIMIT $limit
             ");
-            $res = $st->execute([
+            if (!$res) {
+                throw new Exception(PdoHelper::formatErrorInfo($this->pdo->errorInfo()));
+            }
+
+            $res->execute([
                 'until' => $until->format('Y-m-d H:i:s.v'),
                 'status' => Run::STATUS_FINISHED,
             ]);
-            if (!$res) {
-                throw new RepositoryError("Failed to get scheduled run ids: execute() returned false");
-            }
 
             $runIds = [];
-            while ($runId = $st->fetch(PDO::FETCH_COLUMN)) {
+            while ($runId = $res->fetch(PDO::FETCH_COLUMN)) {
                 $runIds[] = $runId;
             }
 
