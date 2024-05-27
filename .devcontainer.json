@@ -1,0 +1,6 @@
+{
+    "name": "tsqm-php",
+    "dockerComposeFile": "compose.yaml",
+    "service": "cli",
+    "workspaceFolder": "/tsqm-php"
+}
