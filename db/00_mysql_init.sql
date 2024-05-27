@@ -4,7 +4,6 @@ CREATE TABLE
         `created_at` TIMESTAMP(6) NOT NULL,
         `scheduled_for` TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
         `task` BLOB NOT NULL,
-        `retry_policy` JSON,
         `status` enum(
             'created',
             'started',

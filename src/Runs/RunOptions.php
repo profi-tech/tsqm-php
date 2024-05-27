@@ -9,7 +9,6 @@ class RunOptions {
     private ?Task $task = null;
     private ?DateTime $createdAt = null;
     private ?DateTime $scheduledFor = null;
-    private ?RunRetryPolicy $retryPolicy = null;
 
     public function setTask(Task $task): self {
         $this->task = $task;
@@ -36,14 +35,5 @@ class RunOptions {
 
     public function getScheduledFor(): ?DateTime {
         return $this->scheduledFor;
-    }
-
-    public function setRetryPolicy(?RunRetryPolicy $retryPolicy): self {
-        $this->retryPolicy = $retryPolicy;
-        return $this;
-    }
-
-    public function getRetryPolicy(): ?RunRetryPolicy {
-        return $this->retryPolicy;
     }
 }
