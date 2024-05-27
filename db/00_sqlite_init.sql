@@ -4,6 +4,7 @@ CREATE TABLE
         `created_at` TIMESTAMP(6) NOT NULL,
         `scheduled_for` TIMESTAMP(3) NOT NULL,
         `task` BLOB NOT NULL,
+        `retry_policy` JSON,
         `status` VARCHAR(32) NOT NULL
     );
 

@@ -33,8 +33,8 @@ class RunRepository implements RunRepositoryInterface
             );
 
             $res = $this->pdo->prepare("
-                INSERT INTO runs (id, created_at, scheduled_for, task, status)
-                VALUES(:id, :created_at, :scheduled_for, :task, :status)
+                INSERT INTO runs (id, created_at, scheduled_for, task, retry_policy, status)
+                VALUES(:id, :created_at, :scheduled_for, :task, :retry_policy, :status)
             ");
             if (!$res) {
                 throw new Exception(PdoHelper::formatErrorInfo($this->pdo->errorInfo()));
@@ -46,6 +46,7 @@ class RunRepository implements RunRepositoryInterface
                 'scheduled_for' => $run->getScheduledFor()->format('Y-m-d H:i:s.v'),
                 'task' => SerializationHelper::serialize($run->getTask()),
                 'status' => $run->getStatus(),
+                'retry_policy' => null,
             ]);
 
             return $run;
