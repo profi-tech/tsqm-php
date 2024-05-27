@@ -1,0 +1,19 @@
+
+services:
+  cli:
+    container_name: tsqm-php-cli
+    image: tsqm-php-cli:latest
+    build:
+        context: .
+    volumes:
+        - ./:/tsqm-php
+        - ssh-keys:/root/.ssh
+
+volumes:
+    logs:
+    ssh-keys:
+        driver: local
+        driver_opts:
+            type: none
+            device: ~/.ssh/tsqm-php
+            o: bind
