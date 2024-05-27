@@ -1,3 +1,5 @@
+[![CI](https://github.com/profi-tech/tsqm-php/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/profi-tech/tsqm-php/actions/workflows/ci.yml)
+
 # TSQM
 
 Simple and reliable transaction engine for PHP applications.
