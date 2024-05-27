@@ -20,17 +20,16 @@ class Task
             throw new Exception("Method not found: " . get_class($object) . "::" . $method);
         }
         $className = get_class($object);
-        $taskId = UuidHelper::named(implode('::', [
+        return new Task($className, $method, $args);
+    }
+
+    private function __construct(string $className, string $method, array $args)
+    {
+        $this->id = UuidHelper::named(implode('::', [
             $className,
             $method,
             SerializationHelper::serialize($args),
         ]));
-        return new Task($taskId, $className, $method, $args);
-    }
-
-    private function __construct(string $id, string $className, string $method, array $args)
-    {
-        $this->id = $id;
         $this->className = $className;
         $this->method = $method;
         $this->args = $args;
