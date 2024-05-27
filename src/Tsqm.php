@@ -70,6 +70,7 @@ class Tsqm
             $options->getCreatedAt() ?? $now,
             $options->getScheduledFor() ?? $now,
             $options->getTask(),
+            $options->getRetryPolicy(),
             Run::STATUS_CREATED
         );
 

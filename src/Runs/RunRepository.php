@@ -36,7 +36,7 @@ class RunRepository implements RunRepositoryInterface
                 'scheduled_for' => $run->getScheduledFor()->format('Y-m-d H:i:s.v'),
                 'task' => SerializationHelper::serialize($run->getTask()),
                 'status' => $run->getStatus(),
-                'retry_policy' => null,
+                'retry_policy' => $run->getRetryPolicy() ? json_encode($run->getRetryPolicy()) : null,
             ]);
         } catch (Exception $e) {
             throw new RepositoryError("Failed to create run: " . $e->getMessage(), 0, $e);

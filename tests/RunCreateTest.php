@@ -5,6 +5,7 @@ namespace Tests;
 use DateTime;
 use Examples\Greeter\Greeter;
 use Tsqm\Runs\RunOptions;
+use Tsqm\Runs\RunRetryPolicy;
 use Tsqm\TsqmTasks;
 use Tsqm\Tasks\Task;
 
@@ -68,5 +69,22 @@ class RunCreateTest extends TestCase
         );
 
         $this->assertEquals($run->getStatus(), 'created');
+    }
+
+    public function testPersistRetryPolicy() {
+        /** @var Task */
+        $task = $this->greeterTasks->simpleGreet('John Doe');
+        $retryPolicy = (new RunRetryPolicy)
+            ->setMaxRetries(3)
+            ->setMinInterval(1000);
+        $run = $this->tsqm->createRun(
+            (new RunOptions)
+                ->setTask($task)
+                ->setRetryPolicy($retryPolicy)
+        );
+        $persistedRun = $this->tsqm->getRun($run->getId());
+
+        $this->assertEquals($retryPolicy, $persistedRun->getRetryPolicy());
+
     }
 }
