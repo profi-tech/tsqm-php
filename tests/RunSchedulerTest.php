@@ -26,7 +26,10 @@ class RunSchedulerTest extends TestCase
     {
         /** @var Task */
         $task = $this->greeterTasks->simpleGreet('John Doe');
-        $run = $this->tsqm->createRun($task);
+        $run = $this->tsqm->createRun(
+            (new RunOptions)
+                ->setTask($task)
+        );
 
         $this->assertTrue(
             $this->assertHelper->isDateTimeEqualsWithDelta($run->getScheduledFor(), new DateTime(), 10)
@@ -38,7 +41,11 @@ class RunSchedulerTest extends TestCase
         /** @var Task */
         $task = $this->greeterTasks->simpleGreet('John Doe');
         $scheduleFor = (new DateTime())->modify('+1 day');
-        $run = $this->tsqm->createRun($task, $scheduleFor);
+        $run = $this->tsqm->createRun(
+            (new RunOptions)
+                ->setTask($task)
+                ->setScheduledFor($scheduleFor)
+        );
 
         $this->assertEquals($scheduleFor->format('Y-m-d H:i:s.v'), $run->getScheduledFor()->format('Y-m-d H:i:s.v'));
     }
@@ -51,7 +58,10 @@ class RunSchedulerTest extends TestCase
                 ->setMaxRetries(3)
                 ->setMinInterval(1500)
         );
-        $run = $this->tsqm->createRun($task);
+        $run = $this->tsqm->createRun(
+            (new RunOptions)
+                ->setTask($task)
+        );
         $this->tsqm->performRun($run);
         $run = $this->tsqm->getRun($run->getId());
 
@@ -64,7 +74,10 @@ class RunSchedulerTest extends TestCase
     {
         /** @var Task */
         $task = $this->greeterTasks->simpleGreet('John Doe');
-        $run = $this->tsqm->createRun($task);
+        $run = $this->tsqm->createRun(
+            (new RunOptions)
+                ->setTask($task)
+        );
         $result = $this->tsqm->performRun($run, (new RunOptions)->setForceAsync(true));
 
         $this->assertFalse($result->isReady());
@@ -80,9 +93,9 @@ class RunSchedulerTest extends TestCase
     {
         /** @var Task */
         $task = $this->greeterTasks->simpleGreetWith3Fails('John Doe');
-        $run1 = $this->tsqm->createRun($task);
-        $run2 = $this->tsqm->createRun($task);
-        $run3 = $this->tsqm->createRun($task);
+        $run1 = $this->tsqm->createRun((new RunOptions)->setTask($task));
+        $run2 = $this->tsqm->createRun((new RunOptions)->setTask($task));
+        $run3 = $this->tsqm->createRun((new RunOptions)->setTask($task));
 
         $runIds = $this->tsqm->getScheduledRunIds(new DateTime, 10);
         $this->assertCount(3, $runIds);
@@ -93,9 +106,9 @@ class RunSchedulerTest extends TestCase
     {
         /** @var Task */
         $task = $this->greeterTasks->simpleGreetWith3Fails('John Doe');
-        $this->tsqm->createRun($task);
-        $this->tsqm->createRun($task);
-        $this->tsqm->createRun($task);
+        $this->tsqm->createRun((new RunOptions)->setTask($task));
+        $this->tsqm->createRun((new RunOptions)->setTask($task));
+        $this->tsqm->createRun((new RunOptions)->setTask($task));
 
         $runIds = $this->tsqm->getScheduledRunIds((new DateTime)->modify('- 10 second'), 10);
         $this->assertCount(0, $runIds);
@@ -105,9 +118,9 @@ class RunSchedulerTest extends TestCase
     {
         /** @var Task */
         $task = $this->greeterTasks->simpleGreetWith3Fails('John Doe');
-        $run1 = $this->tsqm->createRun($task);
-        $run2 = $this->tsqm->createRun($task);
-        $this->tsqm->createRun($task);
+        $run1 = $this->tsqm->createRun((new RunOptions)->setTask($task));
+        $run2 = $this->tsqm->createRun((new RunOptions)->setTask($task));
+        $this->tsqm->createRun((new RunOptions)->setTask($task));
 
         $runIds = $this->tsqm->getScheduledRunIds(new DateTime, 2);
         $this->assertCount(2, $runIds);

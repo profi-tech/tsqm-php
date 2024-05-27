@@ -20,18 +20,9 @@ class RunRepository implements RunRepositoryInterface
         $this->pdo = $pdo;
     }
 
-    public function createRun(Task $task, DateTime $createdAt, DateTime $scheduledFor): Run
+    public function createRun(Run $run)
     {
         try {
-            $runId = UuidHelper::random();
-            $run = new Run(
-                $runId,
-                $createdAt,
-                $scheduledFor,
-                $task,
-                Run::STATUS_CREATED
-            );
-
             $res = $this->pdo->prepare("
                 INSERT INTO runs (id, created_at, scheduled_for, task, retry_policy, status)
                 VALUES(:id, :created_at, :scheduled_for, :task, :retry_policy, :status)
@@ -39,7 +30,6 @@ class RunRepository implements RunRepositoryInterface
             if (!$res) {
                 throw new Exception(PdoHelper::formatErrorInfo($this->pdo->errorInfo()));
             }
-
             $res->execute([
                 'id' => $run->getId(),
                 'created_at' => $run->getCreatedAt()->format('Y-m-d H:i:s.u'),
@@ -48,8 +38,6 @@ class RunRepository implements RunRepositoryInterface
                 'status' => $run->getStatus(),
                 'retry_policy' => null,
             ]);
-
-            return $run;
         } catch (Exception $e) {
             throw new RepositoryError("Failed to create run: " . $e->getMessage(), 0, $e);
         }

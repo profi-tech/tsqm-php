@@ -5,6 +5,7 @@ namespace Tests;
 use Examples\Greeter\Greeter;
 use Examples\Greeter\Greeting;
 use Examples\Greeter\GreeterError;
+use Tsqm\Runs\RunOptions;
 use Tsqm\TsqmTasks;
 use Tsqm\Tasks\Task;
 use Tsqm\Tasks\TaskRetryPolicy;
@@ -26,7 +27,10 @@ class RunTaskTest extends TestCase
     {
         /** @var Task */
         $task = $this->greeterTasks->simpleGreet('John Doe');
-        $run = $this->tsqm->createRun($task);
+        $run = $this->tsqm->createRun(
+            (new RunOptions)
+                ->setTask($task)
+        );
         $result = $this->tsqm->performRun($run);
 
         $this->assertTrue($result->isReady());
@@ -38,7 +42,10 @@ class RunTaskTest extends TestCase
     {
         /** @var Task */
         $task = $this->greeterTasks->simpleGreetWith3Fails('John Doe');
-        $run = $this->tsqm->createRun($task);
+        $run = $this->tsqm->createRun(
+            (new RunOptions)
+                ->setTask($task)
+        );
 
         $this->expectException(GreeterError::class);
         $this->expectExceptionCode(1700403919);
@@ -52,7 +59,10 @@ class RunTaskTest extends TestCase
         /** @var Task */
         $task = $this->greeterTasks->simpleGreetWith3Fails('John Doe');
         $task->setRetryPolicy((new TaskRetryPolicy)->setMaxRetries(3));
-        $run = $this->tsqm->createRun($task);
+        $run = $this->tsqm->createRun(
+            (new RunOptions)
+                ->setTask($task)
+        );
 
         for ($i = 1; $i <= 3; $i++) {
             $result = $this->tsqm->performRun($run);
@@ -70,7 +80,10 @@ class RunTaskTest extends TestCase
         /** @var Task */
         $task = $this->greeterTasks->simpleGreetWith3Fails('John Doe');
         $task->setRetryPolicy((new TaskRetryPolicy)->setMaxRetries(2));
-        $run = $this->tsqm->createRun($task);
+        $run = $this->tsqm->createRun(
+            (new RunOptions)
+                ->setTask($task)
+        );
 
         for ($i = 1; $i <= 2; $i++) {
             $result = $this->tsqm->performRun($run);

@@ -13,6 +13,7 @@ use Tsqm\Tsqm;
 use Tsqm\TsqmConfig;
 use Examples\Greeter\Greeter;
 use Examples\Logger;
+use Tsqm\Runs\RunOptions;
 use Tsqm\Tasks\Task;
 
 class HelloWorldCommand extends Command
@@ -48,7 +49,10 @@ class HelloWorldCommand extends Command
 
         /** @var Task */
         $task = $greeterTasks->greetWithRandomFail($input->getArgument("name"));
-        $run = $tsqm->createRun($task);
+        $run = $tsqm->createRun(
+            (new RunOptions())
+                ->setTask($task)
+        );
         $result = $tsqm->performRun($run);
         $logger->logRunResult($result);
 

@@ -8,6 +8,7 @@ use Tsqm\Tasks\Task;
 use Examples\Greeter\Greeter;
 use Examples\Greeter\GreeterError;
 use Tsqm\Errors\DuplicatedTask;
+use Tsqm\Runs\RunOptions;
 use Tsqm\Tasks\TaskRetryPolicy;
 
 class RunTaskGeneratorTest extends TestCase
@@ -27,7 +28,10 @@ class RunTaskGeneratorTest extends TestCase
     {
         /** @var Task */
         $task = $this->greeterTasks->greet('John Doe');
-        $run = $this->tsqm->createRun($task);
+        $run = $this->tsqm->createRun(
+            (new RunOptions)
+                ->setTask($task)
+        );
         $result = $this->tsqm->performRun($run);
 
         $this->assertTrue($result->isReady());
@@ -42,7 +46,10 @@ class RunTaskGeneratorTest extends TestCase
     {
         /** @var Task */
         $task = $this->greeterTasks->greet('x');
-        $run = $this->tsqm->createRun($task);
+        $run = $this->tsqm->createRun(
+            (new RunOptions)
+                ->setTask($task)
+        );
         $result = $this->tsqm->performRun($run);
 
         $this->assertTrue($result->isReady());
@@ -54,7 +61,10 @@ class RunTaskGeneratorTest extends TestCase
     {
         /** @var Task */
         $task = $this->greeterTasks->greetWith3Fails('John Doe');
-        $run = $this->tsqm->createRun($task);
+        $run = $this->tsqm->createRun(
+            (new RunOptions)
+                ->setTask($task)
+        );
 
         $this->expectException(GreeterError::class);
         $this->expectExceptionCode(1700409195);
@@ -68,7 +78,10 @@ class RunTaskGeneratorTest extends TestCase
         /** @var Task */
         $task = $this->greeterTasks->greetWith3Fails('John Doe');
         $task->setRetryPolicy((new TaskRetryPolicy)->setMaxRetries(3));
-        $run = $this->tsqm->createRun($task);
+        $run = $this->tsqm->createRun(
+            (new RunOptions)
+                ->setTask($task)
+        );
 
         for ($i = 1; $i <= 3; $i++) {
             $result = $this->tsqm->performRun($run);
@@ -86,7 +99,10 @@ class RunTaskGeneratorTest extends TestCase
         /** @var Task */
         $task = $this->greeterTasks->greetWith3Fails('John Doe');
         $task->setRetryPolicy((new TaskRetryPolicy)->setMaxRetries(2));
-        $run = $this->tsqm->createRun($task);
+        $run = $this->tsqm->createRun(
+            (new RunOptions)
+                ->setTask($task)
+        );
 
         for ($i = 1; $i <= 2; $i++) {
             $result = $this->tsqm->performRun($run);
@@ -104,7 +120,10 @@ class RunTaskGeneratorTest extends TestCase
     {
         /** @var Task */
         $task = $this->greeterTasks->greetWith3PurchaseFailsAnd3Retries('John Doe');
-        $run = $this->tsqm->createRun($task);
+        $run = $this->tsqm->createRun(
+            (new RunOptions)
+                ->setTask($task)
+        );
 
         for ($i = 1; $i <= 3; $i++) {
             $result = $this->tsqm->performRun($run);
@@ -124,7 +143,10 @@ class RunTaskGeneratorTest extends TestCase
     {
         /** @var Task */
         $task = $this->greeterTasks->greetWith3PurchaseFailsAnd2Retries('John Doe');
-        $run = $this->tsqm->createRun($task);
+        $run = $this->tsqm->createRun(
+            (new RunOptions)
+                ->setTask($task)
+        );
 
         for ($i = 1; $i <= 2; $i++) {
             $result = $this->tsqm->performRun($run);
@@ -142,7 +164,10 @@ class RunTaskGeneratorTest extends TestCase
     {
         /** @var Task */
         $task = $this->greeterTasks->greetWith3PurchaseFailsAndRevert('John Doe');
-        $run = $this->tsqm->createRun($task);
+        $run = $this->tsqm->createRun(
+            (new RunOptions)
+                ->setTask($task)
+        );
 
         for ($i = 1; $i <= 2; $i++) {
             $result = $this->tsqm->performRun($run);
@@ -159,7 +184,10 @@ class RunTaskGeneratorTest extends TestCase
     {
         /** @var Task */
         $task = $this->greeterTasks->greetWithDuplicatedTask('John Doe');
-        $run = $this->tsqm->createRun($task);
+        $run = $this->tsqm->createRun(
+            (new RunOptions)
+                ->setTask($task)
+        );
 
         $this->expectException(DuplicatedTask::class);
         $this->expectExceptionMessage("Task already started");

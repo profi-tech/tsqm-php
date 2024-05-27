@@ -7,6 +7,7 @@ use Examples\Greeter\Greeter;
 use Tsqm\TsqmTasks;
 use Tsqm\Tasks\Task;
 use Examples\Greeter\GreeterError;
+use Tsqm\Runs\RunOptions;
 use Tsqm\Tasks\TaskRetryPolicy;
 
 class RunResultTest extends TestCase
@@ -26,7 +27,10 @@ class RunResultTest extends TestCase
     {
         /** @var Task */
         $task = $this->greeterTasks->simpleGreet('John Doe');
-        $run = $this->tsqm->createRun($task);
+        $run = $this->tsqm->createRun(
+            (new RunOptions)
+                ->setTask($task)
+        );
         $result = $this->tsqm->performRun($run);
 
         $this->assertEquals($run->getId(), $result->getRunId());
@@ -39,7 +43,10 @@ class RunResultTest extends TestCase
     {
         /** @var Task */
         $task = $this->greeterTasks->simpleGreet('John Doe');
-        $run = $this->tsqm->createRun($task);
+        $run = $this->tsqm->createRun(
+            (new RunOptions)
+                ->setTask($task)
+        );
         $result = $this->tsqm->performRun($run);
 
         $this->assertTrue($result->isReady());
@@ -56,7 +63,10 @@ class RunResultTest extends TestCase
     {
         /** @var Task */
         $task = $this->greeterTasks->simpleGreetWith3Fails('John Doe');
-        $run = $this->tsqm->createRun($task);
+        $run = $this->tsqm->createRun(
+            (new RunOptions)
+                ->setTask($task)
+        );
 
         $this->expectException(GreeterError::class);
         $this->expectExceptionCode(1700403919);

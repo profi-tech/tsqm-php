@@ -14,6 +14,7 @@ use Tsqm\Errors\RunNotFound;
 use Tsqm\Errors\TaskClassDefinitionNotFound;
 use Tsqm\Errors\CrashTheRun;
 use Tsqm\Errors\DuplicatedTask;
+use Tsqm\Errors\InvalidTask;
 use Tsqm\Events\Event;
 use Tsqm\Events\EventRepositoryInterface;
 use Tsqm\Runs\Run;
@@ -55,16 +56,24 @@ class Tsqm
      * @return Run 
      * @throws Exception
      */
-    public function createRun(Task $task, ?DateTime $scheduledFor = null): Run
+    public function createRun(RunOptions $options): Run
     {
+        if (!$task = $options->getTask()) {
+            throw new InvalidTask("Task is required");
+        }
         $this->logger->debug("Creating a run", ['task' => $task]);
-        $createdAt = new DateTime();
-        $scheduledFor = $scheduledFor ?? $createdAt;
-        $run = $this->runRepository->createRun(
-            $task,
-            $createdAt,
-            $scheduledFor
+        
+        $runId = UuidHelper::random();
+        $now = new DateTime();
+        $run = new Run(
+            $runId,
+            $options->getCreatedAt() ?? $now,
+            $options->getScheduledFor() ?? $now,
+            $options->getTask(),
+            Run::STATUS_CREATED
         );
+
+        $this->runRepository->createRun($run);
         $this->logger->debug("Run created", ['run' => $run]);
         return $run;
     }

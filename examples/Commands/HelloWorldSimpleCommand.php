@@ -13,6 +13,7 @@ use Tsqm\Tsqm;
 use Tsqm\TsqmConfig;
 use Examples\Greeter\Greeter;
 use Examples\Logger;
+use Tsqm\Runs\RunOptions;
 use Tsqm\Tasks\Task;
 
 class HelloWorldSimpleCommand extends Command
@@ -51,7 +52,10 @@ class HelloWorldSimpleCommand extends Command
         $task->setRetryPolicy(
             $task->getRetryPolicy()->setMaxRetries(3)
         );
-        $run = $tsqm->createRun($task);
+        $run = $tsqm->createRun(
+            (new RunOptions)
+                ->setTask($task)
+        );
         $result = $tsqm->performRun($run);
         $logger->logRunResult($result);
 

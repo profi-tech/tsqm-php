@@ -43,7 +43,10 @@ class RunQueueTest extends TestCase
     {
         /** @var Task */
         $task = $this->greeterTasks->simpleGreet('John Doe');
-        $run = $this->tsqm->createRun($task);
+        $run = $this->tsqm->createRun(
+            (new RunOptions)
+                ->setTask($task)
+        );
 
         $this->queue->expects($this->once())->method('enqueueRun')->with(
             $this->callback(
@@ -61,7 +64,12 @@ class RunQueueTest extends TestCase
         /** @var Task */
         $task = $this->greeterTasks->simpleGreet('John Doe');
         $scheduledFor = (new DateTime())->modify('+1 day');
-        $run = $this->tsqm->createRun($task, $scheduledFor);
+        $run = $this->tsqm->createRun(
+            (new RunOptions)
+                ->setTask($task)
+                ->setScheduledFor($scheduledFor)
+        );
+
 
         $this->queue->expects($this->once())->method('enqueueRun')->with(
             $this->callback(
@@ -79,7 +87,10 @@ class RunQueueTest extends TestCase
         /** @var Task */
         $task = $this->greeterTasks->simpleGreetWith3Fails('John Doe');
         $task->setRetryPolicy((new TaskRetryPolicy)->setMinInterval(1500)->setMaxRetries(1));
-        $run = $this->tsqm->createRun($task);
+        $run = $this->tsqm->createRun(
+            (new RunOptions)
+                ->setTask($task)
+        );
 
         $this->queue->expects($this->once())->method('enqueueRun')->with(
             $this->callback(

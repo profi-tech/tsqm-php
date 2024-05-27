@@ -24,7 +24,7 @@ class RunStatusTest extends TestCase
     {
         /** @var Task */
         $task = $this->greeterTasks->simpleGreet('John Doe');
-        $run = $this->tsqm->createRun($task);
+        $run = $this->tsqm->createRun((new RunOptions)->setTask($task));
         $result = $this->tsqm->performRun($run);
         $run = $this->tsqm->getRun($run->getId());
 
@@ -36,9 +36,14 @@ class RunStatusTest extends TestCase
     {
         /** @var Task */
         $task = $this->greeterTasks->simpleGreetWith3Fails('John Doe');
-        $run = $this->tsqm->createRun($task->setRetryPolicy(
+        $task->setRetryPolicy(
             $task->getRetryPolicy()->setMaxRetries(1)
-        ));
+        );
+        $run = $this->tsqm->createRun(
+            (new RunOptions)
+                ->setTask($task)
+        );
+
         $result = $this->tsqm->performRun($run);
         $run = $this->tsqm->getRun($run->getId());
 
@@ -50,7 +55,10 @@ class RunStatusTest extends TestCase
     {
         /** @var Task */
         $task = $this->greeterTasks->simpleGreet('John Doe');
-        $run = $this->tsqm->createRun($task);
+        $run = $this->tsqm->createRun(
+            (new RunOptions)
+                ->setTask($task)
+        );
         $result = $this->tsqm->performRun($run, (new RunOptions)->setForceAsync(true));
         $run = $this->tsqm->getRun($run->getId());
 
@@ -62,7 +70,11 @@ class RunStatusTest extends TestCase
     {
         /** @var Task */
         $task = $this->greeterTasks->simpleGreet('John Doe');
-        $run = $this->tsqm->createRun($task, (new \DateTime())->modify('+1 day'));
+        $run = $this->tsqm->createRun(
+            (new RunOptions)
+                ->setTask($task)
+                ->setScheduledFor((new \DateTime())->modify('+1 day'))
+        );
         $result = $this->tsqm->performRun($run);
         $run = $this->tsqm->getRun($run->getId());
 
