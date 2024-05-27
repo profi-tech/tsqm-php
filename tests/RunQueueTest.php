@@ -56,7 +56,7 @@ class RunQueueTest extends TestCase
                 }
             )
         );
-        $this->tsqm->performRun($run, (new RunOptions)->setForceAsync(true));
+        $this->tsqm->performRun($run, true);
     }
 
     public function testEnqueueForScheduledRun()
@@ -79,7 +79,7 @@ class RunQueueTest extends TestCase
                 }
             )
         );
-        $this->tsqm->performRun($run, (new RunOptions)->setForceAsync(true));
+        $this->tsqm->performRun($run, true);
     }
 
     public function testEnqueueForRetry()

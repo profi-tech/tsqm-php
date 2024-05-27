@@ -78,7 +78,7 @@ class RunSchedulerTest extends TestCase
             (new RunOptions)
                 ->setTask($task)
         );
-        $result = $this->tsqm->performRun($run, (new RunOptions)->setForceAsync(true));
+        $result = $this->tsqm->performRun($run, true);
 
         $this->assertFalse($result->isReady());
 

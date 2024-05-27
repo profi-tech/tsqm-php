@@ -9,7 +9,6 @@ class RunOptions {
     private ?Task $task = null;
     private ?DateTime $createdAt = null;
     private ?DateTime $scheduledFor = null;
-    private bool $forceAsync = false;
     private ?RunRetryPolicy $retryPolicy = null;
 
     public function setTask(Task $task): self {
@@ -37,15 +36,6 @@ class RunOptions {
 
     public function getScheduledFor(): ?DateTime {
         return $this->scheduledFor;
-    }
-
-    public function setForceAsync(bool $forceAsync): self {
-        $this->forceAsync = $forceAsync;
-        return $this;
-    }
-
-    public function getForceAsync(): bool {
-        return $this->forceAsync;
     }
 
     public function setRetryPolicy(?RunRetryPolicy $retryPolicy): self {

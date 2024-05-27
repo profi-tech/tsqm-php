@@ -3,7 +3,6 @@
 namespace Tsqm\Runs;
 
 use DateTime;
-use Tsqm\Tasks\Task;
 
 interface RunRepositoryInterface
 {
