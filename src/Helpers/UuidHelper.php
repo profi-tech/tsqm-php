@@ -2,8 +2,7 @@
 
 namespace Tsqm\Helpers;
 
-use Ramsey\Uuid\Rfc4122\UuidV4;
-use Ramsey\Uuid\Rfc4122\UuidV5;
+use Ramsey\Uuid\Uuid;
 
 class UuidHelper
 {
@@ -11,11 +10,11 @@ class UuidHelper
 
     public static function named(string $value): string
     {
-        return UuidV5::uuid5(self::UUID_NAMESPACE, $value);
+        return Uuid::uuid5(self::UUID_NAMESPACE, $value);
     }
 
     public static function random(): string
     {
-        return UuidV4::uuid4()->toString();
+        return Uuid::uuid4()->toString();
     }
 }
