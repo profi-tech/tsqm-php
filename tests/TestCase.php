@@ -3,6 +3,8 @@
 namespace Tests;
 
 use Examples\Container;
+use Examples\Greeter\Callables\SimpleGreet;
+use Examples\Greeter\Callables\SimpleGreetWith3Fails;
 use Examples\Helpers\DbHelper;
 use PDO;
 use Psr\Container\ContainerInterface;
@@ -17,6 +19,9 @@ class TestCase extends \PHPUnit\Framework\TestCase
     protected ContainerInterface $container;
 
     protected Tsqm $tsqm;
+
+    protected SimpleGreet $simpleGreet;
+    protected SimpleGreetWith3Fails $simpleGreetWith3Fails;
 
     protected function setUp(): void
     {
@@ -34,5 +39,8 @@ class TestCase extends \PHPUnit\Framework\TestCase
                 ->setContainer($this->container)
                 ->setPdo($this->pdo)
         );
+
+        $this->simpleGreet = $this->container->get(SimpleGreet::class);
+        $this->simpleGreetWith3Fails = $this->container->get(SimpleGreetWith3Fails::class);
     }
 }

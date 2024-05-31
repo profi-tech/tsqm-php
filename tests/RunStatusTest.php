@@ -2,29 +2,15 @@
 
 namespace Tests;
 
-use Tsqm\TsqmTasks;
 use Tsqm\Tasks\Task;
-use Examples\Greeter\Greeter;
-use Tsqm\Runs\RunOptions;
+use Tsqm\Tasks\RetryPolicy;
 
 class RunStatusTest extends TestCase
 {
-    /** @var Greeter */
-    private $greeterTasks;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->greeterTasks = new TsqmTasks(
-            $this->container->get(Greeter::class)
-        );
-    }
-
     public function testTaskSucceed()
     {
-        /** @var Task */
-        $task = $this->greeterTasks->simpleGreet('John Doe');
-        $run = $this->tsqm->createRun((new RunOptions)->setTask($task));
+        $task = (new Task($this->simpleGreet))->setArgs('John Doe');
+        $run = $this->tsqm->createRun($task);
         $result = $this->tsqm->performRun($run);
         $run = $this->tsqm->getRun($run->getId());
 
@@ -34,16 +20,13 @@ class RunStatusTest extends TestCase
 
     public function testTaskFaildAndScheduled()
     {
-        /** @var Task */
-        $task = $this->greeterTasks->simpleGreetWith3Fails('John Doe');
-        $task->setRetryPolicy(
-            $task->getRetryPolicy()->setMaxRetries(1)
-        );
-        $run = $this->tsqm->createRun(
-            (new RunOptions)
-                ->setTask($task)
-        );
-
+        $task = (new Task($this->simpleGreetWith3Fails))
+            ->setArgs('John Doe')
+            ->setRetryPolicy(
+                (new RetryPolicy)
+                    ->setMaxRetries(1)
+            );
+        $run = $this->tsqm->createRun($task);
         $result = $this->tsqm->performRun($run);
         $run = $this->tsqm->getRun($run->getId());
 
@@ -53,12 +36,8 @@ class RunStatusTest extends TestCase
 
     public function testAsyncRun()
     {
-        /** @var Task */
-        $task = $this->greeterTasks->simpleGreet('John Doe');
-        $run = $this->tsqm->createRun(
-            (new RunOptions)
-                ->setTask($task)
-        );
+        $task = (new Task($this->simpleGreet))->setArgs('John Doe');
+        $run = $this->tsqm->createRun($task);
         $result = $this->tsqm->performRun($run, true);
         $run = $this->tsqm->getRun($run->getId());
 
@@ -68,13 +47,10 @@ class RunStatusTest extends TestCase
 
     public function testScheduledRun()
     {
-        /** @var Task */
-        $task = $this->greeterTasks->simpleGreet('John Doe');
-        $run = $this->tsqm->createRun(
-            (new RunOptions)
-                ->setTask($task)
-                ->setScheduledFor((new \DateTime())->modify('+1 day'))
-        );
+        $task = (new Task($this->simpleGreet))
+            ->setArgs('John Doe')
+            ->setScheduledFor((new \DateTime())->modify('+1 day'));
+        $run = $this->tsqm->createRun($task);
         $result = $this->tsqm->performRun($run);
         $run = $this->tsqm->getRun($run->getId());
 
