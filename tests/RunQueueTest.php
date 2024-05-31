@@ -4,8 +4,6 @@ namespace Tests;
 
 use DateTime;
 use Examples\Container;
-use Examples\Greeter\Callables\SimpleGreet;
-use Examples\Greeter\Callables\SimpleGreetWith3Fails;
 use Tsqm\Tsqm;
 use Tsqm\Config;
 use Tsqm\Queue\QueueInterface;

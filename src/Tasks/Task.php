@@ -2,8 +2,9 @@
 namespace Tsqm\Tasks;
 
 use DateTime;
-use Exception;
 use JsonSerializable;
+use Tsqm\Errors\InvalidTask;
+use Tsqm\Helpers\SerializationHelper;
 use Tsqm\Helpers\UuidHelper;
 
 class Task implements JsonSerializable {
@@ -17,14 +18,14 @@ class Task implements JsonSerializable {
             $this->name = get_class($callable);
         }
         else {
-            throw new Exception("Callable must be a string or an object with __invoke method");
+            throw new InvalidTask("Callable must be a string or an object with __invoke method");
         }
     }
 
     public function getId() {
         return UuidHelper::named(implode('::', [
             $this->name,
-            serialize($this->args),
+            SerializationHelper::serialize($this->args),
         ]));
     }
     

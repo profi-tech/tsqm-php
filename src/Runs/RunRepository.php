@@ -6,7 +6,9 @@ use DateTime;
 use Exception;
 use PDO;
 use Tsqm\Errors\RepositoryError;
+use Tsqm\Errors\RunNotFound;
 use Tsqm\Helpers\PdoHelper;
+use Tsqm\Helpers\SerializationHelper;
 use Tsqm\Helpers\UuidHelper;
 use Tsqm\Tasks\Task;
 
@@ -38,7 +40,7 @@ class RunRepository implements RunRepositoryInterface
                 'id' => $runId,
                 'created_at' => $createdAt->format('Y-m-d H:i:s.v'),
                 'run_at' => $runAt->format('Y-m-d H:i:s.v'),
-                'task' => serialize($task),
+                'task' => SerializationHelper::serialize($task),
                 'status' => Run::STATUS_CREATED,
             ]);
 
@@ -59,7 +61,7 @@ class RunRepository implements RunRepositoryInterface
             $res->execute([$runId]);
             $data = $res->fetch(PDO::FETCH_ASSOC);
             if (!$data) {
-                throw new RepositoryError("Run not found: $runId");
+                throw new RunNotFound("Run not found: $runId");
             }
 
             return Run::fromArray($data);

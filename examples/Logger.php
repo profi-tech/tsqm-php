@@ -8,7 +8,6 @@ use Symfony\Component\Console\Logger\ConsoleLogger;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Tsqm\Result;
 use Tsqm\Runs\Run;
-use Tsqm\Runs\RunResult;
 use Tsqm\Tasks\Task;
 
 class Logger extends ConsoleLogger

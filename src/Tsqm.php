@@ -304,7 +304,7 @@ class Tsqm
             }
             // Otherwise we just crash
             else {
-                throw new CrashTheRun("", 0, $e);
+                throw new CrashTheRun("Run ".$run->getId()." crashed", 0, $e);
             }
         }
     }

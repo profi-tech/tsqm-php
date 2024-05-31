@@ -13,7 +13,7 @@ class SerializationHelper
         try {
             return serialize($value);
         } catch (Exception $e) {
-            throw new SerializationError("Could not serialize value: " . $e->getMessage(), null, $e);
+            throw new SerializationError("Could not serialize value: " . $e->getMessage(), 0, $e);
         }
     }
 
@@ -22,7 +22,7 @@ class SerializationHelper
         try {
             $result = unserialize($value);
         } catch (Exception $e) {
-            throw new SerializationError("Could not unserialize value: " . $e->getMessage(), null, $e);
+            throw new SerializationError("Could not unserialize value: " . $e->getMessage(), 0, $e);
         }
 
         if ($result instanceof __PHP_Incomplete_Class) {

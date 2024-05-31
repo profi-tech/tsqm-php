@@ -9,12 +9,9 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Examples\Helpers\DbHelper;
-use Tsqm\TsqmTasks;
 use Tsqm\Tsqm;
 use Tsqm\Config;
-use Examples\Greeter\Greeter;
 use Examples\Logger;
-use Tsqm\Runs\RunOptions;
 use Tsqm\Tasks\Task;
 
 class HelloWorldCommand extends Command
@@ -47,7 +44,7 @@ class HelloWorldCommand extends Command
         $task = (new Task($greetWithRandomFail))->setArgs($input->getArgument("name"));
         $run = $tsqm->createRun($task);
         $result = $tsqm->performRun($run);
-        
+
         $logger->logRunResult($result);
 
         return self::SUCCESS;

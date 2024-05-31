@@ -3,13 +3,14 @@
 namespace Tsqm\Runs;
 
 use DateTime;
+use Tsqm\Helpers\SerializationHelper;
 use Tsqm\Tasks\Task;
 
 class Run
 {
-    const STATUS_CREATED = 'created';
-    const STATUS_STARTED = 'started';
-    const STATUS_FINISHED = 'finished';
+    public const STATUS_CREATED = 'created';
+    public const STATUS_STARTED = 'started';
+    public const STATUS_FINISHED = 'finished';
 
     private string $id;
     private DateTime $createdAt;
@@ -62,7 +63,7 @@ class Run
             $data['id'],
             new DateTime($data['created_at']),
             new DateTime($data['run_at']),
-            unserialize($data['task']),
+            SerializationHelper::unserialize($data['task']),
             $data['status'],
         );
     }
