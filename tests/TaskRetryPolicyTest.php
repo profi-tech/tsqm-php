@@ -3,13 +3,13 @@
 namespace Tests;
 
 use DateTime;
-use Tsqm\Tasks\TaskRetryPolicy;
+use Tsqm\Tasks\RetryPolicy;
 
 class TaskRetryPolicyTest extends TestCase
 {
     public function testDefaultRetryPolicy()
     {
-        $retryPolicy = new TaskRetryPolicy();
+        $retryPolicy = new RetryPolicy();
 
         $this->assertEquals(0, $retryPolicy->getMaxRetries());
         $this->assertEquals(100, $retryPolicy->getMinInterval());
@@ -17,7 +17,7 @@ class TaskRetryPolicyTest extends TestCase
 
     public function testGetRetryAt()
     {
-        $retryPolicy = new TaskRetryPolicy();
+        $retryPolicy = new RetryPolicy();
         $retryPolicy->setMaxRetries(5);
         $retryPolicy->setMinInterval(300);
 
