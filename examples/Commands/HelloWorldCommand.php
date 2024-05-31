@@ -3,15 +3,14 @@
 namespace Examples\Commands;
 
 use Examples\Container;
+use Examples\Greeter\Callables\GreetWithRandomFail;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Examples\Helpers\DbHelper;
-use Tsqm\TsqmTasks;
 use Tsqm\Tsqm;
-use Tsqm\TsqmConfig;
-use Examples\Greeter\Greeter;
+use Tsqm\Config;
 use Examples\Logger;
 use Tsqm\Tasks\Task;
 
@@ -35,21 +34,17 @@ class HelloWorldCommand extends Command
         $container = Container::create();
         $logger = new Logger();
         $tsqm = new Tsqm(
-            (new TsqmConfig())
+            (new Config())
                 ->setContainer($container)
                 ->setPdo(DbHelper::createPdoFromEnv())
                 ->setLogger($logger)
         );
 
-        /** @var Greeter */
-        $greeterTasks = new TsqmTasks(
-            $container->get(Greeter::class)
-        );
-
-        /** @var Task */
-        $task = $greeterTasks->greetWithRandomFail($input->getArgument("name"));
+        $greetWithRandomFail = $container->get(GreetWithRandomFail::class);
+        $task = (new Task($greetWithRandomFail))->setArgs($input->getArgument("name"));
         $run = $tsqm->createRun($task);
         $result = $tsqm->performRun($run);
+
         $logger->logRunResult($result);
 
         return self::SUCCESS;

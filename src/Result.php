@@ -1,14 +1,11 @@
 <?php
 
-namespace Tsqm\Runs;
+namespace Tsqm;
 
+use Error;
 use Tsqm\Events\Event;
-use Tsqm\Tasks\TaskError;
 
-/**
- * RunResult doesn't interpret the result, it just provides a methods to check if the result is ready and if it has data or an error.
- */
-class RunResult
+class Result
 {
     private string $runId;
     private ?Event $event;
@@ -44,10 +41,10 @@ class RunResult
 
     public function hasError()
     {
-        return $this->event && ($this->event->getPayload() instanceof TaskError);
+        return $this->event && ($this->event->getPayload() instanceof Error);
     }
 
-    public function getError(): ?TaskError
+    public function getError(): ?Error
     {
         if ($this->hasError()) {
             return $this->event->getPayload();

@@ -6,26 +6,21 @@ use PDO;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use Tsqm\Errors\ConfigError;
-use Tsqm\Runs\Queue\RunQueueInterface;
-use Tsqm\Runs\Queue\NullQueue;
+use Tsqm\Queue\QueueInterface;
+use Tsqm\Queue\NullQueue;
 use Tsqm\Events\EventRepository;
 use Tsqm\Events\EventRepositoryInterface;
 use Tsqm\Events\EventValidator;
 use Tsqm\Runs\RunRepository;
 use Tsqm\Runs\RunRepositoryInterface;
-use Tsqm\Runs\RunScheduler;
-use Tsqm\Runs\RunSchedulerInterface;
-use Tsqm\Events\EventValidatorInterface;
 
-class TsqmConfig
+class Config
 {
     private ?PDO $pdo = null;
     private ?ContainerInterface $container = null;
     private ?RunRepositoryInterface $runRepository = null;
-    private ?RunQueueInterface $queue = null;
-    private ?RunSchedulerInterface $runScheduler = null;
+    private ?QueueInterface $queue = null;
     private ?EventRepositoryInterface $eventRepository = null;
-    private ?EventValidatorInterface $eventValidator = null;
     private ?LoggerInterface $logger = null;
 
     public function setContainer(ContainerInterface $container): self
@@ -70,7 +65,7 @@ class TsqmConfig
         return new RunRepository($this->getPdo());
     }
 
-    public function setRunQueue(RunQueueInterface $queue): self
+    public function setRunQueue(QueueInterface $queue): self
     {
         $this->queue = $queue;
         return $this;
@@ -82,23 +77,6 @@ class TsqmConfig
             return $this->queue;
         }
         return new NullQueue();
-    }
-
-    public function setRunScheduler(RunSchedulerInterface $runScheduler): self
-    {
-        $this->runScheduler = $runScheduler;
-        return $this;
-    }
-
-    public function getRunScheduler(): RunSchedulerInterface
-    {
-        if (!is_null($this->runScheduler)) {
-            return $this->runScheduler;
-        }
-        return new RunScheduler(
-            $this->getRunRepository(),
-            $this->getRunQueue()
-        );
     }
 
     public function setEventRepository(EventRepositoryInterface $eventRepository): self
@@ -115,18 +93,8 @@ class TsqmConfig
         return new EventRepository($this->getPdo());
     }
 
-    public function setEventValidator(EventValidatorInterface $eventValidator): self
+    public function getEventValidator(): EventValidator
     {
-        $this->eventValidator = $eventValidator;
-        return $this;
-    }
-
-    public function getEventValidator(): EventValidatorInterface
-    {
-        if (!is_null($this->eventValidator)) {
-            return $this->eventValidator;
-        }
-
         return new EventValidator();
     }
 

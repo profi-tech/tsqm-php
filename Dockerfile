@@ -1,6 +1,6 @@
 FROM php:7.4-bullseye
 
-RUN apt-get update && apt-get install -y zip libsqlite3-dev git
+RUN apt-get update && apt-get install -y zip sqlite3 libsqlite3-dev git
 
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 

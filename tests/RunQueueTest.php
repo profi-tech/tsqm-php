@@ -4,92 +4,86 @@ namespace Tests;
 
 use DateTime;
 use Examples\Container;
-use Examples\Greeter\Greeter;
-use Tsqm\TsqmTasks;
 use Tsqm\Tsqm;
-use Tsqm\TsqmConfig;
-use Tsqm\Runs\Queue\RunQueueInterface;
+use Tsqm\Config;
+use Tsqm\Queue\QueueInterface;
 use Tsqm\Runs\Run;
-use Tsqm\Runs\RunOptions;
+use Tsqm\Tasks\RetryPolicy;
 use Tsqm\Tasks\Task;
-use Tsqm\Tasks\TaskRetryPolicy;
 
 class RunQueueTest extends TestCase
 {
     protected Tsqm $tsqm;
-
-    /** @var Greeter */
-    private $greeterTasks;
 
     private $queue;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->queue = $this->createMock(RunQueueInterface::class);
+        $this->queue = $this->createMock(QueueInterface::class);
         $this->tsqm = new Tsqm(
-            (new TsqmConfig)
+            (new Config)
                 ->setContainer(Container::create())
                 ->setPdo($this->pdo)
                 ->setRunQueue($this->queue)
         );
 
-        $this->greeterTasks = new TsqmTasks(
-            $this->container->get(Greeter::class)
-        );
     }
 
     public function testEnqueueForAsyncRun()
     {
-        /** @var Task */
-        $task = $this->greeterTasks->simpleGreet('John Doe');
+        $task = (new Task($this->simpleGreet))->setArgs('John Doe');
         $run = $this->tsqm->createRun($task);
 
-        $this->queue->expects($this->once())->method('enqueueRun')->with(
+        $this->queue->expects($this->once())->method('enqueue')->with(
             $this->callback(
                 function (Run $gotRun) use ($run) {
                     return $gotRun->getId() === $run->getId()
-                        && $this->assertHelper->isDateTimeEqualsWithDelta($gotRun->getScheduledFor(), new DateTime(), 10);
+                        && $this->assertHelper->isDateTimeEqualsWithDelta($gotRun->getRunAt(), new DateTime(), 10);
                 }
             )
         );
-        $this->tsqm->performRun($run, (new RunOptions)->setForceAsync(true));
+        $this->tsqm->performRun($run, true);
     }
 
     public function testEnqueueForScheduledRun()
     {
-        /** @var Task */
-        $task = $this->greeterTasks->simpleGreet('John Doe');
         $scheduledFor = (new DateTime())->modify('+1 day');
-        $run = $this->tsqm->createRun($task, $scheduledFor);
+        
+        $task = (new Task($this->simpleGreet))
+            ->setArgs('John Doe')
+            ->setScheduledFor($scheduledFor);
 
-        $this->queue->expects($this->once())->method('enqueueRun')->with(
+        $run = $this->tsqm->createRun($task);
+        $this->queue->expects($this->once())->method('enqueue')->with(
             $this->callback(
                 function (Run $gotRun) use ($run, $scheduledFor) {
                     return $gotRun->getId() === $run->getId()
-                        && $this->assertHelper->isDateTimeEqualsWithDelta($gotRun->getScheduledFor(), $scheduledFor, 1);
+                        && $this->assertHelper->isDateTimeEqualsWithDelta($gotRun->getRunAt(), $scheduledFor, 1);
                 }
             )
         );
-        $this->tsqm->performRun($run, (new RunOptions)->setForceAsync(true));
+        $this->tsqm->performRun($run, true);
     }
 
     public function testEnqueueForRetry()
     {
-        /** @var Task */
-        $task = $this->greeterTasks->simpleGreetWith3Fails('John Doe');
-        $task->setRetryPolicy((new TaskRetryPolicy)->setMinInterval(1500)->setMaxRetries(1));
+        $task = (new Task($this->simpleGreetWith3Fails))
+            ->setArgs('John Doe')
+            ->setRetryPolicy((new RetryPolicy)->setMinInterval(1500)->setMaxRetries(1));
+
         $run = $this->tsqm->createRun($task);
 
-        $this->queue->expects($this->once())->method('enqueueRun')->with(
+        $this->queue->expects($this->once())->method('enqueue')->with(
             $this->callback(
                 function (Run $gotRun) use ($run) {
                     $wantScheduledFor = (new DateTime)->modify('+ 1500 milliseconds');
                     return $gotRun->getId() === $run->getId()
-                        && $this->assertHelper->isDateTimeEqualsWithDelta($gotRun->getScheduledFor(), $wantScheduledFor, 10);
+                        && $this->assertHelper->isDateTimeEqualsWithDelta($gotRun->getRunAt(), $wantScheduledFor, 10);
                 }
             )
         );
+
         $this->tsqm->performRun($run);
     }
 }

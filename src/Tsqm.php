@@ -3,89 +3,88 @@
 namespace Tsqm;
 
 use DateTime;
+use Error;
 use Exception;
 use Generator;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
+use Ramsey\Uuid\Exception\InvalidUuidStringException;
+use Throwable;
 use Tsqm\Errors\ThrowMe;
 use Tsqm\Errors\InvalidGeneratorItem;
 use Tsqm\Errors\StopTheRun;
-use Tsqm\Errors\RunNotFound;
 use Tsqm\Errors\TaskClassDefinitionNotFound;
 use Tsqm\Errors\CrashTheRun;
 use Tsqm\Errors\DuplicatedTask;
 use Tsqm\Events\Event;
 use Tsqm\Events\EventRepositoryInterface;
+use Tsqm\Events\EventValidator;
+use Tsqm\Helpers\PdoHelper;
+use Tsqm\Helpers\UuidHelper;
+use Tsqm\Queue\QueueInterface;
 use Tsqm\Runs\Run;
 use Tsqm\Runs\RunRepositoryInterface;
-use Tsqm\Runs\RunResult;
-use Tsqm\Runs\RunSchedulerInterface;
-use Tsqm\Events\EventValidatorInterface;
-use Tsqm\Helpers\PdoHelper;
 use Tsqm\Tasks\Task;
-use Tsqm\Tasks\TaskError;
-use Tsqm\Helpers\UuidHelper;
-use Tsqm\Runs\RunOptions;
 
 class Tsqm
 {
-    const GENERATOR_CB_LIMIT = 1000;
+    const GENERATOR_CB_LIMIT = 100;
 
     private ContainerInterface $container;
     private RunRepositoryInterface $runRepository;
-    private RunSchedulerInterface $runScheduler;
+    private QueueInterface $runQueue;
     private EventRepositoryInterface $eventRepository;
-    private EventValidatorInterface $eventValidator;
+    private EventValidator $eventValidator;
     private LoggerInterface $logger;
 
-    public function __construct(TsqmConfig $config)
+    public function __construct(Config $config)
     {
         $this->container = $config->getContainer();
         $this->runRepository = $config->getRunRepository();
-        $this->runScheduler = $config->getRunScheduler();
+        $this->runQueue = $config->getRunQueue();
         $this->eventRepository = $config->getEventRepository();
         $this->eventValidator = $config->getEventValidator();
         $this->logger = $config->getLogger();
     }
 
     /**
-     * Createing a Run to be started later
+     * Create a new run
      * @param Task $task 
-     * @param null|DateTime $scheduledFor 
      * @return Run 
-     * @throws Exception
      */
-    public function createRun(Task $task, ?DateTime $scheduledFor = null): Run
-    {
+    public function createRun(Task $task) {
         $this->logger->debug("Creating a run", ['task' => $task]);
-        $createdAt = new DateTime();
-        $scheduledFor = $scheduledFor ?? $createdAt;
-        $run = $this->runRepository->createRun(
-            $task,
-            $createdAt,
-            $scheduledFor
-        );
+        $run = $this->runRepository->createRun($task);
         $this->logger->debug("Run created", ['run' => $run]);
         return $run;
     }
 
     /**
-     * Starting a Run
-     * @param Run $run 
-     * @param bool $forceAsync
-     * @return RunResult 
-     * @throws Exception
+     * Get a run by id
+     * @param string $runId 
+     * @return Run 
      */
-    public function performRun(Run $run, ?RunOptions $options = null): RunResult
+    public function getRun(string $runId): Run
     {
-        $options = $options ?? new RunOptions();
+        return $this->runRepository->getRun($runId);
+    }
 
+    /**
+     * Perform a run
+     * @param Run $run 
+     * @return Result 
+     * @throws InvalidUuidStringException 
+     * @throws Throwable 
+     * @throws Exception 
+     */
+    public function performRun(Run $run, bool $forceAsync = false): Result
+    {
         $task = $run->getTask();
 
-        if ($options->getForceAsync() || $run->getScheduledFor() > new DateTime()) {
-            $this->runScheduler->scheduleRun($run, $run->getScheduledFor());
-            $this->logger->debug("Run scheduled for " . $run->getScheduledFor()->format('Y-m-d H:i:s.v'), ['run' => $run]);
-            return new RunResult($run->getId(), null);
+        if ($forceAsync || $run->getRunAt() > new DateTime()) {
+            $this->runQueue->enqueue($run);
+            $this->logger->debug("Run scheduled for " . $run->getRunAt()->format('Y-m-d H:i:s.v'), ['run' => $run]);
+            return new Result($run->getId(), null);
         }
 
         if ($run->getStatus() === Run::STATUS_CREATED) {
@@ -104,7 +103,7 @@ class Tsqm
         $history = $eventsGenerator($startedEvents);
 
         try {
-            $this->runTask($run, $task, $history);
+            $this->executeTask($run, $task, $history);
             $this->finishRun($run);
         } catch (StopTheRun $e) {
             $this->logger->notice("Run stopped", ['run' => $run]);
@@ -114,7 +113,7 @@ class Tsqm
                 $run->getId(),
                 Event::TYPE_TASK_CRASHED,
                 $task->getId(),
-                TaskError::fromException($e->getPrevious()),
+                new Error($e->getMessage(), $e->getCode(), $e),
             );
             $this->finishRun($run);
             throw $e->getPrevious();
@@ -126,28 +125,19 @@ class Tsqm
         return $this->getRunResult($run);
     }
 
-    public function getRun(string $runId): Run
-    {
-        $run = $this->runRepository->getRun($runId);
-        if (!$run) {
-            throw new RunNotFound("Run $runId not found");
-        }
-        return $run;
-    }
-
     /**
      * Returing a run result
      * @param Run $run 
-     * @return RunResult 
+     * @return Result 
      * @throws Exception
      */
-    public function getRunResult(Run $run): RunResult
+    public function getRunResult(Run $run): Result
     {
         $event = $this->eventRepository->getCompletionEvent(
             $run->getId(),
             $run->getTask()->getId()
         );
-        return new RunResult($run->getId(), $event);
+        return new Result($run->getId(), $event);
     }
 
     /**
@@ -156,9 +146,9 @@ class Tsqm
      * @param int $limit 
      * @return string[]
      */
-    public function getScheduledRunIds(DateTime $until, int $limit)
+    public function getNextRunIds(DateTime $until, int $limit): array
     {
-        return $this->runRepository->getScheduledRunIds($until, $limit);
+        return $this->runRepository->getNextRunIds($until, $limit);
     }
 
     /**
@@ -170,7 +160,7 @@ class Tsqm
      * @return mixed 
      * @throws Exception
      */
-    private function runTask(Run $run, Task $task, Generator $history, bool $inGenerator = false)
+    private function executeTask(Run $run, Task $task, Generator $history, bool $inGenerator = false)
     {
         $this->logger->debug("Task started", ['run' => $run, 'task' => $task]);
 
@@ -216,9 +206,11 @@ class Tsqm
         // This is the major try-catch block which is reponsible for handling errors and performing retries.
         try {
 
-            // We execute the Task — the wrapped object and method inside. 
-            // Heads up — here we need a container, to rebuild an original object for from the className. 
-            $result = $this->runTaskMethod($task);
+            if (!$this->container->has($task->getName())) {
+                throw new TaskClassDefinitionNotFound("Task " . $task->getName() . " definitoin not found");
+            }
+            $object = $this->container->get($task->getName());
+            $result = call_user_func($object, ...$task->getArgs());
 
             // If Task returns a Generator — we need to iterate over it and run all the tasks inside.
             if ($result instanceof Generator) {
@@ -233,13 +225,13 @@ class Tsqm
                 // @todo explain algorigthm
                 while ($cb++ < self::GENERATOR_CB_LIMIT) {
                     if ($generator->valid()) {
-                        $genTask = $generator->current();
-                        if ($genTask instanceof Task) {
-                            $genTaskResult = $this->runTask($run, $genTask, $history, true);
-                            if ($genTaskResult instanceof ThrowMe) {
-                                $generator->throw($genTaskResult->getException());
+                        $childTask = $generator->current();
+                        if ($childTask instanceof Task) {
+                            $childTaskResult = $this->executeTask($run, $childTask, $history, true);
+                            if ($childTaskResult instanceof ThrowMe) {
+                                $generator->throw($childTaskResult->getException());
                             } else {
-                                $generator->send($genTaskResult);
+                                $generator->send($childTaskResult);
                             }
                         } else {
                             throw new InvalidGeneratorItem();
@@ -280,9 +272,13 @@ class Tsqm
         }
         // Here we handle all the exceptions from the task code
         catch (Exception $e) {
+            
             // Checking the retry policy
+            $retryAt = null;
             $retryPolicy = $task->getRetryPolicy();
-            $retryAt = $retryPolicy->getRetryAt($failedEventsCount ?? 0);
+            if ($retryPolicy) {
+                $retryAt = $retryPolicy->getRetryAt($failedEventsCount ?? 0);
+            }
 
             if ($retryAt || $inGenerator) {
                 $this->eventRepository->addEvent(
@@ -298,7 +294,8 @@ class Tsqm
             // This is ok — we wrote down a faile event and we are ready to retry
             if ($retryAt) {
                 $this->logger->debug("Task failover scheduled for " . $retryAt->format('Y-m-d H:i:s.v'), ['run' => $run, 'task' => $task]);
-                $this->runScheduler->scheduleRun($run, $retryAt);
+                $run = $this->runRepository->updateRunAt($run->getId(), $retryAt);
+                $this->runQueue->enqueue($run);
                 throw new StopTheRun();
             }
             // For the tasks which are processed withing generator we need to throw an exception to generator using Generator::throw()
@@ -307,18 +304,9 @@ class Tsqm
             }
             // Otherwise we just crash
             else {
-                throw new CrashTheRun("", 0, $e);
+                throw new CrashTheRun("Run ".$run->getId()." crashed", 0, $e);
             }
         }
-    }
-
-    private function runTaskMethod(Task $task)
-    {
-        if (!$this->container->has($task->getClassName())) {
-            throw new TaskClassDefinitionNotFound("Task " . $task->getClassName() . " definitoin not found");
-        }
-        $object = $this->container->get($task->getClassName());
-        return call_user_func_array([$object, $task->getMethod()], $task->getArgs());
     }
 
     private function finishRun(Run $run)

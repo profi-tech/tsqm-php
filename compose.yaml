@@ -4,10 +4,19 @@ services:
     container_name: tsqm-php-cli
     image: tsqm-php-cli:latest
     build:
-        context: .
+        context: ${PWD}
     volumes:
         - ./:/tsqm-php
         - ssh-keys:/root/.ssh
+  db:
+    containe_name: tsqm-php-db
+    image: mysql:8
+    platform: linux/x86_64
+    ports:
+        - 3306:3306
+    environment:
+        MYSQL_ROOT_PASSWORD: root
+        MYSQL_DATABASE: tsqm
 
 volumes:
     logs:
@@ -15,5 +24,5 @@ volumes:
         driver: local
         driver_opts:
             type: none
-            device: ~/.ssh/tsqm-php
+            device: ${HOME}/.ssh/tsqm-php
             o: bind

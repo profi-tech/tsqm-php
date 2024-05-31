@@ -1,11 +1,12 @@
 <?php
-
 namespace Tsqm\Tasks;
 
 use DateTime;
+use JsonSerializable;
 
-class TaskRetryPolicy
-{
+class RetryPolicy implements JsonSerializable {
+    
+    /** @var int Maximum number of retries */
     private int $maxRetries = 0;
 
     /** @var int Minimum time between retries in milliseconds */
@@ -40,5 +41,24 @@ class TaskRetryPolicy
         } else {
             return (new DateTime())->modify('+' . $this->getMinInterval() . ' milliseconds');
         }
+    }
+
+    public function __serialize(): array
+    {
+        return [
+            'maxRetries' => $this->maxRetries,
+            'minInterval' => $this->minInterval
+        ];
+    }
+
+    public function jsonSerialize(): mixed
+    {
+        return $this->__serialize();
+    }
+
+    public function __unserialize(array $data): void
+    {
+        $this->maxRetries = $data['maxRetries'];
+        $this->minInterval = $data['minInterval'];
     }
 }

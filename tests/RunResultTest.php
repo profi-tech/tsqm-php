@@ -3,29 +3,14 @@
 namespace Tests;
 
 use Examples\Greeter\Greeting;
-use Examples\Greeter\Greeter;
-use Tsqm\TsqmTasks;
 use Tsqm\Tasks\Task;
 use Examples\Greeter\GreeterError;
-use Tsqm\Tasks\TaskRetryPolicy;
 
 class RunResultTest extends TestCase
 {
-    /** @var Greeter */
-    private $greeterTasks;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->greeterTasks = new TsqmTasks(
-            $this->container->get(Greeter::class)
-        );
-    }
-
     public function testSuccessfulRunResult()
     {
-        /** @var Task */
-        $task = $this->greeterTasks->simpleGreet('John Doe');
+        $task = (new Task($this->simpleGreet))->setArgs('John Doe');
         $run = $this->tsqm->createRun($task);
         $result = $this->tsqm->performRun($run);
 
@@ -37,8 +22,7 @@ class RunResultTest extends TestCase
 
     public function testTaskSuccessSecondRun()
     {
-        /** @var Task */
-        $task = $this->greeterTasks->simpleGreet('John Doe');
+        $task = (new Task($this->simpleGreet))->setArgs('John Doe');
         $run = $this->tsqm->createRun($task);
         $result = $this->tsqm->performRun($run);
 
@@ -54,8 +38,7 @@ class RunResultTest extends TestCase
 
     public function testTaskFailSecondRun()
     {
-        /** @var Task */
-        $task = $this->greeterTasks->simpleGreetWith3Fails('John Doe');
+        $task = (new Task($this->simpleGreetWith3Fails))->setArgs('John Doe');
         $run = $this->tsqm->createRun($task);
 
         $this->expectException(GreeterError::class);

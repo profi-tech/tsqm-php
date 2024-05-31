@@ -2,7 +2,7 @@ CREATE TABLE
     `runs` (
         id VARCHAR(36) NOT NULL,
         `created_at` TIMESTAMP(6) NOT NULL,
-        `scheduled_for` TIMESTAMP(3) NOT NULL,
+        `run_at` TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
         `task` BLOB NOT NULL,
         `status` enum(
             'created',
@@ -10,7 +10,7 @@ CREATE TABLE
             'finished'
         ) NOT NULL,
         PRIMARY KEY (`id`),
-        KEY `idx_status_scheduled_for` (`status`, `scheduled_for`)
+        KEY `idx_status_run_at` (`status`, `run_at`)
     );
 
 CREATE TABLE

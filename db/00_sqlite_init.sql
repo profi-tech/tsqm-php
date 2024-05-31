@@ -2,13 +2,13 @@ CREATE TABLE
     `runs` (
         id VARCHAR(36) PRIMARY KEY NOT NULL,
         `created_at` TIMESTAMP(6) NOT NULL,
-        `scheduled_for` TIMESTAMP(3) NOT NULL,
+        `run_at` TIMESTAMP(3) NOT NULL,
         `task` BLOB NOT NULL,
         `status` VARCHAR(32) NOT NULL
     );
 
 CREATE INDEX
-    `idx_status_scheduled_for` ON `runs` (`status`, `scheduled_for`);
+    `idx_status_run_at` ON `runs` (`status`, `run_at`);
 
 CREATE TABLE
     `events` (

@@ -2,31 +2,18 @@
 
 namespace Tests;
 
-use Examples\Greeter\Greeter;
 use Examples\Greeter\Greeting;
 use Examples\Greeter\GreeterError;
-use Tsqm\TsqmTasks;
+use Tsqm\Tasks\RetryPolicy;
 use Tsqm\Tasks\Task;
-use Tsqm\Tasks\TaskRetryPolicy;
 
 class RunTaskTest extends TestCase
 {
-    /** @var Greeter */
-    private $greeterTasks;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->greeterTasks = new TsqmTasks(
-            $this->container->get(Greeter::class)
-        );
-    }
-
     public function testTaskSuccess()
     {
-        /** @var Task */
-        $task = $this->greeterTasks->simpleGreet('John Doe');
+        $task = (new Task($this->simpleGreet))->setArgs('John Doe');
         $run = $this->tsqm->createRun($task);
+        
         $result = $this->tsqm->performRun($run);
 
         $this->assertTrue($result->isReady());
@@ -36,8 +23,7 @@ class RunTaskTest extends TestCase
 
     public function testTaskFail()
     {
-        /** @var Task */
-        $task = $this->greeterTasks->simpleGreetWith3Fails('John Doe');
+        $task = (new Task($this->simpleGreetWith3Fails))->setArgs('John Doe');
         $run = $this->tsqm->createRun($task);
 
         $this->expectException(GreeterError::class);
@@ -49,9 +35,12 @@ class RunTaskTest extends TestCase
 
     public function testTaskFailRetrySuccess()
     {
-        /** @var Task */
-        $task = $this->greeterTasks->simpleGreetWith3Fails('John Doe');
-        $task->setRetryPolicy((new TaskRetryPolicy)->setMaxRetries(3));
+        $task = (new Task($this->simpleGreetWith3Fails))
+            ->setArgs('John Doe')
+            ->setRetryPolicy(
+                (new RetryPolicy)
+                    ->setMaxRetries(3)
+            );
         $run = $this->tsqm->createRun($task);
 
         for ($i = 1; $i <= 3; $i++) {
@@ -67,10 +56,14 @@ class RunTaskTest extends TestCase
 
     public function testTaskFailRetryFail()
     {
-        /** @var Task */
-        $task = $this->greeterTasks->simpleGreetWith3Fails('John Doe');
-        $task->setRetryPolicy((new TaskRetryPolicy)->setMaxRetries(2));
+        $task = (new Task($this->simpleGreetWith3Fails))
+            ->setArgs('John Doe')
+            ->setRetryPolicy(
+                (new RetryPolicy)
+                    ->setMaxRetries(2)
+            );
         $run = $this->tsqm->createRun($task);
+
 
         for ($i = 1; $i <= 2; $i++) {
             $result = $this->tsqm->performRun($run);
