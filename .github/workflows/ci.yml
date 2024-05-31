@@ -43,8 +43,8 @@ jobs:
     - name: Install dependencies
       run: composer install --prefer-dist --no-progress
 
-    - name: Lint PSR-12
+    - name: Lint
       run: composer lint
 
-    - name: Static analysis
+    - name: Analyse
       run: composer analyse
