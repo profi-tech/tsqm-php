@@ -1,11 +1,12 @@
 <?php
+
 namespace Examples\Greeter\Callables;
 
 use Examples\Greeter\Greeting;
 use Examples\Greeter\Reverter;
 
-class RevertGreeting {
-
+class RevertGreeting
+{
     private Reverter $reverter;
 
     public function __construct(Reverter $reverter)
@@ -13,7 +14,7 @@ class RevertGreeting {
         $this->reverter = $reverter;
     }
 
-    public function __invoke(Greeting $greeting)
+    public function __invoke(Greeting $greeting): Greeting
     {
         return $this->reverter->revertGreeting($greeting);
     }

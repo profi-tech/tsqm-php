@@ -7,7 +7,7 @@ use Tsqm\Tasks\RetryPolicy;
 
 class TaskRetryPolicyTest extends TestCase
 {
-    public function testDefaultRetryPolicy()
+    public function testDefaultRetryPolicy(): void
     {
         $retryPolicy = new RetryPolicy();
 
@@ -15,7 +15,7 @@ class TaskRetryPolicyTest extends TestCase
         $this->assertEquals(100, $retryPolicy->getMinInterval());
     }
 
-    public function testGetRetryAt()
+    public function testGetRetryAt(): void
     {
         $retryPolicy = new RetryPolicy();
         $retryPolicy->setMaxRetries(5);
@@ -23,12 +23,12 @@ class TaskRetryPolicyTest extends TestCase
 
         $retryAt = $retryPolicy->getRetryAt(1);
         $this->assertTrue(
-            $this->assertHelper->isDateTimeEqualsWithDelta((new DateTime)->modify('+300 milliseconds'), $retryAt, 50)
+            $this->assertHelper->isDateTimeEqualsWithDelta((new DateTime())->modify('+300 milliseconds'), $retryAt, 50)
         );
 
         $retryAt = $retryPolicy->getRetryAt(4);
         $this->assertTrue(
-            $this->assertHelper->isDateTimeEqualsWithDelta((new DateTime)->modify('+300 milliseconds'), $retryAt, 50)
+            $this->assertHelper->isDateTimeEqualsWithDelta((new DateTime())->modify('+300 milliseconds'), $retryAt, 50)
         );
 
         $retryAt = $retryPolicy->getRetryAt(5);

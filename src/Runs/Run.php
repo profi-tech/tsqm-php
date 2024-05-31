@@ -3,6 +3,7 @@
 namespace Tsqm\Runs;
 
 use DateTime;
+use Tsqm\Errors\SerializationError;
 use Tsqm\Helpers\SerializationHelper;
 use Tsqm\Tasks\Task;
 
@@ -57,6 +58,11 @@ class Run
         return $this->status;
     }
 
+    /**
+     * @param array<string, mixed> $data
+     * @return Run
+     * @throws SerializationError
+     */
     public static function fromArray(array $data): Run
     {
         return new Run(

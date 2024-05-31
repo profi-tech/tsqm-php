@@ -10,7 +10,7 @@ use Tsqm\Tasks\RetryPolicy;
 
 class RunTaskGeneratorTest extends TestCase
 {
-    public function testTaskSuccess()
+    public function testTaskSuccess(): void
     {
         $task = (new Task($this->greet))->setArgs('John Doe');
         $run = $this->tsqm->createRun($task);
@@ -24,7 +24,7 @@ class RunTaskGeneratorTest extends TestCase
         );
     }
 
-    public function testTaskSuccessFlow()
+    public function testTaskSuccessFlow(): void
     {
         $task = (new Task($this->greet))->setArgs('x');
         $run = $this->tsqm->createRun($task);
@@ -35,7 +35,7 @@ class RunTaskGeneratorTest extends TestCase
         $this->assertEquals(false, $result->getData());
     }
 
-    public function testTaskFail()
+    public function testTaskFail(): void
     {
         $task = (new Task($this->greetWith3Fails))->setArgs('John Doe');
         $run = $this->tsqm->createRun($task);
@@ -47,12 +47,12 @@ class RunTaskGeneratorTest extends TestCase
         $this->tsqm->performRun($run);
     }
 
-    public function testTaskFailRetrySuccess()
+    public function testTaskFailRetrySuccess(): void
     {
         $task = (new Task($this->greetWith3Fails))
             ->setArgs('John Doe')
             ->setRetryPolicy(
-                (new RetryPolicy)
+                (new RetryPolicy())
                     ->setMaxRetries(3)
             );
         $run = $this->tsqm->createRun($task);
@@ -68,12 +68,12 @@ class RunTaskGeneratorTest extends TestCase
         $this->assertEquals((new Greeting("Hello, John Doe!"))->setSent(true), $result->getData());
     }
 
-    public function testTaskFailRetryFail()
+    public function testTaskFailRetryFail(): void
     {
         $task = (new Task($this->greetWith3Fails))
             ->setArgs('John Doe')
             ->setRetryPolicy(
-                (new RetryPolicy)
+                (new RetryPolicy())
                     ->setMaxRetries(2)
             );
         $run = $this->tsqm->createRun($task);
@@ -90,7 +90,7 @@ class RunTaskGeneratorTest extends TestCase
         $this->tsqm->performRun($run);
     }
 
-    public function testTaskInnerFailRetrySuccess()
+    public function testTaskInnerFailRetrySuccess(): void
     {
         $task = (new Task($this->greetWith3PurchaseFailsAnd3Retries))->setArgs('John Doe');
         $run = $this->tsqm->createRun($task);
@@ -109,7 +109,7 @@ class RunTaskGeneratorTest extends TestCase
         );
     }
 
-    public function testTaskInnerFailRetryFail()
+    public function testTaskInnerFailRetryFail(): void
     {
         $task = (new Task($this->greetWith3PurchaseFailsAnd2Retries))->setArgs('John Doe');
         $run = $this->tsqm->createRun($task);
@@ -126,7 +126,7 @@ class RunTaskGeneratorTest extends TestCase
         $this->tsqm->performRun($run);
     }
 
-    public function testTaskInnerFailRetryRevert()
+    public function testTaskInnerFailRetryRevert(): void
     {
         $task = (new Task($this->greetWith3PurchaseFailsAndRevert))->setArgs('John Doe');
         $run = $this->tsqm->createRun($task);
@@ -142,7 +142,7 @@ class RunTaskGeneratorTest extends TestCase
         $this->assertEquals((new Greeting("Hello, John Doe!"))->setReverted(true), $result->getData());
     }
 
-    public function testDuplicatedTask()
+    public function testDuplicatedTask(): void
     {
         $task = (new Task($this->greetWithDuplicatedTask))->setArgs('John Doe');
         $run = $this->tsqm->createRun($task);

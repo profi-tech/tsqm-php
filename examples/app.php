@@ -1,4 +1,5 @@
 <?php
+
 require __DIR__ . './../vendor/autoload.php';
 
 use Symfony\Component\Console\Application;
@@ -14,6 +15,6 @@ $app->add(new Examples\Commands\ListScheduledCommand());
 $app->add(new Examples\Commands\RunScheduledCommand());
 
 $app->add(new Examples\Commands\HelloWorldCommand());
-$app->add(new Examples\Commands\HelloWorldSimpleCommand);
+$app->add(new Examples\Commands\HelloWorldSimpleCommand());
 
 $app->run();

@@ -7,7 +7,7 @@ use Tsqm\Tasks\RetryPolicy;
 
 class RunStatusTest extends TestCase
 {
-    public function testTaskSucceed()
+    public function testTaskSucceed(): void
     {
         $task = (new Task($this->simpleGreet))->setArgs('John Doe');
         $run = $this->tsqm->createRun($task);
@@ -18,12 +18,12 @@ class RunStatusTest extends TestCase
         $this->assertTrue($result->isReady());
     }
 
-    public function testTaskFaildAndScheduled()
+    public function testTaskFaildAndScheduled(): void
     {
         $task = (new Task($this->simpleGreetWith3Fails))
             ->setArgs('John Doe')
             ->setRetryPolicy(
-                (new RetryPolicy)
+                (new RetryPolicy())
                     ->setMaxRetries(1)
             );
         $run = $this->tsqm->createRun($task);
@@ -34,7 +34,7 @@ class RunStatusTest extends TestCase
         $this->assertFalse($result->isReady());
     }
 
-    public function testAsyncRun()
+    public function testAsyncRun(): void
     {
         $task = (new Task($this->simpleGreet))->setArgs('John Doe');
         $run = $this->tsqm->createRun($task);
@@ -45,7 +45,7 @@ class RunStatusTest extends TestCase
         $this->assertFalse($result->isReady());
     }
 
-    public function testScheduledRun()
+    public function testScheduledRun(): void
     {
         $task = (new Task($this->simpleGreet))
             ->setArgs('John Doe')

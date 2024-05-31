@@ -14,7 +14,7 @@ use Tsqm\Config;
 
 class ListScheduledCommand extends Command
 {
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName("list:scheduled")
@@ -22,13 +22,12 @@ class ListScheduledCommand extends Command
             ->addOption("limit", "l", InputArgument::OPTIONAL, "Limit number of run ids to get", 10);
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $container = Container::create();
         $tsqm = new Tsqm((new Config())
                 ->setContainer($container)
-                ->setPdo(DbHelper::createPdoFromEnv())
-        );
+                ->setPdo(DbHelper::createPdoFromEnv()));
 
         $runIds = $tsqm->getNextRunIds(new DateTime(), $input->getOption("limit"));
         foreach ($runIds as $runId) {

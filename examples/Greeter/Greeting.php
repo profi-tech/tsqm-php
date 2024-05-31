@@ -16,24 +16,27 @@ class Greeting implements JsonSerializable
         $this->text = $text;
     }
 
-    public function setPurchased(bool $purchased)
+    public function setPurchased(bool $purchased): self
     {
         $this->purchased = $purchased;
         return $this;
     }
 
-    public function setSent(bool $sent)
+    public function setSent(bool $sent): self
     {
         $this->sent = $sent;
         return $this;
     }
 
-    public function setReverted(bool $reverted)
+    public function setReverted(bool $reverted): self
     {
         $this->reverted = $reverted;
         return $this;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function jsonSerialize(): array
     {
         return [

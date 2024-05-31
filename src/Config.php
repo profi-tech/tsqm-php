@@ -71,7 +71,7 @@ class Config
         return $this;
     }
 
-    public function getRunQueue()
+    public function getRunQueue(): QueueInterface
     {
         if (!is_null($this->queue)) {
             return $this->queue;

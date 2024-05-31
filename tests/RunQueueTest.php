@@ -10,27 +10,29 @@ use Tsqm\Queue\QueueInterface;
 use Tsqm\Runs\Run;
 use Tsqm\Tasks\RetryPolicy;
 use Tsqm\Tasks\Task;
+use PHPUnit\Framework\MockObject\MockObject;
 
 class RunQueueTest extends TestCase
 {
     protected Tsqm $tsqm;
 
+    /** @var QueueInterface|MockObject */
     private $queue;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->queue = $this->createMock(QueueInterface::class);
+
         $this->tsqm = new Tsqm(
-            (new Config)
+            (new Config())
                 ->setContainer(Container::create())
                 ->setPdo($this->pdo)
                 ->setRunQueue($this->queue)
         );
-
     }
 
-    public function testEnqueueForAsyncRun()
+    public function testEnqueueForAsyncRun(): void
     {
         $task = (new Task($this->simpleGreet))->setArgs('John Doe');
         $run = $this->tsqm->createRun($task);
@@ -46,10 +48,10 @@ class RunQueueTest extends TestCase
         $this->tsqm->performRun($run, true);
     }
 
-    public function testEnqueueForScheduledRun()
+    public function testEnqueueForScheduledRun(): void
     {
         $scheduledFor = (new DateTime())->modify('+1 day');
-        
+
         $task = (new Task($this->simpleGreet))
             ->setArgs('John Doe')
             ->setScheduledFor($scheduledFor);
@@ -66,18 +68,18 @@ class RunQueueTest extends TestCase
         $this->tsqm->performRun($run, true);
     }
 
-    public function testEnqueueForRetry()
+    public function testEnqueueForRetry(): void
     {
         $task = (new Task($this->simpleGreetWith3Fails))
             ->setArgs('John Doe')
-            ->setRetryPolicy((new RetryPolicy)->setMinInterval(1500)->setMaxRetries(1));
+            ->setRetryPolicy((new RetryPolicy())->setMinInterval(1500)->setMaxRetries(1));
 
         $run = $this->tsqm->createRun($task);
 
         $this->queue->expects($this->once())->method('enqueue')->with(
             $this->callback(
                 function (Run $gotRun) use ($run) {
-                    $wantScheduledFor = (new DateTime)->modify('+ 1500 milliseconds');
+                    $wantScheduledFor = (new DateTime())->modify('+ 1500 milliseconds');
                     return $gotRun->getId() === $run->getId()
                         && $this->assertHelper->isDateTimeEqualsWithDelta($gotRun->getRunAt(), $wantScheduledFor, 10);
                 }

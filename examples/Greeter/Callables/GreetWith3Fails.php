@@ -1,10 +1,12 @@
 <?php
+
 namespace Examples\Greeter\Callables;
 
 use Examples\Greeter\Greeter;
+use Generator;
 
-class GreetWith3Fails {
-
+class GreetWith3Fails
+{
     private Greeter $greeter;
 
     public function __construct(Greeter $greeter)
@@ -12,7 +14,7 @@ class GreetWith3Fails {
         $this->greeter = $greeter;
     }
 
-    public function __invoke(string $name)
+    public function __invoke(string $name): Generator
     {
         return $this->greeter->greetWith3Fails($name);
     }

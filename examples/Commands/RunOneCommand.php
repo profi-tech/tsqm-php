@@ -14,7 +14,7 @@ use Tsqm\Config;
 
 class RunOneCommand extends Command
 {
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName("run:one")
@@ -22,15 +22,14 @@ class RunOneCommand extends Command
             ->addArgument("runId", InputArgument::REQUIRED, "Run id to run");
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $container = Container::create();
         $logger = new Logger();
         $tsqm = new Tsqm((new Config())
                 ->setContainer($container)
                 ->setPdo(DbHelper::createPdoFromEnv())
-                ->setLogger($logger)
-        );
+                ->setLogger($logger));
 
         $runId = $input->getArgument("runId");
         $run = $tsqm->getRun($runId);

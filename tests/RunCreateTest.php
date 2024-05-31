@@ -7,21 +7,21 @@ use Tsqm\Tasks\Task;
 
 class RunCreateTest extends TestCase
 {
-    public function testRunID()
+    public function testRunID(): void
     {
         $task = (new Task($this->simpleGreet))->setArgs('John Doe');
         $run = $this->tsqm->createRun($task);
         $this->assertTrue(preg_match('/^[a-f0-9]{8}-([a-f0-9]{4}-){3}[a-f0-9]{12}$/', $run->getId()) === 1);
     }
 
-    public function testTaskId()
+    public function testTaskId(): void
     {
         $task = (new Task($this->simpleGreet))->setArgs('John Doe');
         $run = $this->tsqm->createRun($task);
         $this->assertEquals($run->getTask()->getId(), $task->getId());
     }
 
-    public function testCreatedAt()
+    public function testCreatedAt(): void
     {
         $task = (new Task($this->simpleGreet))->setArgs('John Doe');
         $run = $this->tsqm->createRun($task);
@@ -30,11 +30,10 @@ class RunCreateTest extends TestCase
         );
     }
 
-    public function testStatus()
+    public function testStatus(): void
     {
         $task = (new Task($this->simpleGreet))->setArgs('John Doe');
         $run = $this->tsqm->createRun($task);
         $this->assertEquals($run->getStatus(), 'created');
     }
-
 }

@@ -1,11 +1,12 @@
 <?php
+
 namespace Examples\Greeter\Callables;
 
 use Examples\Greeter\Greeting;
 use Examples\Greeter\Purchaser;
 
-class PurchaseWithRandomFail {
-
+class PurchaseWithRandomFail
+{
     private Purchaser $purchaser;
 
     public function __construct(Purchaser $purchaser)
@@ -13,9 +14,8 @@ class PurchaseWithRandomFail {
         $this->purchaser = $purchaser;
     }
 
-    public function __invoke(Greeting $greeting)
+    public function __invoke(Greeting $greeting): void
     {
-        return $this->purchaser->purchaseWithRandomFail($greeting);
+        $this->purchaser->purchaseWithRandomFail($greeting);
     }
-    
 }

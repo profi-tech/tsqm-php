@@ -8,7 +8,7 @@ use Tsqm\Tasks\RetryPolicy;
 
 class RunSchedulerTest extends TestCase
 {
-    public function testDefaultScheduledFor()
+    public function testDefaultScheduledFor(): void
     {
         $task = (new Task($this->simpleGreet))->setArgs('John Doe');
         $run = $this->tsqm->createRun($task);
@@ -17,7 +17,7 @@ class RunSchedulerTest extends TestCase
         );
     }
 
-    public function testScheduledFor()
+    public function testScheduledFor(): void
     {
         $scheduleFor = (new DateTime())->modify('+1 day');
         $task = (new Task($this->simpleGreet))
@@ -28,12 +28,12 @@ class RunSchedulerTest extends TestCase
         $this->assertEquals($scheduleFor->format('Y-m-d H:i:s.v'), $run->getRunAt()->format('Y-m-d H:i:s.v'));
     }
 
-    public function testRetryScheduleFor()
+    public function testRetryScheduleFor(): void
     {
         $task = (new Task($this->simpleGreetWith3Fails))
             ->setArgs('John Doe')
             ->setRetryPolicy(
-                (new RetryPolicy)
+                (new RetryPolicy())
                     ->setMaxRetries(3)
                     ->setMinInterval(1500)
             );
@@ -44,11 +44,15 @@ class RunSchedulerTest extends TestCase
         $run = $this->tsqm->getRun($run->getId());
 
         $this->assertTrue(
-            $this->assertHelper->isDateTimeEqualsWithDelta($run->getRunAt(), (new DateTime)->modify('+1500 milliseconds'), 10)
+            $this->assertHelper->isDateTimeEqualsWithDelta(
+                $run->getRunAt(),
+                (new DateTime())->modify('+1500 milliseconds'),
+                10
+            )
         );
     }
 
-    public function testRunScheduledRun()
+    public function testRunScheduledRun(): void
     {
         $task = (new Task($this->simpleGreet))->setArgs('John Doe');
         $run = $this->tsqm->createRun($task);
@@ -63,37 +67,37 @@ class RunSchedulerTest extends TestCase
         $this->assertTrue($result->isReady());
     }
 
-    public function testListScheduledRuns()
+    public function testListScheduledRuns(): void
     {
         $task = (new Task($this->simpleGreetWith3Fails))->setArgs('John Doe');
         $run1 = $this->tsqm->createRun($task);
         $run2 = $this->tsqm->createRun($task);
         $run3 = $this->tsqm->createRun($task);
 
-        $runIds = $this->tsqm->getNextRunIds(new DateTime, 10);
+        $runIds = $this->tsqm->getNextRunIds(new DateTime(), 10);
         $this->assertCount(3, $runIds);
         $this->assertEquals([$run1->getId(), $run2->getId(), $run3->getId()], $runIds);
     }
 
-    public function testListScheduledRunsUntil()
+    public function testListScheduledRunsUntil(): void
     {
         $task = (new Task($this->simpleGreetWith3Fails))->setArgs('John Doe');
         $this->tsqm->createRun($task);
         $this->tsqm->createRun($task);
         $this->tsqm->createRun($task);
 
-        $runIds = $this->tsqm->getNextRunIds((new DateTime)->modify('- 10 second'), 10);
+        $runIds = $this->tsqm->getNextRunIds((new DateTime())->modify('- 10 second'), 10);
         $this->assertCount(0, $runIds);
     }
 
-    public function testListScheduledRunsLimit()
+    public function testListScheduledRunsLimit(): void
     {
         $task = (new Task($this->simpleGreetWith3Fails))->setArgs('John Doe');
         $run1 = $this->tsqm->createRun($task);
         $run2 = $this->tsqm->createRun($task);
         $this->tsqm->createRun($task);
 
-        $runIds = $this->tsqm->getNextRunIds(new DateTime, 2);
+        $runIds = $this->tsqm->getNextRunIds(new DateTime(), 2);
         $this->assertCount(2, $runIds);
         $this->assertEquals([$run1->getId(), $run2->getId()], $runIds);
     }

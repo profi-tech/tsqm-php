@@ -1,11 +1,12 @@
 <?php
+
 namespace Examples\Greeter\Callables;
 
 use Examples\Greeter\Greeting;
 use Examples\Greeter\Purchaser;
 
-class PurchaseWith3Fails {
-
+class PurchaseWith3Fails
+{
     private Purchaser $purchaser;
 
     public function __construct(Purchaser $purchaser)
@@ -13,9 +14,8 @@ class PurchaseWith3Fails {
         $this->purchaser = $purchaser;
     }
 
-    public function __invoke(Greeting $greeting)
+    public function __invoke(Greeting $greeting): void
     {
-        return $this->purchaser->purchaseWith3Fails($greeting);
+        $this->purchaser->purchaseWith3Fails($greeting);
     }
-    
 }

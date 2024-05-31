@@ -11,9 +11,14 @@ interface RunRepositoryInterface
 
     public function getRun(string $runId): Run;
 
-    public function updateRunStatus(string $runId, string $status);
+    public function updateRunStatus(string $runId, string $status): void;
 
     public function updateRunAt(string $runId, DateTime $runAt): Run;
 
+    /**
+     * @param DateTime $until
+     * @param int $limit
+     * @return array<string>
+     */
     public function getNextRunIds(DateTime $until, int $limit): array;
 }

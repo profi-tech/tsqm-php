@@ -17,17 +17,19 @@ class Logger extends ConsoleLogger
         parent::__construct(new ConsoleOutput(ConsoleOutput::VERBOSITY_DEBUG));
     }
 
-    public function log($level, $message, array $context = [])
+    public function log($level, $message, array $context = []): void
     {
-        /** @var Task */
+        /** @var Task|null */
         $task = (isset($context['task']) && $context['task'] instanceof Task) ? $context['task'] : null;
         $taskResult = $context['taskResult'] ?? null;
 
-        /** @var Run */
+        /** @var Run|null */
         $run = (isset($context['run']) && $context['run'] instanceof Run) ? $context['run'] : null;
 
-        /** @var Exception */
-        $exception = (isset($context['exception']) && $context['exception'] instanceof Exception) ? $context['exception'] : null;
+        /** @var Exception|null */
+        $exception = (isset($context['exception']) && $context['exception'] instanceof Exception)
+            ? $context['exception']
+            : null;
 
         $dt = (new DateTime())->format("Y-m-d\TH:i:s.v");
 
@@ -56,11 +58,13 @@ class Logger extends ConsoleLogger
         parent::log($level, "$dt\n— $message\n", $context);
     }
 
-    public function logRunResult(Result $result)
+    public function logRunResult(Result $result): void
     {
         $this->log(
             $result->hasError() ? self::ERROR : self::INFO,
-            "RunResult for run {$result->getRunId()}: status=" . ($result->isReady() ? "ready, data=" . json_encode($result->getData()) : "scheduled")
+            "RunResult for run {$result->getRunId()}: status="
+            . ($result->isReady() ? "ready, data="
+            . json_encode($result->getData()) : "scheduled")
         );
     }
 }

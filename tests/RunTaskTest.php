@@ -9,11 +9,11 @@ use Tsqm\Tasks\Task;
 
 class RunTaskTest extends TestCase
 {
-    public function testTaskSuccess()
+    public function testTaskSuccess(): void
     {
         $task = (new Task($this->simpleGreet))->setArgs('John Doe');
         $run = $this->tsqm->createRun($task);
-        
+
         $result = $this->tsqm->performRun($run);
 
         $this->assertTrue($result->isReady());
@@ -21,7 +21,7 @@ class RunTaskTest extends TestCase
         $this->assertEquals((new Greeting("Hello, John Doe!"))->setSent(true), $result->getData());
     }
 
-    public function testTaskFail()
+    public function testTaskFail(): void
     {
         $task = (new Task($this->simpleGreetWith3Fails))->setArgs('John Doe');
         $run = $this->tsqm->createRun($task);
@@ -33,12 +33,12 @@ class RunTaskTest extends TestCase
         $this->tsqm->performRun($run);
     }
 
-    public function testTaskFailRetrySuccess()
+    public function testTaskFailRetrySuccess(): void
     {
         $task = (new Task($this->simpleGreetWith3Fails))
             ->setArgs('John Doe')
             ->setRetryPolicy(
-                (new RetryPolicy)
+                (new RetryPolicy())
                     ->setMaxRetries(3)
             );
         $run = $this->tsqm->createRun($task);
@@ -54,12 +54,12 @@ class RunTaskTest extends TestCase
         $this->assertEquals((new Greeting("Hello, John Doe!"))->setSent(true), $result->getData());
     }
 
-    public function testTaskFailRetryFail()
+    public function testTaskFailRetryFail(): void
     {
         $task = (new Task($this->simpleGreetWith3Fails))
             ->setArgs('John Doe')
             ->setRetryPolicy(
-                (new RetryPolicy)
+                (new RetryPolicy())
                     ->setMaxRetries(2)
             );
         $run = $this->tsqm->createRun($task);
