@@ -3,6 +3,7 @@
 namespace Examples\Greeter\Callables;
 
 use Examples\Greeter\Greeter;
+use Examples\Greeter\Greeting;
 
 class SimpleGreetWith3Fails
 {
@@ -13,7 +14,7 @@ class SimpleGreetWith3Fails
         $this->greeter = $greeter;
     }
 
-    public function __invoke(string $name)
+    public function __invoke(string $name): Greeting
     {
         return $this->greeter->simpleGreetWith3Fails($name);
     }

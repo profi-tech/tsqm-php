@@ -21,7 +21,7 @@ class HelloWorldCommand extends Command
         parent::__construct();
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName("example:hello-world")

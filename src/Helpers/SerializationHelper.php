@@ -8,7 +8,14 @@ use Tsqm\Errors\SerializationError;
 
 class SerializationHelper
 {
-    public static function serialize($value)
+    /**
+     * Serialize a value.
+     *
+     * @param mixed $value
+     * @return string
+     * @throws SerializationError
+     */
+    public static function serialize($value): string
     {
         try {
             return serialize($value);
@@ -17,6 +24,13 @@ class SerializationHelper
         }
     }
 
+    /**
+     * Unserialize a value.
+     *
+     * @param string $value
+     * @return mixed
+     * @throws SerializationError
+     */
     public static function unserialize($value)
     {
         try {

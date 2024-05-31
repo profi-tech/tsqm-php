@@ -17,8 +17,13 @@ class Event
     private DateTime $ts;
     private string $type;
     private string $taskId;
+
+    /** @var mixed */
     private $payload;
 
+    /**
+     * @param mixed $payload
+     */
     public function __construct(?int $id, string $runId, DateTime $ts, string $type, string $taskId, $payload)
     {
         $this->id = $id;
@@ -34,39 +39,42 @@ class Event
         return $this->id;
     }
 
-    public function withId(int $id)
+    public function withId(int $id): self
     {
         $cloned = clone $this;
         $cloned->id = $id;
         return $cloned;
     }
 
-    public function getRunId()
+    public function getRunId(): string
     {
         return $this->runId;
     }
 
-    public function getTs()
+    public function getTs(): DateTime
     {
         return $this->ts;
     }
 
-    public function getType()
+    public function getType(): string
     {
         return $this->type;
     }
 
-    public function getTaskId()
+    public function getTaskId(): string
     {
         return $this->taskId;
     }
 
+    /**
+     * @return mixed
+     */
     public function getPayload()
     {
         return $this->payload;
     }
 
-    public function getHash(?string $salt = null)
+    public function getHash(?string $salt = null): string
     {
         return md5(implode("::", [
             $this->runId,
@@ -76,6 +84,10 @@ class Event
         ]));
     }
 
+    /**
+     * @param array<string, mixed> $data
+     * @return Event
+     */
     public static function fromArray(array $data): Event
     {
         $payload = SerializationHelper::unserialize($data['payload']);

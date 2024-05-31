@@ -14,7 +14,7 @@ class RevertGreeting
         $this->reverter = $reverter;
     }
 
-    public function __invoke(Greeting $greeting)
+    public function __invoke(Greeting $greeting): Greeting
     {
         return $this->reverter->revertGreeting($greeting);
     }

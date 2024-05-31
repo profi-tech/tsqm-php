@@ -6,5 +6,5 @@ use Tsqm\Runs\Run;
 
 interface QueueInterface
 {
-    public function enqueue(Run $run);
+    public function enqueue(Run $run): void;
 }

@@ -14,7 +14,7 @@ class SendGreeting
         $this->messenger = $messenger;
     }
 
-    public function __invoke(Greeting $greeting)
+    public function __invoke(Greeting $greeting): Greeting
     {
         return $this->messenger->sendGreeting($greeting);
     }

@@ -21,7 +21,7 @@ class Result
         return $this->runId;
     }
 
-    public function isReady()
+    public function isReady(): bool
     {
         return $this->event && in_array($this->event->getType(), [
             Event::TYPE_TASK_COMPLETED,
@@ -29,17 +29,20 @@ class Result
         ]);
     }
 
-    public function hasData()
+    public function hasData(): bool
     {
         return $this->event && $this->event->getPayload() !== null;
     }
 
+    /**
+     * @return mixed
+     */
     public function getData()
     {
         return $this->event->getPayload();
     }
 
-    public function hasError()
+    public function hasError(): bool
     {
         return $this->event && ($this->event->getPayload() instanceof Error);
     }

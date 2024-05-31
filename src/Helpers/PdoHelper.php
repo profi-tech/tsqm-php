@@ -7,6 +7,11 @@ use PDOException;
 
 class PdoHelper
 {
+    /**
+     * Format a PDO exception as a string.
+     * @param array<mixed> $errinfo
+     * @return string
+     */
     public static function formatErrorInfo(array $errinfo): string
     {
         $err = $errinfo[0];

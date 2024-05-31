@@ -9,14 +9,14 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class InitDbCommand extends Command
 {
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName("init:db")
             ->setDescription("Init database for examples");
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $pdo = DbHelper::createPdoFromEnv();
         DbHelper::initPdoDb($pdo);

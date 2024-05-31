@@ -18,8 +18,16 @@ class EventRepository implements EventRepositoryInterface
         $this->pdo = $pdo;
     }
 
-    public function addEvent(string $runId, string $type, string $taskId, $payload = null, ?string $salt = null)
-    {
+    /**
+     * @param mixed $payload
+     */
+    public function addEvent(
+        string $runId,
+        string $type,
+        string $taskId,
+        $payload = null,
+        ?string $salt = null
+    ): Event {
         try {
             $event = new Event(
                 null,
@@ -46,7 +54,7 @@ class EventRepository implements EventRepositoryInterface
                 'hash' => $event->getHash($salt),
             ]);
 
-            $id = $this->pdo->lastInsertId();
+            $id = (int)$this->pdo->lastInsertId();
             if (!$id) {
                 throw new Exception("Failed to add event: lastInsertId() returned 0");
             }
@@ -107,7 +115,13 @@ class EventRepository implements EventRepositoryInterface
         }
     }
 
-    public function getFailedEvents(string $runId, string $taskId)
+    /**
+     * @param string $runId
+     * @param string $taskId
+     * @return Event[]
+     * @throws RepositoryError
+     */
+    public function getFailedEvents(string $runId, string $taskId): array
     {
         try {
             $res = $this->pdo->prepare("

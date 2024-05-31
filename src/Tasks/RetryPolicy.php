@@ -13,24 +13,24 @@ class RetryPolicy implements JsonSerializable
     /** @var int Minimum time between retries in milliseconds */
     private int $minInterval = 100;
 
-    public function setMaxRetries(int $maxRetries)
+    public function setMaxRetries(int $maxRetries): self
     {
         $this->maxRetries = $maxRetries;
         return $this;
     }
 
-    public function getMaxRetries()
+    public function getMaxRetries(): int
     {
         return $this->maxRetries;
     }
 
-    public function setMinInterval(int $minInterval)
+    public function setMinInterval(int $minInterval): self
     {
         $this->minInterval = $minInterval;
         return $this;
     }
 
-    public function getMinInterval()
+    public function getMinInterval(): int
     {
         return $this->minInterval;
     }
@@ -44,6 +44,9 @@ class RetryPolicy implements JsonSerializable
         }
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function __serialize(): array
     {
         return [
@@ -52,11 +55,17 @@ class RetryPolicy implements JsonSerializable
         ];
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function jsonSerialize(): mixed
     {
         return $this->__serialize();
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     public function __unserialize(array $data): void
     {
         $this->maxRetries = $data['maxRetries'];

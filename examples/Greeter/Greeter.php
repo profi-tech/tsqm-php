@@ -10,6 +10,7 @@ use Examples\Greeter\Callables\RevertGreeting;
 use Examples\Greeter\Callables\SendGreeting;
 use Examples\Greeter\Callables\ValidateName;
 use Exception;
+use Generator;
 use Tsqm\Tasks\RetryPolicy;
 use Tsqm\Tasks\Task;
 
@@ -26,7 +27,7 @@ class Greeter
     private Repository $repository;
     private Messenger $messenger;
 
-    private $failsCount = 0;
+    private int $failsCount = 0;
 
     public function __construct(
         Repository $repository,
@@ -51,7 +52,7 @@ class Greeter
         $this->revertGreeting = $revertGreeting;
     }
 
-    public function greet(string $name)
+    public function greet(string $name): Generator
     {
         $valid = yield (new Task($this->validateName))->setArgs($name);
         if (!$valid) {
@@ -64,7 +65,7 @@ class Greeter
         return yield (new Task($this->sendGreeting))->setArgs($greeting);
     }
 
-    public function greetWithRandomFail(string $name)
+    public function greetWithRandomFail(string $name): Generator
     {
         $valid = yield (new Task($this->validateName))->setArgs($name);
         if (!$valid) {
@@ -85,7 +86,7 @@ class Greeter
         return $greeting;
     }
 
-    public function greetWith3Fails(string $name)
+    public function greetWith3Fails(string $name): Generator
     {
         $valid = yield (new Task($this->validateName))->setArgs($name);
         if (!$valid) {
@@ -98,7 +99,7 @@ class Greeter
         return yield (new Task($this->sendGreeting))->setArgs($greeting);
     }
 
-    public function greetWith3PurchaseFailsAnd3Retries(string $name)
+    public function greetWith3PurchaseFailsAnd3Retries(string $name): Generator
     {
         $valid = yield (new Task($this->validateName))->setArgs($name);
         if (!$valid) {
@@ -113,7 +114,7 @@ class Greeter
         return yield (new Task($this->sendGreeting))->setArgs($greeting);
     }
 
-    public function greetWith3PurchaseFailsAnd2Retries(string $name)
+    public function greetWith3PurchaseFailsAnd2Retries(string $name): Generator
     {
         $valid = yield (new Task($this->validateName))->setArgs($name);
         if (!$valid) {
@@ -128,7 +129,7 @@ class Greeter
         return yield (new Task($this->sendGreeting))->setArgs($greeting);
     }
 
-    public function greetWith3PurchaseFailsAndRevert(string $name)
+    public function greetWith3PurchaseFailsAndRevert(string $name): Generator
     {
         $valid = yield (new Task($this->validateName))->setArgs($name);
         if (!$valid) {
@@ -146,7 +147,7 @@ class Greeter
         return yield (new Task($this->sendGreeting))->setArgs($greeting);
     }
 
-    public function greetWithDuplicatedTask(string $name)
+    public function greetWithDuplicatedTask(string $name): Generator
     {
         yield (new Task($this->createGreeting))->setArgs($name);
         yield (new Task($this->createGreeting))->setArgs($name);

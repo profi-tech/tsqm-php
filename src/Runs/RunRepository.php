@@ -70,7 +70,7 @@ class RunRepository implements RunRepositoryInterface
         }
     }
 
-    public function updateRunStatus(string $runId, string $status)
+    public function updateRunStatus(string $runId, string $status): void
     {
         try {
             $res = $this->pdo->prepare("

@@ -2,6 +2,7 @@
 
 namespace Examples\Greeter\Callables;
 
+use Examples\Greeter\Greeting;
 use Examples\Greeter\Repository;
 
 class CreateGreeting
@@ -13,7 +14,7 @@ class CreateGreeting
         $this->repository = $repository;
     }
 
-    public function __invoke(string $name)
+    public function __invoke(string $name): Greeting
     {
         return $this->repository->createGreeing($name);
     }

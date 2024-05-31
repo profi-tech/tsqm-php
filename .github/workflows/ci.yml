@@ -29,7 +29,7 @@ jobs:
     - name: Run test suite
       run: composer test
 
-  lint:
+  lint-analyse:
 
     runs-on: ubuntu-20.04
 
@@ -44,4 +44,7 @@ jobs:
       run: composer install --prefer-dist --no-progress
 
     - name: Lint PSR-12
-      run: composer lint-psr12
+      run: composer lint
+
+    - name: Static analysis
+      run: composer analyse

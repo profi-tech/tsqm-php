@@ -14,8 +14,8 @@ class Purchase
         $this->purchaser = $purchaser;
     }
 
-    public function __invoke(Greeting $greeting)
+    public function __invoke(Greeting $greeting): void
     {
-        return $this->purchaser->purchase($greeting);
+        $this->purchaser->purchase($greeting);
     }
 }

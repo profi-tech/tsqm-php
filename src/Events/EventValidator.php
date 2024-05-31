@@ -7,7 +7,13 @@ use Tsqm\Errors\TaskIdMismatch;
 
 class EventValidator
 {
-    public function validateEventType(Event $event, array $expectedTypes)
+    /**
+     * @param Event $event
+     * @param array<string> $expectedTypes
+     * @return void
+     * @throws EventTypeMismatch
+     */
+    public function validateEventType(Event $event, array $expectedTypes): void
     {
         if (!in_array($event->getType(), $expectedTypes)) {
             throw new EventTypeMismatch(
@@ -17,7 +23,7 @@ class EventValidator
         }
     }
 
-    public function validateEventTaskId(Event $event, string $expectedTaskId)
+    public function validateEventTaskId(Event $event, string $expectedTaskId): void
     {
         if ($event->getTaskId() != $expectedTaskId) {
             throw new TaskIdMismatch(

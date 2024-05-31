@@ -7,7 +7,7 @@ use PDO;
 
 class DbHelper
 {
-    public static function createPdoFromEnv()
+    public static function createPdoFromEnv(): PDO
     {
         return self::createPdo(
             $_ENV['DB_PDO_DSN'],
@@ -16,7 +16,7 @@ class DbHelper
         );
     }
 
-    public static function createPdo($dsn = null, $username = null, $password = null): PDO
+    public static function createPdo(string $dsn = null, string $username = null, string $password = null): PDO
     {
         $dsn = $dsn ?? "sqlite::memory:";
         $pdo = new PDO($dsn, $username, $password);
@@ -24,7 +24,7 @@ class DbHelper
         return $pdo;
     }
 
-    public static function initPdoDb(PDO $pdo)
+    public static function initPdoDb(PDO $pdo): void
     {
         $driver = $pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
         switch ($driver) {

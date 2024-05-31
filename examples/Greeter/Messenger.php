@@ -4,7 +4,7 @@ namespace Examples\Greeter;
 
 class Messenger
 {
-    public function sendGreeting(Greeting $greeting)
+    public function sendGreeting(Greeting $greeting): Greeting
     {
         return $greeting->setSent(true);
     }

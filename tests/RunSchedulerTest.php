@@ -8,7 +8,7 @@ use Tsqm\Tasks\RetryPolicy;
 
 class RunSchedulerTest extends TestCase
 {
-    public function testDefaultScheduledFor()
+    public function testDefaultScheduledFor(): void
     {
         $task = (new Task($this->simpleGreet))->setArgs('John Doe');
         $run = $this->tsqm->createRun($task);
@@ -17,7 +17,7 @@ class RunSchedulerTest extends TestCase
         );
     }
 
-    public function testScheduledFor()
+    public function testScheduledFor(): void
     {
         $scheduleFor = (new DateTime())->modify('+1 day');
         $task = (new Task($this->simpleGreet))
@@ -28,7 +28,7 @@ class RunSchedulerTest extends TestCase
         $this->assertEquals($scheduleFor->format('Y-m-d H:i:s.v'), $run->getRunAt()->format('Y-m-d H:i:s.v'));
     }
 
-    public function testRetryScheduleFor()
+    public function testRetryScheduleFor(): void
     {
         $task = (new Task($this->simpleGreetWith3Fails))
             ->setArgs('John Doe')
@@ -52,7 +52,7 @@ class RunSchedulerTest extends TestCase
         );
     }
 
-    public function testRunScheduledRun()
+    public function testRunScheduledRun(): void
     {
         $task = (new Task($this->simpleGreet))->setArgs('John Doe');
         $run = $this->tsqm->createRun($task);
@@ -67,7 +67,7 @@ class RunSchedulerTest extends TestCase
         $this->assertTrue($result->isReady());
     }
 
-    public function testListScheduledRuns()
+    public function testListScheduledRuns(): void
     {
         $task = (new Task($this->simpleGreetWith3Fails))->setArgs('John Doe');
         $run1 = $this->tsqm->createRun($task);
@@ -79,7 +79,7 @@ class RunSchedulerTest extends TestCase
         $this->assertEquals([$run1->getId(), $run2->getId(), $run3->getId()], $runIds);
     }
 
-    public function testListScheduledRunsUntil()
+    public function testListScheduledRunsUntil(): void
     {
         $task = (new Task($this->simpleGreetWith3Fails))->setArgs('John Doe');
         $this->tsqm->createRun($task);
@@ -90,7 +90,7 @@ class RunSchedulerTest extends TestCase
         $this->assertCount(0, $runIds);
     }
 
-    public function testListScheduledRunsLimit()
+    public function testListScheduledRunsLimit(): void
     {
         $task = (new Task($this->simpleGreetWith3Fails))->setArgs('John Doe');
         $run1 = $this->tsqm->createRun($task);

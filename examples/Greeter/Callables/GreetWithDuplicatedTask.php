@@ -3,6 +3,7 @@
 namespace Examples\Greeter\Callables;
 
 use Examples\Greeter\Greeter;
+use Generator;
 
 class GreetWithDuplicatedTask
 {
@@ -13,7 +14,7 @@ class GreetWithDuplicatedTask
         $this->greeter = $greeter;
     }
 
-    public function __invoke(string $name)
+    public function __invoke(string $name): Generator
     {
         return $this->greeter->greetWithDuplicatedTask($name);
     }

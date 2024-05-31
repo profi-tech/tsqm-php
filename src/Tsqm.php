@@ -275,7 +275,7 @@ class Tsqm
             $retryAt = null;
             $retryPolicy = $task->getRetryPolicy();
             if ($retryPolicy) {
-                $retryAt = $retryPolicy->getRetryAt($failedEventsCount ?? 0);
+                $retryAt = $retryPolicy->getRetryAt($failedEventsCount);
             }
 
             if ($retryAt || $inGenerator) {
@@ -311,7 +311,7 @@ class Tsqm
         }
     }
 
-    private function finishRun(Run $run)
+    private function finishRun(Run $run): void
     {
         try {
             if ($run->getStatus() !== Run::STATUS_FINISHED) {

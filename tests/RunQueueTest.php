@@ -10,17 +10,20 @@ use Tsqm\Queue\QueueInterface;
 use Tsqm\Runs\Run;
 use Tsqm\Tasks\RetryPolicy;
 use Tsqm\Tasks\Task;
+use PHPUnit\Framework\MockObject\MockObject;
 
 class RunQueueTest extends TestCase
 {
     protected Tsqm $tsqm;
 
+    /** @var QueueInterface|MockObject */
     private $queue;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->queue = $this->createMock(QueueInterface::class);
+
         $this->tsqm = new Tsqm(
             (new Config())
                 ->setContainer(Container::create())
@@ -29,7 +32,7 @@ class RunQueueTest extends TestCase
         );
     }
 
-    public function testEnqueueForAsyncRun()
+    public function testEnqueueForAsyncRun(): void
     {
         $task = (new Task($this->simpleGreet))->setArgs('John Doe');
         $run = $this->tsqm->createRun($task);
@@ -45,7 +48,7 @@ class RunQueueTest extends TestCase
         $this->tsqm->performRun($run, true);
     }
 
-    public function testEnqueueForScheduledRun()
+    public function testEnqueueForScheduledRun(): void
     {
         $scheduledFor = (new DateTime())->modify('+1 day');
 
@@ -65,7 +68,7 @@ class RunQueueTest extends TestCase
         $this->tsqm->performRun($run, true);
     }
 
-    public function testEnqueueForRetry()
+    public function testEnqueueForRetry(): void
     {
         $task = (new Task($this->simpleGreetWith3Fails))
             ->setArgs('John Doe')

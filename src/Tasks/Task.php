@@ -11,6 +11,8 @@ use Tsqm\Helpers\UuidHelper;
 class Task implements JsonSerializable
 {
     private string $name;
+
+    /** @var array<mixed> */
     private array $args = [];
     private ?RetryPolicy $retryPolicy = null;
     private ?DateTime $scheduledFor = null;
@@ -24,7 +26,7 @@ class Task implements JsonSerializable
         }
     }
 
-    public function getId()
+    public function getId(): string
     {
         return UuidHelper::named(implode('::', [
             $this->name,
@@ -37,12 +39,19 @@ class Task implements JsonSerializable
         return $this->name;
     }
 
+    /**
+     * @param array<mixed> $args
+     * @return Task
+     */
     public function setArgs(...$args): self
     {
         $this->args = $args;
         return $this;
     }
 
+    /**
+     * @return array<mixed>
+     */
     public function getArgs(): array
     {
         return $this->args;
@@ -70,6 +79,9 @@ class Task implements JsonSerializable
         return $this->scheduledFor;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function __serialize(): array
     {
         return [
@@ -80,11 +92,17 @@ class Task implements JsonSerializable
         ];
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function jsonSerialize(): array
     {
         return $this->__serialize();
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     public function __unserialize(array $data): void
     {
         $this->name = $data['name'];

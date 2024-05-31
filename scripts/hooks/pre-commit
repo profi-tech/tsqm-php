@@ -2,5 +2,6 @@
 
 set -e
 
-composer lint-psr12
+composer lint
+composer analyse
 composer test

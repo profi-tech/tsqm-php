@@ -15,7 +15,7 @@ use Tsqm\Config;
 
 class RunScheduledCommand extends Command
 {
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName("run:scheduled")
@@ -23,7 +23,7 @@ class RunScheduledCommand extends Command
             ->addOption("limit", "l", InputArgument::OPTIONAL, "Limit number of runs", 10);
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $limit = (int)$input->getOption("limit");
         $container = Container::create();

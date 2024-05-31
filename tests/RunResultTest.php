@@ -8,7 +8,7 @@ use Examples\Greeter\GreeterError;
 
 class RunResultTest extends TestCase
 {
-    public function testSuccessfulRunResult()
+    public function testSuccessfulRunResult(): void
     {
         $task = (new Task($this->simpleGreet))->setArgs('John Doe');
         $run = $this->tsqm->createRun($task);
@@ -20,7 +20,7 @@ class RunResultTest extends TestCase
         $this->assertEquals((new Greeting("Hello, John Doe!"))->setSent(true), $result->getData());
     }
 
-    public function testTaskSuccessSecondRun()
+    public function testTaskSuccessSecondRun(): void
     {
         $task = (new Task($this->simpleGreet))->setArgs('John Doe');
         $run = $this->tsqm->createRun($task);
@@ -36,7 +36,7 @@ class RunResultTest extends TestCase
         $this->assertEquals((new Greeting("Hello, John Doe!"))->setSent(true), $result->getData());
     }
 
-    public function testTaskFailSecondRun()
+    public function testTaskFailSecondRun(): void
     {
         $task = (new Task($this->simpleGreetWith3Fails))->setArgs('John Doe');
         $run = $this->tsqm->createRun($task);
