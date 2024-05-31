@@ -33,7 +33,7 @@ class RunSchedulerTest extends TestCase
         $task = (new Task($this->simpleGreetWith3Fails))
             ->setArgs('John Doe')
             ->setRetryPolicy(
-                (new RetryPolicy)
+                (new RetryPolicy())
                     ->setMaxRetries(3)
                     ->setMinInterval(1500)
             );
@@ -44,7 +44,7 @@ class RunSchedulerTest extends TestCase
         $run = $this->tsqm->getRun($run->getId());
 
         $this->assertTrue(
-            $this->assertHelper->isDateTimeEqualsWithDelta($run->getRunAt(), (new DateTime)->modify('+1500 milliseconds'), 10)
+            $this->assertHelper->isDateTimeEqualsWithDelta($run->getRunAt(), (new DateTime())->modify('+1500 milliseconds'), 10)
         );
     }
 
@@ -70,7 +70,7 @@ class RunSchedulerTest extends TestCase
         $run2 = $this->tsqm->createRun($task);
         $run3 = $this->tsqm->createRun($task);
 
-        $runIds = $this->tsqm->getNextRunIds(new DateTime, 10);
+        $runIds = $this->tsqm->getNextRunIds(new DateTime(), 10);
         $this->assertCount(3, $runIds);
         $this->assertEquals([$run1->getId(), $run2->getId(), $run3->getId()], $runIds);
     }
@@ -82,7 +82,7 @@ class RunSchedulerTest extends TestCase
         $this->tsqm->createRun($task);
         $this->tsqm->createRun($task);
 
-        $runIds = $this->tsqm->getNextRunIds((new DateTime)->modify('- 10 second'), 10);
+        $runIds = $this->tsqm->getNextRunIds((new DateTime())->modify('- 10 second'), 10);
         $this->assertCount(0, $runIds);
     }
 
@@ -93,7 +93,7 @@ class RunSchedulerTest extends TestCase
         $run2 = $this->tsqm->createRun($task);
         $this->tsqm->createRun($task);
 
-        $runIds = $this->tsqm->getNextRunIds(new DateTime, 2);
+        $runIds = $this->tsqm->getNextRunIds(new DateTime(), 2);
         $this->assertCount(2, $runIds);
         $this->assertEquals([$run1->getId(), $run2->getId()], $runIds);
     }

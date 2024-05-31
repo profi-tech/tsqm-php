@@ -36,5 +36,4 @@ class RunCreateTest extends TestCase
         $run = $this->tsqm->createRun($task);
         $this->assertEquals($run->getStatus(), 'created');
     }
-
 }

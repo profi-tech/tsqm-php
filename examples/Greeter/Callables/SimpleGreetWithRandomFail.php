@@ -1,9 +1,11 @@
 <?php
+
 namespace Examples\Greeter\Callables;
 
 use Examples\Greeter\Greeter;
 
-class SimpleGreetWithRandomFail {
+class SimpleGreetWithRandomFail
+{
     private Greeter $greeter;
 
     public function __construct(Greeter $greeter)

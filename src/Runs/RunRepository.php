@@ -102,7 +102,7 @@ class RunRepository implements RunRepositoryInterface
                 'id' => $runId,
                 'run_at' => $runAt->format('Y-m-d H:i:s.v'),
             ]);
-            
+
             return $this->getRun($runId);
         } catch (Exception $e) {
             throw new RepositoryError("Failed to update run scheduled for: " . $e->getMessage(), 0, $e);

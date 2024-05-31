@@ -6,7 +6,7 @@ use DateTime;
 
 class AssertHelper
 {
-    /** 
+    /**
      * Checks if two DateTime objects are equal with a delta.
      * @param DateTime $dt1
      * @param DateTime $dt2

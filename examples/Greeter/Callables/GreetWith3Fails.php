@@ -1,10 +1,11 @@
 <?php
+
 namespace Examples\Greeter\Callables;
 
 use Examples\Greeter\Greeter;
 
-class GreetWith3Fails {
-
+class GreetWith3Fails
+{
     private Greeter $greeter;
 
     public function __construct(Greeter $greeter)

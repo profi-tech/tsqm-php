@@ -13,7 +13,7 @@ class RunTaskTest extends TestCase
     {
         $task = (new Task($this->simpleGreet))->setArgs('John Doe');
         $run = $this->tsqm->createRun($task);
-        
+
         $result = $this->tsqm->performRun($run);
 
         $this->assertTrue($result->isReady());
@@ -38,7 +38,7 @@ class RunTaskTest extends TestCase
         $task = (new Task($this->simpleGreetWith3Fails))
             ->setArgs('John Doe')
             ->setRetryPolicy(
-                (new RetryPolicy)
+                (new RetryPolicy())
                     ->setMaxRetries(3)
             );
         $run = $this->tsqm->createRun($task);
@@ -59,7 +59,7 @@ class RunTaskTest extends TestCase
         $task = (new Task($this->simpleGreetWith3Fails))
             ->setArgs('John Doe')
             ->setRetryPolicy(
-                (new RetryPolicy)
+                (new RetryPolicy())
                     ->setMaxRetries(2)
             );
         $run = $this->tsqm->createRun($task);

@@ -35,7 +35,8 @@
     },
     "scripts": {
         "test": "./vendor/bin/phpunit tests",
-        "lint-psr12": "./vendor/bin/phpcs --standard=PSR12 src tests examples"
+        "lint-psr12": "./vendor/bin/phpcs --standard=PSR12 ./src ./tests ./examples",
+        "lint-psr12-fix": "./vendor/bin/phpcbf --standard=PSR12 ./src ./tests ./examples"
         
     }
 }

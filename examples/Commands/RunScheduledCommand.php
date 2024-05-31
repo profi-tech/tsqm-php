@@ -30,8 +30,7 @@ class RunScheduledCommand extends Command
         $logger = new Logger();
         $tsqm = new Tsqm((new Config())
                 ->setContainer($container)
-                ->setPdo(DbHelper::createPdoFromEnv())
-        );
+                ->setPdo(DbHelper::createPdoFromEnv()));
 
         $runIds = $tsqm->getNextRunIds(new DateTime(), $limit);
         $output->writeln("Run scheduled:");

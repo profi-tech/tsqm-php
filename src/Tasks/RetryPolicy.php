@@ -1,11 +1,12 @@
 <?php
+
 namespace Tsqm\Tasks;
 
 use DateTime;
 use JsonSerializable;
 
-class RetryPolicy implements JsonSerializable {
-    
+class RetryPolicy implements JsonSerializable
+{
     /** @var int Maximum number of retries */
     private int $maxRetries = 0;
 

@@ -29,8 +29,7 @@ class RunOneCommand extends Command
         $tsqm = new Tsqm((new Config())
                 ->setContainer($container)
                 ->setPdo(DbHelper::createPdoFromEnv())
-                ->setLogger($logger)
-        );
+                ->setLogger($logger));
 
         $runId = $input->getArgument("runId");
         $run = $tsqm->getRun($runId);

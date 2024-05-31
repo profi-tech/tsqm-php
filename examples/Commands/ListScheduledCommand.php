@@ -27,8 +27,7 @@ class ListScheduledCommand extends Command
         $container = Container::create();
         $tsqm = new Tsqm((new Config())
                 ->setContainer($container)
-                ->setPdo(DbHelper::createPdoFromEnv())
-        );
+                ->setPdo(DbHelper::createPdoFromEnv()));
 
         $runIds = $tsqm->getNextRunIds(new DateTime(), $input->getOption("limit"));
         foreach ($runIds as $runId) {

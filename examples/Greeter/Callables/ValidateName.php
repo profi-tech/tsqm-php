@@ -1,10 +1,11 @@
 <?php
+
 namespace Examples\Greeter\Callables;
 
 use Examples\Greeter\Validator;
 
-class ValidateName {
-
+class ValidateName
+{
     private Validator $validator;
 
     public function __construct(Validator $validator)

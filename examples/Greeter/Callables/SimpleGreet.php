@@ -1,9 +1,11 @@
 <?php
+
 namespace Examples\Greeter\Callables;
 
 use Examples\Greeter\Greeter;
 
-class SimpleGreet {
+class SimpleGreet
+{
     private Greeter $greeter;
 
     public function __construct(Greeter $greeter)

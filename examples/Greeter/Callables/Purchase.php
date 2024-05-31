@@ -1,11 +1,12 @@
 <?php
+
 namespace Examples\Greeter\Callables;
 
 use Examples\Greeter\Greeting;
 use Examples\Greeter\Purchaser;
 
-class Purchase {
-
+class Purchase
+{
     private Purchaser $purchaser;
 
     public function __construct(Purchaser $purchaser)
@@ -17,5 +18,4 @@ class Purchase {
     {
         return $this->purchaser->purchase($greeting);
     }
-    
 }

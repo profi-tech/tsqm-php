@@ -23,7 +23,7 @@ class RunStatusTest extends TestCase
         $task = (new Task($this->simpleGreetWith3Fails))
             ->setArgs('John Doe')
             ->setRetryPolicy(
-                (new RetryPolicy)
+                (new RetryPolicy())
                     ->setMaxRetries(1)
             );
         $run = $this->tsqm->createRun($task);

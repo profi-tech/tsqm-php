@@ -31,7 +31,6 @@ class Greeter
     public function __construct(
         Repository $repository,
         Messenger $messenger,
-
         CreateGreeting $createGreeting,
         ValidateName $validateName,
         Purchase $purchase,

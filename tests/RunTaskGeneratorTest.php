@@ -52,7 +52,7 @@ class RunTaskGeneratorTest extends TestCase
         $task = (new Task($this->greetWith3Fails))
             ->setArgs('John Doe')
             ->setRetryPolicy(
-                (new RetryPolicy)
+                (new RetryPolicy())
                     ->setMaxRetries(3)
             );
         $run = $this->tsqm->createRun($task);
@@ -73,7 +73,7 @@ class RunTaskGeneratorTest extends TestCase
         $task = (new Task($this->greetWith3Fails))
             ->setArgs('John Doe')
             ->setRetryPolicy(
-                (new RetryPolicy)
+                (new RetryPolicy())
                     ->setMaxRetries(2)
             );
         $run = $this->tsqm->createRun($task);

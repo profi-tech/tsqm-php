@@ -23,12 +23,12 @@ class TaskRetryPolicyTest extends TestCase
 
         $retryAt = $retryPolicy->getRetryAt(1);
         $this->assertTrue(
-            $this->assertHelper->isDateTimeEqualsWithDelta((new DateTime)->modify('+300 milliseconds'), $retryAt, 50)
+            $this->assertHelper->isDateTimeEqualsWithDelta((new DateTime())->modify('+300 milliseconds'), $retryAt, 50)
         );
 
         $retryAt = $retryPolicy->getRetryAt(4);
         $this->assertTrue(
-            $this->assertHelper->isDateTimeEqualsWithDelta((new DateTime)->modify('+300 milliseconds'), $retryAt, 50)
+            $this->assertHelper->isDateTimeEqualsWithDelta((new DateTime())->modify('+300 milliseconds'), $retryAt, 50)
         );
 
         $retryAt = $retryPolicy->getRetryAt(5);

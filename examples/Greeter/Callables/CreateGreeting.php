@@ -1,13 +1,15 @@
 <?php
+
 namespace Examples\Greeter\Callables;
 
 use Examples\Greeter\Repository;
 
-class CreateGreeting {
-
+class CreateGreeting
+{
     private Repository $repository;
 
-    public function __construct(Repository $repository) {
+    public function __construct(Repository $repository)
+    {
         $this->repository = $repository;
     }
 

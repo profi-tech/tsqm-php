@@ -49,10 +49,11 @@ class Tsqm
 
     /**
      * Create a new run
-     * @param Task $task 
-     * @return Run 
+     * @param Task $task
+     * @return Run
      */
-    public function createRun(Task $task) {
+    public function createRun(Task $task)
+    {
         $this->logger->debug("Creating a run", ['task' => $task]);
         $run = $this->runRepository->createRun($task);
         $this->logger->debug("Run created", ['run' => $run]);
@@ -61,8 +62,8 @@ class Tsqm
 
     /**
      * Get a run by id
-     * @param string $runId 
-     * @return Run 
+     * @param string $runId
+     * @return Run
      */
     public function getRun(string $runId): Run
     {
@@ -71,11 +72,11 @@ class Tsqm
 
     /**
      * Perform a run
-     * @param Run $run 
-     * @return Result 
-     * @throws InvalidUuidStringException 
-     * @throws Throwable 
-     * @throws Exception 
+     * @param Run $run
+     * @return Result
+     * @throws InvalidUuidStringException
+     * @throws Throwable
+     * @throws Exception
      */
     public function performRun(Run $run, bool $forceAsync = false): Result
     {
@@ -127,8 +128,8 @@ class Tsqm
 
     /**
      * Returing a run result
-     * @param Run $run 
-     * @return Result 
+     * @param Run $run
+     * @return Result
      * @throws Exception
      */
     public function getRunResult(Run $run): Result
@@ -142,8 +143,8 @@ class Tsqm
 
     /**
      * Return all the scheduled run ids which is not finished
-     * @param DateTime $until 
-     * @param int $limit 
+     * @param DateTime $until
+     * @param int $limit
      * @return string[]
      */
     public function getNextRunIds(DateTime $until, int $limit): array
@@ -153,11 +154,11 @@ class Tsqm
 
     /**
      * The heart of the TSQM — running tasks, handles exceptions, retries tasks, etc.
-     * @param Task $task 
-     * @param Run $run 
-     * @param Generator $history 
-     * @param bool $inGenerator 
-     * @return mixed 
+     * @param Task $task
+     * @param Run $run
+     * @param Generator $history
+     * @param bool $inGenerator
+     * @return mixed
      * @throws Exception
      */
     private function executeTask(Run $run, Task $task, Generator $history, bool $inGenerator = false)
@@ -205,7 +206,6 @@ class Tsqm
 
         // This is the major try-catch block which is reponsible for handling errors and performing retries.
         try {
-
             if (!$this->container->has($task->getName())) {
                 throw new TaskClassDefinitionNotFound("Task " . $task->getName() . " definitoin not found");
             }
@@ -272,7 +272,6 @@ class Tsqm
         }
         // Here we handle all the exceptions from the task code
         catch (Exception $e) {
-            
             // Checking the retry policy
             $retryAt = null;
             $retryPolicy = $task->getRetryPolicy();
@@ -304,7 +303,7 @@ class Tsqm
             }
             // Otherwise we just crash
             else {
-                throw new CrashTheRun("Run ".$run->getId()." crashed", 0, $e);
+                throw new CrashTheRun("Run " . $run->getId() . " crashed", 0, $e);
             }
         }
     }
