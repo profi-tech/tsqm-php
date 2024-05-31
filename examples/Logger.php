@@ -27,7 +27,9 @@ class Logger extends ConsoleLogger
         $run = (isset($context['run']) && $context['run'] instanceof Run) ? $context['run'] : null;
 
         /** @var Exception */
-        $exception = (isset($context['exception']) && $context['exception'] instanceof Exception) ? $context['exception'] : null;
+        $exception = (isset($context['exception']) && $context['exception'] instanceof Exception)
+            ? $context['exception']
+            : null;
 
         $dt = (new DateTime())->format("Y-m-d\TH:i:s.v");
 
@@ -60,7 +62,9 @@ class Logger extends ConsoleLogger
     {
         $this->log(
             $result->hasError() ? self::ERROR : self::INFO,
-            "RunResult for run {$result->getRunId()}: status=" . ($result->isReady() ? "ready, data=" . json_encode($result->getData()) : "scheduled")
+            "RunResult for run {$result->getRunId()}: status="
+            . ($result->isReady() ? "ready, data="
+            . json_encode($result->getData()) : "scheduled")
         );
     }
 }

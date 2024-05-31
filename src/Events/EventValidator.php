@@ -11,7 +11,8 @@ class EventValidator
     {
         if (!in_array($event->getType(), $expectedTypes)) {
             throw new EventTypeMismatch(
-                "Event #{$event->getId()} type mismatch: got {$event->getType()}, but want one of [" . implode(",", $expectedTypes) . "]"
+                "Event #{$event->getId()} type mismatch: got {$event->getType()},"
+                . "but want one of [" . implode(",", $expectedTypes) . "]"
             );
         }
     }

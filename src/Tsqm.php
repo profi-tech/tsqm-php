@@ -28,7 +28,7 @@ use Tsqm\Tasks\Task;
 
 class Tsqm
 {
-    const GENERATOR_CB_LIMIT = 100;
+    public const GENERATOR_CB_LIMIT = 100;
 
     private ContainerInterface $container;
     private RunRepositoryInterface $runRepository;
@@ -193,7 +193,10 @@ class Tsqm
         // We are checking if this task was already completed (or crashed). If so — we just return the payload.
         $completionEvent = $this->eventRepository->getCompletionEvent($run->getId(), $task->getId());
         if ($completionEvent) {
-            $this->logger->debug("Task completed from cache", ['run' => $run, 'task' => $task, 'taskResult' => $completionEvent->getPayload()]);
+            $this->logger->debug(
+                "Task completed from cache",
+                ['run' => $run, 'task' => $task, 'taskResult' => $completionEvent->getPayload()]
+            );
             return $completionEvent->getPayload();
         }
 
@@ -265,13 +268,9 @@ class Tsqm
             $this->logger->debug("Task completed", ['run' => $run, 'task' => $task]);
 
             return $result;
-        }
-        // We propagate the StopTheRun exception to the top-leve performRun() method
-        catch (StopTheRun $e) {
+        } catch (StopTheRun $e) { // We propagate the StopTheRun exception to the top-leve performRun() method
             throw $e;
-        }
-        // Here we handle all the exceptions from the task code
-        catch (Exception $e) {
+        } catch (Exception $e) { // Here we handle all the exceptions from the task code
             // Checking the retry policy
             $retryAt = null;
             $retryPolicy = $task->getRetryPolicy();
@@ -287,22 +286,26 @@ class Tsqm
                     $e->__toString(),
                     UuidHelper::random(),
                 );
-                $this->logger->error("Task failed: " . $e->getMessage(), ['run' => $run, 'task' => $task, 'exception' => $e]);
+                $this->logger->error(
+                    "Task failed: " . $e->getMessage(),
+                    ['run' => $run, 'task' => $task, 'exception' => $e]
+                );
             }
 
             // This is ok — we wrote down a faile event and we are ready to retry
             if ($retryAt) {
-                $this->logger->debug("Task failover scheduled for " . $retryAt->format('Y-m-d H:i:s.v'), ['run' => $run, 'task' => $task]);
+                $this->logger->debug(
+                    "Task failover scheduled for " . $retryAt->format('Y-m-d H:i:s.v'),
+                    ['run' => $run, 'task' => $task]
+                );
                 $run = $this->runRepository->updateRunAt($run->getId(), $retryAt);
                 $this->runQueue->enqueue($run);
                 throw new StopTheRun();
-            }
-            // For the tasks which are processed withing generator we need to throw an exception to generator using Generator::throw()
-            elseif ($inGenerator) {
+            } elseif ($inGenerator) {
+                // For the tasks which are processed withing generator
+                // we need to throw an exception to generator using Generator::throw()
                 return new ThrowMe($e);
-            }
-            // Otherwise we just crash
-            else {
+            } else { // Otherwise we just crash
                 throw new CrashTheRun("Run " . $run->getId() . " crashed", 0, $e);
             }
         }

@@ -44,7 +44,11 @@ class RunSchedulerTest extends TestCase
         $run = $this->tsqm->getRun($run->getId());
 
         $this->assertTrue(
-            $this->assertHelper->isDateTimeEqualsWithDelta($run->getRunAt(), (new DateTime())->modify('+1500 milliseconds'), 10)
+            $this->assertHelper->isDateTimeEqualsWithDelta(
+                $run->getRunAt(),
+                (new DateTime())->modify('+1500 milliseconds'),
+                10
+            )
         );
     }
 

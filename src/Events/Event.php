@@ -7,10 +7,10 @@ use Tsqm\Helpers\SerializationHelper;
 
 class Event
 {
-    const TYPE_TASK_STARTED = 'taskStarted';
-    const TYPE_TASK_FAILED = 'taskFailed';
-    const TYPE_TASK_COMPLETED = 'taskCompleted';
-    const TYPE_TASK_CRASHED = 'taskCrashed';
+    public const TYPE_TASK_STARTED = 'taskStarted';
+    public const TYPE_TASK_FAILED = 'taskFailed';
+    public const TYPE_TASK_COMPLETED = 'taskCompleted';
+    public const TYPE_TASK_CRASHED = 'taskCrashed';
 
     private ?int $id;
     private string $runId;
