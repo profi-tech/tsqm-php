@@ -7,7 +7,8 @@ use Exception;
 use PDO;
 use Tsqm\Errors\RepositoryError;
 use Tsqm\Helpers\PdoHelper;
-use Tsqm\Helpers\SerializationHelper;
+use Tsqm\Helpers\UuidHelper;
+use Tsqm\Tasks\Task;
 
 class RunRepository implements RunRepositoryInterface
 {
@@ -18,29 +19,36 @@ class RunRepository implements RunRepositoryInterface
         $this->pdo = $pdo;
     }
 
-    public function createRun(Run $run)
+    public function createRun(Task $task): Run
     {
+        $runId = UuidHelper::random();
+
         try {
             $res = $this->pdo->prepare("
-                INSERT INTO runs (id, created_at, scheduled_for, task, status)
-                VALUES(:id, :created_at, :scheduled_for, :task, :status)
+                INSERT INTO runs (id, created_at, run_at, task, status)
+                VALUES(:id, :created_at, :run_at, :task, :status)
             ");
             if (!$res) {
                 throw new Exception(PdoHelper::formatErrorInfo($this->pdo->errorInfo()));
             }
+
+            $createdAt = new DateTime();
+            $runAt = $task->getScheduledFor() ?: $createdAt;
             $res->execute([
-                'id' => $run->getId(),
-                'created_at' => $run->getCreatedAt()->format('Y-m-d H:i:s.u'),
-                'scheduled_for' => $run->getScheduledFor()->format('Y-m-d H:i:s.v'),
-                'task' => SerializationHelper::serialize($run->getTask()),
-                'status' => $run->getStatus(),
+                'id' => $runId,
+                'created_at' => $createdAt->format('Y-m-d H:i:s.v'),
+                'run_at' => $runAt->format('Y-m-d H:i:s.v'),
+                'task' => serialize($task),
+                'status' => Run::STATUS_CREATED,
             ]);
+
+            return $this->getRun($runId);
         } catch (Exception $e) {
             throw new RepositoryError("Failed to create run: " . $e->getMessage(), 0, $e);
         }
     }
 
-    public function getRun(string $runId): ?Run
+    public function getRun(string $runId): Run
     {
         try {
             $res = $this->pdo->prepare("SELECT * FROM runs WHERE id=?");
@@ -50,7 +58,11 @@ class RunRepository implements RunRepositoryInterface
 
             $res->execute([$runId]);
             $data = $res->fetch(PDO::FETCH_ASSOC);
-            return $data ? Run::fromArray($data) : null;
+            if (!$data) {
+                throw new RepositoryError("Run not found: $runId");
+            }
+
+            return Run::fromArray($data);
         } catch (Exception $e) {
             throw new RepositoryError("Failed to get run: " . $e->getMessage(), 0, $e);
         }
@@ -75,32 +87,33 @@ class RunRepository implements RunRepositoryInterface
         }
     }
 
-    public function updateRunScheduledFor(string $runId, DateTime $scheduledFor)
+    public function updateRunAt(string $runId, DateTime $runAt): Run
     {
         try {
             $res = $this->pdo->prepare("
-                UPDATE runs SET scheduled_for = :scheduled_for WHERE id = :id
+                UPDATE runs SET run_at = :run_at WHERE id = :id
             ");
             if (!$res) {
                 throw new Exception(PdoHelper::formatErrorInfo($this->pdo->errorInfo()));
             }
-
             $res->execute([
                 'id' => $runId,
-                'scheduled_for' => $scheduledFor->format('Y-m-d H:i:s.v'),
+                'run_at' => $runAt->format('Y-m-d H:i:s.v'),
             ]);
+            
+            return $this->getRun($runId);
         } catch (Exception $e) {
             throw new RepositoryError("Failed to update run scheduled for: " . $e->getMessage(), 0, $e);
         }
     }
 
-    public function getScheduledRunIds(DateTime $until, int $limit): array
+    public function getNextRunIds(DateTime $until, int $limit): array
     {
         try {
             $res = $this->pdo->prepare("
                 SELECT id FROM runs
-                WHERE scheduled_for <= :until AND status != :status
-                ORDER BY scheduled_for ASC
+                WHERE run_at <= :until AND status != :status
+                ORDER BY run_at ASC
                 LIMIT $limit
             ");
             if (!$res) {

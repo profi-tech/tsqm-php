@@ -8,7 +8,7 @@ use PDO;
 use Psr\Container\ContainerInterface;
 use Tests\Helpers\AssertHelper;
 use Tsqm\Tsqm;
-use Tsqm\TsqmConfig;
+use Tsqm\Config;
 
 class TestCase extends \PHPUnit\Framework\TestCase
 {
@@ -30,7 +30,7 @@ class TestCase extends \PHPUnit\Framework\TestCase
         $this->container = Container::create();
 
         $this->tsqm = new Tsqm(
-            (new TsqmConfig())
+            (new Config())
                 ->setContainer($this->container)
                 ->setPdo($this->pdo)
         );

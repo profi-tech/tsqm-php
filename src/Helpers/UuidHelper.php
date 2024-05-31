@@ -10,7 +10,7 @@ class UuidHelper
 
     public static function named(string $value): string
     {
-        return Uuid::uuid5(self::UUID_NAMESPACE, $value);
+        return Uuid::uuid5(self::UUID_NAMESPACE, $value)->toString();
     }
 
     public static function random(): string

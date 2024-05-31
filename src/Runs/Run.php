@@ -4,7 +4,6 @@ namespace Tsqm\Runs;
 
 use DateTime;
 use Tsqm\Tasks\Task;
-use Tsqm\Helpers\SerializationHelper;
 
 class Run
 {
@@ -14,20 +13,20 @@ class Run
 
     private string $id;
     private DateTime $createdAt;
-    private DateTime $scheduledFor;
+    private DateTime $runAt;
     private Task $task;
     private string $status;
 
     public function __construct(
         string $id,
         DateTime $createdAt,
-        DateTime $scheduledFor,
+        DateTime $runAt,
         Task $task,
         string $status
     ) {
         $this->id = $id;
         $this->createdAt = $createdAt;
-        $this->scheduledFor = $scheduledFor;
+        $this->runAt = $runAt;
         $this->task = $task;
         $this->status = $status;
     }
@@ -42,9 +41,9 @@ class Run
         return $this->createdAt;
     }
 
-    public function getScheduledFor(): DateTime
+    public function getRunAt(): DateTime
     {
-        return $this->scheduledFor;
+        return $this->runAt;
     }
 
     public function getTask(): Task
@@ -59,12 +58,11 @@ class Run
 
     public static function fromArray(array $data): Run
     {
-        $task = SerializationHelper::unserialize($data['task']);
         return new Run(
             $data['id'],
             new DateTime($data['created_at']),
-            $data['scheduled_for'] ? new DateTime($data['scheduled_for']) : null,
-            $task,
+            new DateTime($data['run_at']),
+            unserialize($data['task']),
             $data['status'],
         );
     }

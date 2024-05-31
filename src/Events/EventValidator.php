@@ -5,7 +5,7 @@ namespace Tsqm\Events;
 use Tsqm\Errors\EventTypeMismatch;
 use Tsqm\Errors\TaskIdMismatch;
 
-class EventValidator implements EventValidatorInterface
+class EventValidator
 {
     public function validateEventType(Event $event, array $expectedTypes)
     {

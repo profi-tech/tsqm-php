@@ -6,6 +6,7 @@ use DateTime;
 use Exception;
 use Symfony\Component\Console\Logger\ConsoleLogger;
 use Symfony\Component\Console\Output\ConsoleOutput;
+use Tsqm\Result;
 use Tsqm\Runs\Run;
 use Tsqm\Runs\RunResult;
 use Tsqm\Tasks\Task;
@@ -35,8 +36,7 @@ class Logger extends ConsoleLogger
         if ($task) {
             $data['task'] = [
                 'id' => $task->getId(),
-                'className' => $task->getClassName(),
-                'method' => $task->getMethod(),
+                'className' => $task->getName(),
                 'args' => $task->getArgs(),
             ];
             if (!is_null($taskResult)) {
@@ -57,7 +57,7 @@ class Logger extends ConsoleLogger
         parent::log($level, "$dt\n— $message\n", $context);
     }
 
-    public function logRunResult(RunResult $result)
+    public function logRunResult(Result $result)
     {
         $this->log(
             $result->hasError() ? self::ERROR : self::INFO,

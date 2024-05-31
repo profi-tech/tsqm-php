@@ -97,7 +97,7 @@ class RunSchedulerTest extends TestCase
         $run2 = $this->tsqm->createRun((new RunOptions)->setTask($task));
         $run3 = $this->tsqm->createRun((new RunOptions)->setTask($task));
 
-        $runIds = $this->tsqm->getScheduledRunIds(new DateTime, 10);
+        $runIds = $this->tsqm->getNextRunIds(new DateTime, 10);
         $this->assertCount(3, $runIds);
         $this->assertEquals([$run1->getId(), $run2->getId(), $run3->getId()], $runIds);
     }
@@ -110,7 +110,7 @@ class RunSchedulerTest extends TestCase
         $this->tsqm->createRun((new RunOptions)->setTask($task));
         $this->tsqm->createRun((new RunOptions)->setTask($task));
 
-        $runIds = $this->tsqm->getScheduledRunIds((new DateTime)->modify('- 10 second'), 10);
+        $runIds = $this->tsqm->getNextRunIds((new DateTime)->modify('- 10 second'), 10);
         $this->assertCount(0, $runIds);
     }
 
@@ -122,7 +122,7 @@ class RunSchedulerTest extends TestCase
         $run2 = $this->tsqm->createRun((new RunOptions)->setTask($task));
         $this->tsqm->createRun((new RunOptions)->setTask($task));
 
-        $runIds = $this->tsqm->getScheduledRunIds(new DateTime, 2);
+        $runIds = $this->tsqm->getNextRunIds(new DateTime, 2);
         $this->assertCount(2, $runIds);
         $this->assertEquals([$run1->getId(), $run2->getId()], $runIds);
     }

@@ -3,17 +3,16 @@
 namespace Examples\Commands;
 
 use Examples\Container;
+use Examples\Greeter\Callables\SimpleGreetWithRandomFail;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Examples\Helpers\DbHelper;
-use Tsqm\TsqmTasks;
 use Tsqm\Tsqm;
-use Tsqm\TsqmConfig;
-use Examples\Greeter\Greeter;
+use Tsqm\Config;
 use Examples\Logger;
-use Tsqm\Runs\RunOptions;
+use Tsqm\Tasks\RetryPolicy;
 use Tsqm\Tasks\Task;
 
 class HelloWorldSimpleCommand extends Command
@@ -36,26 +35,19 @@ class HelloWorldSimpleCommand extends Command
         $container = Container::create();
         $logger = new Logger();
         $tsqm = new Tsqm(
-            (new TsqmConfig())
+            (new Config())
                 ->setContainer($container)
                 ->setPdo(DbHelper::createPdoFromEnv())
                 ->setLogger($logger)
         );
 
-        /** @var Greeter */
-        $greeterTasks = new TsqmTasks(
-            $container->get(Greeter::class)
-        );
+        $simpleGreetWithRandomFail = $container->get(SimpleGreetWithRandomFail::class);
 
-        /** @var Task */
-        $task = $greeterTasks->simpleGreetWithRandomFail($input->getArgument("name"));
-        $task->setRetryPolicy(
-            $task->getRetryPolicy()->setMaxRetries(3)
-        );
-        $run = $tsqm->createRun(
-            (new RunOptions)
-                ->setTask($task)
-        );
+        $task = (new Task($simpleGreetWithRandomFail))
+            ->setArgs($input->getArgument("name"))
+            ->setRetryPolicy((new RetryPolicy())->setMaxRetries(3));
+
+        $run = $tsqm->createRun($task);
         $result = $tsqm->performRun($run);
         $logger->logRunResult($result);
 

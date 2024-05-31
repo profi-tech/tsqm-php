@@ -10,7 +10,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Tsqm\Tsqm;
-use Tsqm\TsqmConfig;
+use Tsqm\Config;
 
 class ListScheduledCommand extends Command
 {
@@ -25,15 +25,15 @@ class ListScheduledCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $container = Container::create();
-        $tsqm = new Tsqm((new TsqmConfig())
+        $tsqm = new Tsqm((new Config())
                 ->setContainer($container)
                 ->setPdo(DbHelper::createPdoFromEnv())
         );
 
-        $runIds = $tsqm->getScheduledRunIds(new DateTime(), $input->getOption("limit"));
+        $runIds = $tsqm->getNextRunIds(new DateTime(), $input->getOption("limit"));
         foreach ($runIds as $runId) {
             $run = $tsqm->getRun($runId);
-            $output->writeln($run->getId() . " scheduled for " . $run->getScheduledFor()->format("Y-m-d H:i:s.v"));
+            $output->writeln($run->getId() . " run at " . $run->getRunAt()->format("Y-m-d H:i:s.v"));
         }
 
         return self::SUCCESS;

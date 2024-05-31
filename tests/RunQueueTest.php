@@ -7,8 +7,8 @@ use Examples\Container;
 use Examples\Greeter\Greeter;
 use Tsqm\TsqmTasks;
 use Tsqm\Tsqm;
-use Tsqm\TsqmConfig;
-use Tsqm\Runs\Queue\RunQueueInterface;
+use Tsqm\Config;
+use Tsqm\Queue\QueueInterface;
 use Tsqm\Runs\Run;
 use Tsqm\Runs\RunOptions;
 use Tsqm\Tasks\Task;
@@ -26,9 +26,9 @@ class RunQueueTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->queue = $this->createMock(RunQueueInterface::class);
+        $this->queue = $this->createMock(QueueInterface::class);
         $this->tsqm = new Tsqm(
-            (new TsqmConfig)
+            (new Config)
                 ->setContainer(Container::create())
                 ->setPdo($this->pdo)
                 ->setRunQueue($this->queue)

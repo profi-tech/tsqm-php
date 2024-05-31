@@ -11,7 +11,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Tsqm\Tsqm;
-use Tsqm\TsqmConfig;
+use Tsqm\Config;
 
 class RunScheduledCommand extends Command
 {
@@ -28,12 +28,12 @@ class RunScheduledCommand extends Command
         $limit = (int)$input->getOption("limit");
         $container = Container::create();
         $logger = new Logger();
-        $tsqm = new Tsqm((new TsqmConfig())
+        $tsqm = new Tsqm((new Config())
                 ->setContainer($container)
                 ->setPdo(DbHelper::createPdoFromEnv())
         );
 
-        $runIds = $tsqm->getScheduledRunIds(new DateTime(), $limit);
+        $runIds = $tsqm->getNextRunIds(new DateTime(), $limit);
         $output->writeln("Run scheduled:");
         foreach ($runIds as $runId) {
             $run = $tsqm->getRun($runId);
