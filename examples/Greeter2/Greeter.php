@@ -56,34 +56,34 @@ class Greeter
 
     public function greet(string $name): Generator
     {
-        $valid = yield Task2::fromCallable($this->validateName)->setArgs($name);
+        $valid = yield (new Task2())->setCallable($this->validateName)->setArgs($name);
         if (!$valid) {
             return false;
         }
-        $greeting = yield Task2::fromCallable($this->createGreeting)->setArgs($name);
-        yield Task2::fromCallable($this->purchase)->setArgs($greeting);
+        $greeting = yield (new Task2())->setCallable($this->createGreeting)->setArgs($name);
+        yield (new Task2())->setCallable($this->purchase)->setArgs($greeting);
 
-        return yield Task2::fromCallable($this->sendGreeting)->setArgs($greeting);
+        return yield (new Task2())->setCallable($this->sendGreeting)->setArgs($greeting);
     }
 
     public function greetWithRandomFail(string $name): Generator
     {
-        $valid = yield Task2::fromCallable($this->validateName)->setArgs($name);
+        $valid = yield (new Task2())->setCallable($this->validateName)->setArgs($name);
         if (!$valid) {
             return false;
         }
 
-        $greeting = yield Task2::fromCallable($this->createGreeting)->setArgs($name);
+        $greeting = yield (new Task2())->setCallable($this->createGreeting)->setArgs($name);
         try {
-            yield Task2::fromCallable($this->purchaseWithRandomFail)
+            yield (new Task2())->setCallable($this->purchaseWithRandomFail)
                 ->setArgs($greeting)
                 ->setRetryPolicy((new RetryPolicy2())->setMaxRetries(3)->setMinInterval(10000));
         } catch (Exception $e) {
-            yield Task2::fromCallable($this->revertGreeting)->setArgs($greeting);
+            yield (new Task2())->setCallable($this->revertGreeting)->setArgs($greeting);
             return false;
         }
 
-        yield Task2::fromCallable($this->sendGreeting)->setArgs($greeting);
+        yield (new Task2())->setCallable($this->sendGreeting)->setArgs($greeting);
         return $greeting;
     }
 

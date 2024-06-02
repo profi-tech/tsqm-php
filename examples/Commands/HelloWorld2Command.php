@@ -45,7 +45,7 @@ class HelloWorld2Command extends Command
         );
 
         $greetWithRandomFail = $container->get(GreetWithRandomFail::class);
-        $task = Task2::fromCallable($greetWithRandomFail)->setArgs($input->getArgument("name"));
+        $task = (new Task2())->setCallable($greetWithRandomFail)->setArgs($input->getArgument("name"));
 
         $task = $runner->run($task);
 

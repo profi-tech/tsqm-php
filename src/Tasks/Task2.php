@@ -16,7 +16,7 @@ class Task2 implements JsonSerializable
     private ?DateTime $scheduledFor = null;
     private ?DateTime $startedAt = null;
     private ?DateTime $finishedAt = null;
-    private string $name;
+    private ?string $name = null;
     /** @var array<mixed> */
     private array $args = [];
     private ?RetryPolicy2 $retryPolicy = null;
@@ -24,92 +24,20 @@ class Task2 implements JsonSerializable
     private $result = null;
     private ?Throwable $error = null;
 
-    public static function fromCallable(object $callable): self
+    /**
+     * @param mixed $callable
+     * @return Task2
+     * @throws InvalidTask
+     */
+    public function setCallable(mixed $callable): self
     {
-        if (is_object($callable) && method_exists($callable, '__invoke')) {
-            return (new Task2())
-                ->setName(get_class($callable));
+        $is_invokable = is_object($callable) && method_exists($callable, '__invoke');
+        if ($is_invokable) {
+            $this->name = get_class($callable);
         } else {
-            throw new InvalidTask("Callable must be a string or an object with __invoke method");
+            throw new InvalidTask("Callable object with __invoke method");
         }
-    }
-
-    /**
-     * @param array<string, mixed> $data
-     */
-    public static function fromArray(array $data): self
-    {
-        $task = new self();
-        if (isset($data['id'])) {
-            $task->setId($data['id']);
-        }
-        if (isset($data['trans_id'])) {
-            $task->setTransId($data['trans_id']);
-        }
-        if (isset($data['created_at'])) {
-            $task->setCreatedAt(new DateTime($data['created_at']));
-        }
-        if (isset($data['scheduled_for'])) {
-            $task->setScheduledFor(new DateTime($data['scheduled_for']));
-        }
-        if (isset($data['started_at'])) {
-            $task->setStartedAt(new DateTime($data['started_at']));
-        }
-        if (isset($data['finished_at'])) {
-            $task->setFinishedAt(new DateTime($data['finished_at']));
-        }
-        if (isset($data['name'])) {
-            $task->setName($data['name']);
-        }
-        if (isset($data['args'])) {
-            $task->setArgs(SerializationHelper::unserialize($data['args']));
-        }
-        if (isset($data['retry_policy'])) {
-            $task->setRetryPolicy(RetryPolicy2::fromArray($data['retry_policy']));
-        }
-        if (isset($data['result'])) {
-            $task->setResult(SerializationHelper::unserialize($data['result']));
-        }
-        if (isset($data['error'])) {
-            $task->setError(SerializationHelper::unserialize($data['error']));
-        }
-
-        return $task;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function jsonSerialize()
-    {
-        return array_filter([
-            'id' => $this->id,
-            'trans_id' => $this->trans_id,
-            'created_at' => $this->createdAt ? $this->createdAt->format(DateTime::ATOM) : null,
-            'scheduled_for' => $this->scheduledFor ? $this->scheduledFor->format(DateTime::ATOM) : null,
-            'started_at' => $this->startedAt ? $this->startedAt->format(DateTime::ATOM) : null,
-            'finished_at' => $this->finishedAt ? $this->finishedAt->format(DateTime::ATOM) : null,
-            'name' => $this->name,
-            'args' => $this->args ?: null,
-            'retry_policy' => $this->retryPolicy,
-            'result' => $this->result,
-            'error' => $this->error ? [
-                'class' => get_class($this->error),
-                'message' => $this->error->getMessage(),
-                'code' => $this->error->getCode(),
-                'file' => $this->error->getFile(),
-                'line' => $this->error->getLine(),
-            ] : null,
-        ]);
-    }
-
-    public function getHash(): string
-    {
-        return md5(implode('::', [
-            $this->trans_id,
-            $this->name,
-            SerializationHelper::serialize($this->args),
-        ]));
+        return $this;
     }
 
     public function setId(int $id): self
@@ -253,5 +181,40 @@ class Task2 implements JsonSerializable
     public function getError(): ?Throwable
     {
         return $this->error;
+    }
+
+    public function getHash(): string
+    {
+        return md5(implode('::', [
+            $this->trans_id,
+            $this->name,
+            SerializationHelper::serialize($this->args),
+        ]));
+    }
+
+    /**
+     * @return mixed
+     */
+    public function jsonSerialize()
+    {
+        return array_filter([
+            'id' => $this->id,
+            'trans_id' => $this->trans_id,
+            'created_at' => $this->createdAt ? $this->createdAt->format(DateTime::ATOM) : null,
+            'scheduled_for' => $this->scheduledFor ? $this->scheduledFor->format(DateTime::ATOM) : null,
+            'started_at' => $this->startedAt ? $this->startedAt->format(DateTime::ATOM) : null,
+            'finished_at' => $this->finishedAt ? $this->finishedAt->format(DateTime::ATOM) : null,
+            'name' => $this->name,
+            'args' => $this->args ?: null,
+            'retry_policy' => $this->retryPolicy,
+            'result' => $this->result,
+            'error' => $this->error ? [
+                'class' => get_class($this->error),
+                'message' => $this->error->getMessage(),
+                'code' => $this->error->getCode(),
+                'file' => $this->error->getFile(),
+                'line' => $this->error->getLine(),
+            ] : null,
+        ]);
     }
 }
