@@ -72,7 +72,11 @@ class Runner
             return $task;
         }
 
-        $task->setStartedAt(new DateTime());
+        if (is_null($task->getStartedAt())) {
+            $task->setStartedAt(new DateTime());
+        } else {
+            $task->incRetries();
+        }
         $this->repository->updateTask($task);
 
         try {
@@ -115,11 +119,22 @@ class Runner
             $this->repository->updateTask($task);
             return $task;
         } catch (Exception $e) {
-            // @todo handle retry policy
-            $task
-                ->setFinishedAt(new DateTime())
-                ->setError($e);
-            $this->logger->debug("Task failed", ['task' => $task]);
+            $task->setError($e);
+
+            $retryAt = null;
+            $retryPolicy = $task->getRetryPolicy();
+            if ($retryPolicy) {
+                $retryAt = $retryPolicy->getRetryAt($task->getRetries());
+            }
+
+            if (!is_null($retryAt)) {
+                $task->setScheduledFor($retryAt);
+                $this->logger->debug("Task failed and retry scheduled", ['task' => $task]);
+            } else {
+                $task->setFinishedAt(new DateTime());
+                $this->logger->debug("Task failed", ['task' => $task]);
+            }
+
             $this->repository->updateTask($task);
             return $task;
         }

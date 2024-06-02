@@ -37,10 +37,10 @@ class RetryPolicy2 implements JsonSerializable
 
     public function getRetryAt(int $retriesSoFar): ?DateTime
     {
-        if ($retriesSoFar >= $this->getMaxRetries()) {
-            return null;
-        } else {
+        if ($retriesSoFar < $this->getMaxRetries()) {
             return (new DateTime())->modify('+' . $this->getMinInterval() . ' milliseconds');
+        } else {
+            return null;
         }
     }
 

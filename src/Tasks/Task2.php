@@ -19,10 +19,11 @@ class Task2 implements JsonSerializable
     private ?string $name = null;
     /** @var array<mixed> */
     private array $args = [];
-    private ?RetryPolicy2 $retryPolicy = null;
     /** @var mixed */
     private $result = null;
     private ?Throwable $error = null;
+    private ?RetryPolicy2 $retryPolicy = null;
+    private int $retries = 0;
 
     /**
      * @param mixed $callable
@@ -139,17 +140,6 @@ class Task2 implements JsonSerializable
         return $this->args;
     }
 
-    public function setRetryPolicy(RetryPolicy2 $retryPolicy): self
-    {
-        $this->retryPolicy = $retryPolicy;
-        return $this;
-    }
-
-    public function getRetryPolicy(): ?RetryPolicy2
-    {
-        return $this->retryPolicy;
-    }
-
     /**
      * @param mixed $result
      */
@@ -181,6 +171,28 @@ class Task2 implements JsonSerializable
     public function getError(): ?Throwable
     {
         return $this->error;
+    }
+
+    public function setRetryPolicy(RetryPolicy2 $retryPolicy): self
+    {
+        $this->retryPolicy = $retryPolicy;
+        return $this;
+    }
+
+    public function getRetryPolicy(): ?RetryPolicy2
+    {
+        return $this->retryPolicy;
+    }
+
+    public function incRetries(): self
+    {
+        $this->retries++;
+        return $this;
+    }
+
+    public function getRetries(): int
+    {
+        return $this->retries;
     }
 
     public function getHash(): string

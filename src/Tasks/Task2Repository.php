@@ -13,6 +13,9 @@ use Tsqm\Tasks\Task2;
 
 class Task2Repository
 {
+    private const MILISECONDS_TS = 'Y-m-d H:i:s.v';
+    private const MICROSECONDS_TS = 'Y-m-d H:i:s.u';
+
     private PDO $pdo;
 
     public function __construct(PDO $pdo)
@@ -33,11 +36,15 @@ class Task2Repository
 
             $res->execute([
                 'trans_id' => $task->getTransId(),
-                'created_at' => $task->getCreatedAt()->format('Y-m-d H:i:s.v'),
-                'scheduled_for' => $task->getScheduledFor()->format('Y-m-d H:i:s.v'),
+                'created_at' => $task->getCreatedAt()->format(self::MICROSECONDS_TS),
+                'scheduled_for' => $task->getScheduledFor()->format(self::MILISECONDS_TS),
                 'name' => $task->getName(),
-                'args' => $task->getArgs() ? SerializationHelper::serialize($task->getArgs()) : null,
-                'retry_policy' => $task->getRetryPolicy() ? json_encode($task->getRetryPolicy()) : null,
+                'args' => $task->getArgs()
+                    ? SerializationHelper::serialize($task->getArgs())
+                    : null,
+                'retry_policy' => $task->getRetryPolicy()
+                    ? json_encode($task->getRetryPolicy())
+                    : null,
                 'hash' => $task->getHash(),
             ]);
 
@@ -61,7 +68,8 @@ class Task2Repository
                 started_at=:started_at,
                 finished_at=:finished_at,
                 result=:result,
-                error=:error
+                error=:error,
+                retries=:retries
             WHERE id = :id 
         ");
         if (!$res) {
@@ -70,11 +78,22 @@ class Task2Repository
 
         $res->execute([
             'id' => $task->getId(),
-            'started_at' => $task->getStartedAt() ? $task->getStartedAt()->format('Y-m-d H:i:s.v') : null,
-            'scheduled_for' => $task->getScheduledFor() ? $task->getScheduledFor()->format('Y-m-d H:i:s.v') : null,
-            'finished_at' => $task->getFinishedAt() ? $task->getFinishedAt()->format('Y-m-d H:i:s.v') : null,
-            'result' => !is_null($task->getResult()) ? SerializationHelper::serialize($task->getResult()) : null,
-            'error' => $task->getError() ? SerializationHelper::serialize($task->getError()) : null,
+            'started_at' => $task->getStartedAt()
+                ? $task->getStartedAt()->format(self::MICROSECONDS_TS)
+                : null,
+            'scheduled_for' => $task->getScheduledFor()
+                ? $task->getScheduledFor()->format(self::MILISECONDS_TS)
+                : null,
+            'finished_at' => $task->getFinishedAt()
+                ? $task->getFinishedAt()->format(self::MICROSECONDS_TS)
+                : null,
+            'result' => !is_null($task->getResult())
+                ? SerializationHelper::serialize($task->getResult())
+                : null,
+            'error' => $task->getError()
+                ? SerializationHelper::serialize($task->getError())
+                : null,
+            'retries' => $task->getRetries(),
         ]);
     }
 }
