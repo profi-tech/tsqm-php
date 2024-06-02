@@ -4,18 +4,24 @@ namespace Examples;
 
 use Psr\Container\ContainerInterface;
 use DI\ContainerBuilder;
-use Examples\Greeter\Validator;
-use Examples\Greeter\Greeter;
-use Examples\Greeter\Messenger;
-use Examples\Greeter\Purchaser;
-use Examples\Greeter\Repository;
-use Examples\Greeter\Reverter;
+use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
+use Psr\Log\LoggerInterface;
 
 class Container
 {
     public static function create(): ContainerInterface
     {
         return (new ContainerBuilder())
+            ->addDefinitions([
+                LoggerInterface::class => function () {
+                    $logger = new Logger('examples');
+                    $handler = new StreamHandler('php://stdout');
+                    $handler->setFormatter(new LoggerFormatter());
+                    $logger->pushHandler($handler);
+                    return $logger;
+                }
+            ])
             ->useAutowiring(true)
             ->build();
     }

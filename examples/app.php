@@ -14,7 +14,7 @@ $app->add(new Examples\Commands\RunOneCommand());
 $app->add(new Examples\Commands\ListScheduledCommand());
 $app->add(new Examples\Commands\RunScheduledCommand());
 
-$app->add(new Examples\Commands\HelloWorldCommand());
+$app->add(new Examples\Commands\HelloWorld2Command());
 $app->add(new Examples\Commands\HelloWorldSimpleCommand());
 
 $app->run();
