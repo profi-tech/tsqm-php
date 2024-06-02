@@ -16,7 +16,7 @@ use Tsqm\Tasks\Task2;
 
 class Runner
 {
-    private int $maxChilds = 100;
+    private const GENERATOR_LIMIT = 1000;
     private ContainerInterface $container;
     private Task2Repository $repository;
     private LoggerInterface $logger;
@@ -33,19 +33,12 @@ class Runner
 
     public function run(Task2 $task): Task2
     {
-        static $childCount;
-
         $this->logger->debug("Start task", ['task' => $task]);
 
         if (is_null($task->getTransId())) {
             $this->logger->debug("Create transaction", ['task' => $task]);
-            $childCount = 0;
             $trans_id = UuidHelper::random();
             $task->setTransId($trans_id);
-        }
-
-        if ($childCount++ >= $this->maxChilds) {
-            throw new ToManyTasks("To many tasks in transaction: $childCount");
         }
 
         if (!$this->container->has($task->getName())) {
@@ -85,8 +78,12 @@ class Runner
 
             if ($result instanceof Generator) {
                 $this->logger->debug("Start generator", ['task' => $task]);
+                $generated = 0;
                 $generator = $result;
                 while (true) {
+                    if ($generated++ >= self::GENERATOR_LIMIT) {
+                        throw new ToManyTasks("To many tasks in generator: $generated");
+                    }
                     if ($generator->valid()) {
                         $childTask = $generator->current();
                         if (!$childTask instanceof Task2) {
