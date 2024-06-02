@@ -217,6 +217,55 @@ class Task2 implements JsonSerializable
     }
 
     /**
+     * @param array<string, mixed> $data
+     */
+    public static function fromArray(array $data): self
+    {
+        $task = new self();
+        if (isset($data['id'])) {
+            $task->setId((int)$data['id']);
+        }
+        if (isset($data['parent_id'])) {
+            $task->setParentId((int)$data['parent_id']);
+        }
+        if (isset($data['trans_id'])) {
+            $task->setTransId($data['trans_id']);
+        }
+        if (isset($data['created_at'])) {
+            $task->setCreatedAt(new DateTime($data['created_at']));
+        }
+        if (isset($data['scheduled_for'])) {
+            $task->setScheduledFor(new DateTime($data['scheduled_for']));
+        }
+        if (isset($data['started_at'])) {
+            $task->setStartedAt(new DateTime($data['started_at']));
+        }
+        if (isset($data['finished_at'])) {
+            $task->setFinishedAt(new DateTime($data['finished_at']));
+        }
+        if (isset($data['name'])) {
+            $task->setName($data['name']);
+        }
+        if (isset($data['args'])) {
+            $task->setArgs(SerializationHelper::unserialize($data['args']));
+        }
+        if (isset($data['result'])) {
+            $task->setResult(SerializationHelper::unserialize($data['result']));
+        }
+        if (isset($data['error'])) {
+            $task->setError(SerializationHelper::unserialize($data['error']));
+        }
+        if (isset($data['retry_policy'])) {
+            $task->setRetryPolicy(RetryPolicy2::fromArray(json_decode($data['retry_policy'], true)));
+        }
+        if (isset($data['retried'])) {
+            $task->retried = $data['retried'];
+        }
+
+        return $task;
+    }
+
+    /**
      * @return mixed
      */
     public function jsonSerialize()
@@ -231,8 +280,6 @@ class Task2 implements JsonSerializable
             'finished_at' => $this->finishedAt ? $this->finishedAt->format(DateTime::ATOM) : null,
             'name' => $this->name,
             'args' => $this->args ?: null,
-            'retry_policy' => $this->retryPolicy,
-            'retried' => $this->retried,
             'result' => $this->result,
             'error' => $this->error ? [
                 'class' => get_class($this->error),
@@ -241,6 +288,8 @@ class Task2 implements JsonSerializable
                 'file' => $this->error->getFile(),
                 'line' => $this->error->getLine(),
             ] : null,
+            'retry_policy' => $this->retryPolicy,
+            'retried' => $this->retried,
         ];
     }
 }

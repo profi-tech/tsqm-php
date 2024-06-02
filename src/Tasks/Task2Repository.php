@@ -6,6 +6,7 @@ use DateTime;
 use Exception;
 use Generator;
 use PDO;
+use PDOException;
 use Tsqm\Errors\RepositoryError;
 use Tsqm\Helpers\PdoHelper;
 use Tsqm\Helpers\SerializationHelper;
@@ -64,6 +65,7 @@ class Task2Repository
 
         $res = $this->pdo->prepare("
             UPDATE tasks SET 
+                parent_id=:parent_id,
                 scheduled_for=:scheduled_for,
                 started_at=:started_at,
                 finished_at=:finished_at,
@@ -78,6 +80,7 @@ class Task2Repository
 
         $res->execute([
             'id' => $task->getId(),
+            'parent_id' => $task->getParentId(),
             'started_at' => $task->getStartedAt()
                 ? $task->getStartedAt()->format(self::MICROSECONDS_TS)
                 : null,
@@ -95,5 +98,27 @@ class Task2Repository
                 : null,
             'retried' => $task->getRetried(),
         ]);
+    }
+
+    /**
+     * @param int $parentId
+     * @return array<Task2>
+     * @throws Exception
+     * @throws PDOException
+     */
+    public function getTasksByParentId(int $parentId): array
+    {
+        $tasks = [];
+        $res = $this->pdo->prepare("SELECT * FROM tasks WHERE parent_id = :parent_id ORDER BY id");
+        if (!$res) {
+            throw new Exception(PdoHelper::formatErrorInfo($this->pdo->errorInfo()));
+        }
+        $res->execute(['parent_id' => $parentId]);
+
+        while ($row = $res->fetch(PDO::FETCH_ASSOC)) {
+            $tasks[] = Task2::fromArray($row);
+        }
+
+        return $tasks;
     }
 }

@@ -9,6 +9,7 @@ use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use Tsqm\Errors\InvalidGeneratorItem;
 use Tsqm\Errors\TaskClassDefinitionNotFound;
+use Tsqm\Errors\TaskHashMismatch;
 use Tsqm\Errors\ToManyTasks;
 use Tsqm\Helpers\UuidHelper;
 use Tsqm\Tasks\Task2Repository;
@@ -34,6 +35,11 @@ class Runner
     public function run(Task2 $task): Task2
     {
         $this->logger->debug("Start task", ['task' => $task]);
+
+        if ($task->isFinished()) {
+            $this->logger->debug("Task already finished", ['task' => $task]);
+            return $task;
+        }
 
         if (is_null($task->getTransId())) {
             $this->logger->debug("Create transaction", ['task' => $task]);
@@ -77,6 +83,8 @@ class Runner
             $result = call_user_func($callable, ...$task->getArgs());
 
             if ($result instanceof Generator) {
+                $savedTasks = $this->repository->getTasksByParentId($task->getId());
+
                 $this->logger->debug("Start generator", ['task' => $task]);
                 $generated = 0;
                 $generator = $result;
@@ -85,18 +93,31 @@ class Runner
                         throw new ToManyTasks("To many tasks in generator: $generated");
                     }
                     if ($generator->valid()) {
-                        $childTask = $generator->current();
-                        if (!$childTask instanceof Task2) {
+                        $generatedTask = $generator->current();
+                        if (!$generatedTask instanceof Task2) {
                             throw new InvalidGeneratorItem("Generator item is not a task instance");
                         }
 
-                        $childTask->setTransId($task->getTransId());
-                        $childTask = $this->run($childTask);
-                        if ($childTask->isFinished()) {
-                            if ($childTask->hasError()) {
-                                $generator->throw($childTask->getError());
+                        $savedTask = current($savedTasks);
+                        if ($savedTask instanceof Task2) {
+                            if ($savedTask->getHash() != $generatedTask->getHash()) {
+                                throw new TaskHashMismatch();
+                            }
+                            $generatedTask = $savedTask;
+                            next($savedTasks);
+                        } else {
+                            $generatedTask
+                                ->setParentId($task->getId())
+                                ->setTransId($task->getTransId());
+                        }
+
+                        $generatedTask = $this->run($generatedTask);
+
+                        if ($generatedTask->isFinished()) {
+                            if ($generatedTask->hasError()) {
+                                $generator->throw($generatedTask->getError());
                             } else {
-                                $generator->send($childTask->getResult());
+                                $generator->send($generatedTask->getResult());
                             }
                         } else {
                             return $task;
