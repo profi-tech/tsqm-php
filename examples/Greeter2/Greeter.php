@@ -73,7 +73,10 @@ class Greeter
             return false;
         }
 
-        $greeting = yield (new Task2())->setCallable($this->createGreeting)->setArgs($name);
+        $greeting = yield (new Task2())
+            ->setCallable($this->createGreeting)
+            ->setArgs($name);
+
         try {
             yield (new Task2())->setCallable($this->purchaseWithRandomFail)
                 ->setArgs($greeting)

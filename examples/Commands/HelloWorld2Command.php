@@ -2,6 +2,8 @@
 
 namespace Examples\Commands;
 
+use DateInterval;
+use DateTime;
 use Examples\Container;
 use Examples\Greeter2\Callables\GreetWithRandomFail;
 use Symfony\Component\Console\Command\Command;
@@ -45,11 +47,13 @@ class HelloWorld2Command extends Command
         );
 
         $greetWithRandomFail = $container->get(GreetWithRandomFail::class);
-        $task = (new Task2())->setCallable($greetWithRandomFail)->setArgs($input->getArgument("name"));
+        $task = (new Task2())
+            ->setCallable($greetWithRandomFail)
+            ->setArgs($input->getArgument("name"));
 
         $task = $runner->run($task);
 
-        $logger->info("Task result", ['task' => $task]);
+        $logger->info("Final result", ['task' => $task]);
 
         return self::SUCCESS;
     }

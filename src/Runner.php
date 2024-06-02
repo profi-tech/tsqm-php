@@ -56,9 +56,6 @@ class Runner
         if (!is_callable($callable)) {
             throw new TaskClassDefinitionNotFound($task->getName() . " is not callable");
         }
-        if (!method_exists($callable, '__invoke')) {
-            throw new TaskClassDefinitionNotFound($task->getName() . " is not invokable");
-        }
 
         if (is_null($task->getId())) {
             $task->setCreatedAt(new DateTime());
@@ -70,9 +67,15 @@ class Runner
             $task = $this->repository->createTask($task);
         }
 
-        try {
-            $task->setStartedAt(new DateTime());
+        if ($task->getScheduledFor() > new DateTime()) {
+            $this->logger->debug("Task scheduled", ['task' => $task]);
+            return $task;
+        }
 
+        $task->setStartedAt(new DateTime());
+        $this->repository->updateTask($task);
+
+        try {
             $this->logger->debug("Start callable", ['task' => $task]);
             $result = call_user_func($callable, ...$task->getArgs());
 
@@ -88,10 +91,14 @@ class Runner
 
                         $childTask->setTransId($task->getTransId());
                         $childTask = $this->run($childTask);
-                        if ($childTask->hasError()) {
-                            $generator->throw($childTask->getError());
+                        if ($childTask->isFinished()) {
+                            if ($childTask->hasError()) {
+                                $generator->throw($childTask->getError());
+                            } else {
+                                $generator->send($childTask->getResult());
+                            }
                         } else {
-                            $generator->send($childTask->getResult());
+                            return $task;
                         }
                     } else {
                         $this->logger->debug("Generator finished", ['task' => $task]);
@@ -108,11 +115,10 @@ class Runner
             $this->repository->updateTask($task);
             return $task;
         } catch (Exception $e) {
-            // @todo implement retries via $generator->throw($childTask->getError());
+            // @todo handle retry policy
             $task
                 ->setFinishedAt(new DateTime())
                 ->setError($e);
-
             $this->logger->debug("Task failed", ['task' => $task]);
             $this->repository->updateTask($task);
             return $task;

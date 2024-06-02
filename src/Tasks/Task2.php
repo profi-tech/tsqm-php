@@ -29,7 +29,7 @@ class Task2 implements JsonSerializable
      * @return Task2
      * @throws InvalidTask
      */
-    public function setCallable(mixed $callable): self
+    public function setCallable($callable): self
     {
         $is_invokable = is_object($callable) && method_exists($callable, '__invoke');
         if ($is_invokable) {
@@ -197,7 +197,7 @@ class Task2 implements JsonSerializable
      */
     public function jsonSerialize()
     {
-        return array_filter([
+        return [
             'id' => $this->id,
             'trans_id' => $this->trans_id,
             'created_at' => $this->createdAt ? $this->createdAt->format(DateTime::ATOM) : null,
@@ -215,6 +215,6 @@ class Task2 implements JsonSerializable
                 'file' => $this->error->getFile(),
                 'line' => $this->error->getLine(),
             ] : null,
-        ]);
+        ];
     }
 }
