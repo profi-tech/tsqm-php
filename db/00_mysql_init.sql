@@ -43,7 +43,7 @@ CREATE TABLE `tasks` (
     `result` BLOB,
     `error` BLOB,
     `retry_policy` JSON,
-    `retries` INT UNSIGNED NOT NULL DEFAULT 0,
+    `retried` INT UNSIGNED NOT NULL DEFAULT 0,
     `hash` varchar(32) NOT NULL,
     PRIMARY KEY (`id`),
     KEY `idx_trans_id` (`trans_id`),

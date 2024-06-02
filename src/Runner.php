@@ -75,7 +75,7 @@ class Runner
         if (is_null($task->getStartedAt())) {
             $task->setStartedAt(new DateTime());
         } else {
-            $task->incRetries();
+            $task->incRetried();
         }
         $this->repository->updateTask($task);
 
@@ -124,7 +124,7 @@ class Runner
             $retryAt = null;
             $retryPolicy = $task->getRetryPolicy();
             if ($retryPolicy) {
-                $retryAt = $retryPolicy->getRetryAt($task->getRetries());
+                $retryAt = $retryPolicy->getRetryAt($task->getRetried());
             }
 
             if (!is_null($retryAt)) {

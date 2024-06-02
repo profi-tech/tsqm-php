@@ -69,7 +69,7 @@ class Task2Repository
                 finished_at=:finished_at,
                 result=:result,
                 error=:error,
-                retries=:retries
+                retried=:retried
             WHERE id = :id 
         ");
         if (!$res) {
@@ -93,7 +93,7 @@ class Task2Repository
             'error' => $task->getError()
                 ? SerializationHelper::serialize($task->getError())
                 : null,
-            'retries' => $task->getRetries(),
+            'retried' => $task->getRetried(),
         ]);
     }
 }

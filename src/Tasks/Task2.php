@@ -11,6 +11,7 @@ use Tsqm\Helpers\SerializationHelper;
 class Task2 implements JsonSerializable
 {
     private ?int $id = null;
+    private int $parent_id = 0;
     private ?string $trans_id = null;
     private ?DateTime $createdAt = null;
     private ?DateTime $scheduledFor = null;
@@ -23,7 +24,7 @@ class Task2 implements JsonSerializable
     private $result = null;
     private ?Throwable $error = null;
     private ?RetryPolicy2 $retryPolicy = null;
-    private int $retries = 0;
+    private int $retried = 0;
 
     /**
      * @param mixed $callable
@@ -50,6 +51,17 @@ class Task2 implements JsonSerializable
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function setParentId(int $parent_id): self
+    {
+        $this->parent_id = $parent_id;
+        return $this;
+    }
+
+    public function getParentId(): int
+    {
+        return $this->parent_id;
     }
 
     public function setTransId(string $trans_id): self
@@ -184,15 +196,15 @@ class Task2 implements JsonSerializable
         return $this->retryPolicy;
     }
 
-    public function incRetries(): self
+    public function incRetried(): self
     {
-        $this->retries++;
+        $this->retried++;
         return $this;
     }
 
-    public function getRetries(): int
+    public function getRetried(): int
     {
-        return $this->retries;
+        return $this->retried;
     }
 
     public function getHash(): string
@@ -211,6 +223,7 @@ class Task2 implements JsonSerializable
     {
         return [
             'id' => $this->id,
+            'parent_id' => $this->parent_id,
             'trans_id' => $this->trans_id,
             'created_at' => $this->createdAt ? $this->createdAt->format(DateTime::ATOM) : null,
             'scheduled_for' => $this->scheduledFor ? $this->scheduledFor->format(DateTime::ATOM) : null,
@@ -219,6 +232,7 @@ class Task2 implements JsonSerializable
             'name' => $this->name,
             'args' => $this->args ?: null,
             'retry_policy' => $this->retryPolicy,
+            'retried' => $this->retried,
             'result' => $this->result,
             'error' => $this->error ? [
                 'class' => get_class($this->error),
