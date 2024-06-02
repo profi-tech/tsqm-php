@@ -3,6 +3,7 @@
 namespace Examples\Greeter2\Callables;
 
 use Examples\Greeter2\Validator;
+use Exception;
 
 class ValidateName
 {

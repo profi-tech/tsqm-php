@@ -2,8 +2,9 @@
 
 namespace Examples;
 
-use DateTime;
 use Monolog\Formatter\NormalizerFormatter;
+use Monolog\Logger;
+use Tsqm\Tasks\Task2;
 
 class LoggerFormatter extends NormalizerFormatter
 {
@@ -24,6 +25,14 @@ class LoggerFormatter extends NormalizerFormatter
             'message'    => $record['message'],
             'context'    => $record['context'],
         ];
+
+        if (isset($record['context']['task']) && $record['context']['task'] instanceof Task2) {
+            $task = $record['context']['task'];
+            if ($task->hasError()) {
+                $formatted['log.level'] = Logger::getLevelName(Logger::ERROR);
+            }
+        }
+
         return $this->toJson($formatted) . "\n";
     }
 }

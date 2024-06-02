@@ -1,14 +1,14 @@
 <?php
 
-namespace Tsqm\Runs;
+namespace Tsqm\Tasks;
 
 use DateTime;
 use Exception;
 use Generator;
 use PDO;
 use Tsqm\Errors\RepositoryError;
-use Tsqm\Errors\RunNotFound;
 use Tsqm\Helpers\PdoHelper;
+use Tsqm\Helpers\SerializationHelper;
 use Tsqm\Tasks\Task2;
 
 class Task2Repository
@@ -24,79 +24,57 @@ class Task2Repository
     {
         try {
             $res = $this->pdo->prepare("
-                INSERT INTO tasks (trans_id, created_at, scheduled_for, name, args, retry_policy)
-                VALUES(:trans__id, :created_at, :scheduled_for, :name, :args, :retry_policy)
+                INSERT INTO tasks (trans_id, created_at, scheduled_for, name, args, retry_policy, hash)
+                VALUES (:trans_id, :created_at, :scheduled_for, :name, :args, :retry_policy, :hash)
             ");
             if (!$res) {
                 throw new Exception(PdoHelper::formatErrorInfo($this->pdo->errorInfo()));
             }
 
-            $createdAt = new DateTime();
-            $scheduledFor = $task->getScheduledFor() ?: $createdAt;
-
             $res->execute([
                 'trans_id' => $task->getTransId(),
-                'created_at' => $createdAt->format('Y-m-d H:i:s.v'),
-                'scheduled_for' => $scheduledFor->format('Y-m-d H:i:s.v'),
+                'created_at' => $task->getCreatedAt()->format('Y-m-d H:i:s.v'),
+                'scheduled_for' => $task->getScheduledFor()->format('Y-m-d H:i:s.v'),
                 'name' => $task->getName(),
-                'args' => json_encode($task->getArgs()),
-                'retry_policy' => json_encode($task->getRetryPolicy()),
+                'args' => $task->getArgs() ? SerializationHelper::serialize($task->getArgs()) : null,
+                'retry_policy' => $task->getRetryPolicy() ? json_encode($task->getRetryPolicy()) : null,
+                'hash' => $task->getHash(),
             ]);
 
-            $taskId = (int)$this->pdo->lastInsertId();
-            return $this->getTask($taskId);
+            return $task->setId(
+                (int)$this->pdo->lastInsertId()
+            );
         } catch (Exception $e) {
             throw new RepositoryError("Failed to create run: " . $e->getMessage(), 0, $e);
         }
     }
 
-    public function getTask(int $taskId): Task2
+    public function updateTask(Task2 $task): void
     {
-        try {
-            $res = $this->pdo->prepare("SELECT * FROM tasks WHERE id=?");
-            if (!$res) {
-                throw new Exception(PdoHelper::formatErrorInfo($this->pdo->errorInfo()));
-            }
-
-            $res->execute([$taskId]);
-            $data = $res->fetch(PDO::FETCH_ASSOC);
-            if (!$data) {
-                throw new RunNotFound("Task not found: $taskId");
-            }
-            return Task2::fromArray($data);
-        } catch (Exception $e) {
-            throw new RepositoryError("Failed to get run: " . $e->getMessage(), 0, $e);
+        if (!$task->getId()) {
+            throw new RepositoryError("Task id is required for update");
         }
-    }
 
-    /**
-     * @param string $transId
-     * @return Generator<Task2>
-     */
-    public function getTransaction(string $transId): Generator
-    {
-        $res = $this->pdo->prepare("SELECT * FROM tasks WHERE trans_id=:trans_id ORDER BY id");
+        $res = $this->pdo->prepare("
+            UPDATE tasks SET 
+                scheduled_for=:scheduled_for,
+                started_at=:started_at,
+                finished_at=:finished_at,
+                result=:result,
+                error=:error
+            WHERE id = :id 
+        ");
         if (!$res) {
             throw new Exception(PdoHelper::formatErrorInfo($this->pdo->errorInfo()));
         }
 
-        $res->execute([$transId]);
-        while ($data = $res->fetch(PDO::FETCH_ASSOC)) {
-            yield Task2::fromArray($data);
-        }
-    }
-
-    public function updateStartedAt(Task2 $task, DateTime $startedAt): Task2
-    {
-        try {
-            $res = $this->pdo->prepare("UPDATE tasks SET started_at=? WHERE id=?");
-            if (!$res) {
-                throw new Exception(PdoHelper::formatErrorInfo($this->pdo->errorInfo()));
-            }
-            $res->execute([$startedAt, $task->getId()]);
-            return $this->getTask($task->getId());
-        } catch (Exception $e) {
-            throw new RepositoryError("Failed to update started_at: " . $e->getMessage(), 0, $e);
-        }
+        $res->execute([
+            'id' => $task->getId(),
+            'started_at' => $task->getStartedAt() ? $task->getStartedAt()->format('Y-m-d H:i:s.v') : null,
+            'scheduled_for' => $task->getScheduledFor() ? $task->getScheduledFor()->format('Y-m-d H:i:s.v') : null,
+            'finished_at' => $task->getFinishedAt() ? $task->getFinishedAt()->format('Y-m-d H:i:s.v') : null,
+            'result' => !is_null($task->getResult()) ? SerializationHelper::serialize($task->getResult()) : null,
+            'error' => $task->getError() ? SerializationHelper::serialize($task->getError()) : null,
+        ]);
     }
 }

@@ -90,11 +90,26 @@ class Task2 implements JsonSerializable
             'started_at' => $this->startedAt ? $this->startedAt->format(DateTime::ATOM) : null,
             'finished_at' => $this->finishedAt ? $this->finishedAt->format(DateTime::ATOM) : null,
             'name' => $this->name,
-            'args' => $this->args,
+            'args' => $this->args ?: null,
             'retry_policy' => $this->retryPolicy,
             'result' => $this->result,
-            'error' => $this->error,
+            'error' => $this->error ? [
+                'class' => get_class($this->error),
+                'message' => $this->error->getMessage(),
+                'code' => $this->error->getCode(),
+                'file' => $this->error->getFile(),
+                'line' => $this->error->getLine(),
+            ] : null,
         ]);
+    }
+
+    public function getHash(): string
+    {
+        return md5(implode('::', [
+            $this->trans_id,
+            $this->name,
+            SerializationHelper::serialize($this->args),
+        ]));
     }
 
     public function setId(int $id): self
@@ -156,6 +171,11 @@ class Task2 implements JsonSerializable
     {
         $this->finishedAt = $finishedAt;
         return $this;
+    }
+
+    public function isFinished(): bool
+    {
+        return !is_null($this->finishedAt);
     }
 
     public function getFinishedAt(): ?DateTime

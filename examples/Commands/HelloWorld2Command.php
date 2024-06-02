@@ -9,12 +9,9 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Examples\Helpers\DbHelper;
-use Tsqm\Tsqm;
-use Tsqm\Config;
-use Examples\Logger;
 use Psr\Log\LoggerInterface;
 use Tsqm\Runner;
-use Tsqm\Tasks\Task;
+use Tsqm\Tasks\Task2Repository;
 use Tsqm\Tasks\Task2;
 
 class HelloWorld2Command extends Command
@@ -37,8 +34,13 @@ class HelloWorld2Command extends Command
         $container = Container::create();
         $logger = $container->get(LoggerInterface::class);
 
+        $pdo = DbHelper::createPdoFromEnv();
+        $pdo->exec("delete from tasks;");
+        $repository = new Task2Repository($pdo);
+
         $runner = new Runner(
             $container,
+            $repository,
             $logger
         );
 
@@ -47,7 +49,7 @@ class HelloWorld2Command extends Command
 
         $task = $runner->run($task);
 
-        $logger->debug("Task finished with result", ['task' => $task]);
+        $logger->info("Task result", ['task' => $task]);
 
         return self::SUCCESS;
     }

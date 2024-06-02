@@ -4,6 +4,7 @@ namespace Examples\Greeter2\Callables;
 
 use Examples\Greeter2\Greeting;
 use Examples\Greeter2\Purchaser;
+use Exception;
 
 class PurchaseWithRandomFail
 {
