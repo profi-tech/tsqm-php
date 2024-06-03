@@ -28,6 +28,7 @@ class Greeter
     private Messenger $messenger;
 
     private int $failsCount = 0;
+    private int $runsCount = 0;
 
     public function __construct(
         Repository $repository,
@@ -166,6 +167,26 @@ class Greeter
         yield (new Task())->setCallable($this->createGreeting)->setArgs($name);
         yield (new Task())->setCallable($this->createGreeting)->setArgs($name);
         return true;
+    }
+
+    public function greetWithDeterministicNameFailure(string $name): Generator
+    {
+        if ($this->runsCount++ == 0) {
+            yield (new Task())->setCallable($this->purchase)->setArgs(new Greeting($name));
+            throw new Exception("Variable error", 1717426529);
+        } else {
+            yield (new Task())->setCallable($this->sendGreeting)->setArgs(new Greeting($name));
+        }
+    }
+
+    public function greetWithDeterministicArgsFailure(string $name): Generator
+    {
+        if ($this->runsCount++ == 0) {
+            yield (new Task())->setCallable($this->createGreeting)->setArgs($name . "1");
+            throw new Exception("Variable error", 1717426551);
+        } else {
+            yield (new Task())->setCallable($this->createGreeting)->setArgs($name . "2");
+        }
     }
 
     public function simpleGreet(string $name): Greeting

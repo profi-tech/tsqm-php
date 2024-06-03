@@ -7,12 +7,14 @@ use Exception;
 use Generator;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
+use Tsqm\Errors\DuplicatedTask;
 use Tsqm\Errors\InvalidGeneratorItem;
 use Tsqm\Errors\TaskClassDefinitionNotFound;
-use Tsqm\Errors\TaskHashMismatch;
+use Tsqm\Errors\DeterminismViolation;
 use Tsqm\Errors\ToManyTasks;
 use Tsqm\Errors\TaskNotFound;
 use Tsqm\Errors\TsqmError;
+use Tsqm\Helpers\PdoHelper;
 use Tsqm\Helpers\UuidHelper;
 use Tsqm\Tasks\TaskRepository;
 use Tsqm\Tasks\Task;
@@ -67,7 +69,15 @@ class Tsqm
                     $task->getCreatedAt()
                 );
             }
-            $task = $this->repository->createTask($task);
+            try {
+                $task = $this->repository->createTask($task);
+            } catch (Exception $e) {
+                if (PdoHelper::isIntegrityConstraintViolation($e)) {
+                    throw new DuplicatedTask("Task already started", 0, $e);
+                } else {
+                    throw $e;
+                }
+            }
         }
 
         if ($task->getScheduledFor() > new DateTime()) {
@@ -108,7 +118,7 @@ class Tsqm
                         $startedTask = current($startedTasks);
                         if ($startedTask && $startedTask instanceof Task) {
                             if ($startedTask->getHash() != $generatedTask->getHash()) {
-                                throw new TaskHashMismatch();
+                                throw new DeterminismViolation();
                             }
                             $generatedTask = $startedTask;
                             next($startedTasks);

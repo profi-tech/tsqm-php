@@ -8,6 +8,8 @@ use Examples\Greeter\Callables\GreetWith3Fails;
 use Examples\Greeter\Callables\GreetWith3PurchaseFailsAnd2Retries;
 use Examples\Greeter\Callables\GreetWith3PurchaseFailsAnd3Retries;
 use Examples\Greeter\Callables\GreetWith3PurchaseFailsAndRevert;
+use Examples\Greeter\Callables\GreetWithDeterministicArgsFailure;
+use Examples\Greeter\Callables\GreetWithDeterministicNameFailure;
 use Examples\Greeter\Callables\GreetWithDuplicatedTask;
 use Examples\Greeter\Callables\GreetWithFail;
 use Examples\Greeter\Callables\SimpleGreet;
@@ -39,6 +41,8 @@ class TestCase extends \PHPUnit\Framework\TestCase
     protected GreetWith3PurchaseFailsAnd2Retries $greetWith3PurchaseFailsAnd2Retries;
     protected GreetWith3PurchaseFailsAndRevert $greetWith3PurchaseFailsAndRevert;
     protected GreetWithDuplicatedTask $greetWithDuplicatedTask;
+    protected GreetWithDeterministicArgsFailure $greetWithDeterministicArgsFailure;
+    protected GreetWithDeterministicNameFailure $greetWithDeterministicNameFailure;
 
     protected function setUp(): void
     {
@@ -46,8 +50,7 @@ class TestCase extends \PHPUnit\Framework\TestCase
 
         $this->assertHelper = new AssertHelper();
 
-        //$pdo = new PDO("sqlite::memory:");
-        $pdo = new PDO("mysql:host=db;port=3306;dbname=tsqm", "root", "root");
+        $pdo = new PDO("sqlite::memory:");
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
         $dbHelper = new DBHelper($pdo);
@@ -74,5 +77,7 @@ class TestCase extends \PHPUnit\Framework\TestCase
         $this->greetWith3PurchaseFailsAnd2Retries = $this->container->get(GreetWith3PurchaseFailsAnd2Retries::class);
         $this->greetWith3PurchaseFailsAndRevert = $this->container->get(GreetWith3PurchaseFailsAndRevert::class);
         $this->greetWithDuplicatedTask = $this->container->get(GreetWithDuplicatedTask::class);
+        $this->greetWithDeterministicArgsFailure = $this->container->get(GreetWithDeterministicArgsFailure::class);
+        $this->greetWithDeterministicNameFailure = $this->container->get(GreetWithDeterministicNameFailure::class);
     }
 }

@@ -5,6 +5,8 @@ namespace Tests;
 use DateTime;
 use Examples\Greeter\GreeterError;
 use Examples\Greeter\Greeting;
+use Tsqm\Errors\DeterminismViolation;
+use Tsqm\Errors\DuplicatedTask;
 use Tsqm\Tasks\RetryPolicy;
 use Tsqm\Tasks\Task;
 
@@ -182,8 +184,39 @@ class TransactionFlowTest extends TestCase
         );
     }
 
-    public function testTransactionDeterminismViolation(): void
+    public function testDuplicatedTasks(): void
     {
-        $this->markTestIncomplete();
+        $task = (new Task())
+            ->setCallable($this->greetWithDuplicatedTask)
+            ->setArgs('John Doe');
+        $this->expectException(DuplicatedTask::class);
+        $this->expectExceptionMessage("Task already started");
+        $this->tsqm->run($task);
+    }
+
+    public function testTransactionNameDeterminismViolation(): void
+    {
+        $task = (new Task())
+            ->setCallable($this->greetWithDeterministicNameFailure)
+            ->setArgs('John Doe')
+            ->setRetryPolicy((new RetryPolicy())->setMaxRetries(1)->setMinInterval(0));
+
+        $task = $this->tsqm->run($task);
+        $task = $this->tsqm->getTaskByTransId($task->getTransId());
+        $this->expectException(DeterminismViolation::class);
+        $this->tsqm->run($task);
+    }
+
+    public function testTransactionArgsDeterminismViolation(): void
+    {
+        $task = (new Task())
+            ->setCallable($this->greetWithDeterministicArgsFailure)
+            ->setArgs('John Doe')
+            ->setRetryPolicy((new RetryPolicy())->setMaxRetries(1)->setMinInterval(0));
+
+        $task = $this->tsqm->run($task);
+        $task = $this->tsqm->getTaskByTransId($task->getTransId());
+        $this->expectException(DeterminismViolation::class);
+        $this->tsqm->run($task);
     }
 }
