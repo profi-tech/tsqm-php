@@ -10,7 +10,7 @@ use Examples\Commands\ResetDbCommand;
 use Examples\Commands\ListScheduledCommand;
 use Examples\Commands\RunTaskCommand;
 use Examples\Commands\RunScheduledCommand;
-use Examples\Helpers\DBHelper;
+use Examples\Helpers\DbHelper;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use PDO;

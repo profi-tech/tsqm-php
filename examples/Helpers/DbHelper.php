@@ -5,7 +5,7 @@ namespace Examples\Helpers;
 use Exception;
 use PDO;
 
-class DBHelper
+class DbHelper
 {
     private PDO $pdo;
 

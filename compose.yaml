@@ -9,7 +9,7 @@ services:
         - ./:/tsqm-php
         - ssh-keys:/root/.ssh
   db:
-    containe_name: tsqm-php-db
+    container_name: tsqm-php-db
     image: mysql:8
     platform: linux/x86_64
     ports:

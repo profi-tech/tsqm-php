@@ -16,7 +16,7 @@ use Examples\Greeter\GreetNested;
 use Examples\Greeter\SimpleGreet;
 use Examples\Greeter\SimpleGreetWith3Fails;
 use Examples\Greeter\SimpleGreetWithFail;
-use Examples\Helpers\DBHelper;
+use Examples\Helpers\DbHelper;
 use Monolog\Logger;
 use PDO;
 use Psr\Container\ContainerInterface;
@@ -59,7 +59,7 @@ class TestCase extends \PHPUnit\Framework\TestCase
         $pdo = new PDO($dsn, $username, $password);
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-        $dbHelper = new DBHelper($pdo);
+        $dbHelper = new DbHelper($pdo);
         $dbHelper->resetDb();
 
         $this->container = (new ContainerBuilder())
