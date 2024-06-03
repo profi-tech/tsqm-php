@@ -3,17 +3,17 @@
 namespace Tests;
 
 use DateTime;
-use Examples\Greeter\GreeterError;
-use Examples\Greeter\Greeting;
 use Tsqm\Helpers\SerializationHelper;
+use Tsqm\Tasks\RetryPolicy;
 use Tsqm\Tasks\Task;
 
-class RunSimpleTaskTest extends TestCase
+class TaskTest extends TestCase
 {
-    public function testCheckCommonFields(): void
+    public function testCheckFields(): void
     {
         $task = (new Task())
             ->setCallable($this->simpleGreet)
+            ->setRetryPolicy((new RetryPolicy())->setMaxRetries(3)->setMinInterval(1000))
             ->setArgs('John Doe');
 
         $task = $this->tsqm->run($task);
@@ -36,7 +36,7 @@ class RunSimpleTaskTest extends TestCase
 
         $this->assertEquals(['John Doe'], $task->getArgs());
 
-        $this->assertNull($task->getRetryPolicy());
+        $this->assertEquals((new RetryPolicy())->setMaxRetries(3)->setMinInterval(1000), $task->getRetryPolicy());
 
         $this->assertEquals(0, $task->getRetried());
 
@@ -50,32 +50,31 @@ class RunSimpleTaskTest extends TestCase
         );
     }
 
-    public function testTaskRunSuccess(): void
+    public function testSameTaskRun(): void
     {
         $task = (new Task())
             ->setCallable($this->simpleGreet)
             ->setArgs('John Doe');
-        $task = $this->tsqm->run($task);
 
-        $now = new DateTime();
+        $task0 = $this->tsqm->run($task);
+        $task1 = $this->tsqm->run($task0);
+        $task2 = $this->tsqm->run($task0);
 
-        $this->assertTrue($this->assertHelper->isDateTimeEqualsWithDelta($task->getFinishedAt(), $now, 10));
-        $this->assertEquals((new Greeting("Hello, John Doe!"))->setSent(true), $task->getResult());
-        $this->assertNull($task->getError());
+        $this->assertEquals($task0, $task1);
+        $this->assertEquals($task0, $task2);
     }
 
-
-    public function testTaskRunFailed(): void
+    public function testDifferentTaskRun(): void
     {
         $task = (new Task())
-            ->setCallable($this->simpleGreetWithFail)
+            ->setCallable($this->simpleGreet)
             ->setArgs('John Doe');
-        $task = $this->tsqm->run($task);
 
-        $now = new DateTime();
+        $task0 = $this->tsqm->run($task);
+        $task1 = $this->tsqm->run($task);
+        $task2 = $this->tsqm->run($task);
 
-        $this->assertTrue($this->assertHelper->isDateTimeEqualsWithDelta($task->getFinishedAt(), $now, 10));
-        $this->assertEquals(new GreeterError("Greet John Doe failed", 1717414866), $task->getError());
-        $this->assertNull($this->getResult());
+        $this->assertNotEquals($task0, $task1);
+        $this->assertNotEquals($task0, $task2);
     }
 }

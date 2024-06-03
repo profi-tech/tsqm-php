@@ -24,6 +24,11 @@ class RetryPolicy implements JsonSerializable
         return $this->maxRetries;
     }
 
+    /**
+     * Set the minimum time between retries in milliseconds
+     * @param int $minInterval
+     * @return RetryPolicy
+     */
     public function setMinInterval(int $minInterval): self
     {
         $this->minInterval = $minInterval;

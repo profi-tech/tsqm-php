@@ -36,6 +36,8 @@ class Tsqm
 
     public function run(Task $task): Task
     {
+        $task = clone $task; // Make task immutable
+
         $this->logger->debug("Start task", ['task' => $task]);
 
         if ($task->isFinished()) {
