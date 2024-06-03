@@ -2,7 +2,7 @@
 
 namespace Tsqm\Errors;
 
-class TransactionNotFound extends TsqmError
+class TaskNotFound extends TsqmError
 {
     public function __construct(string $transId)
     {

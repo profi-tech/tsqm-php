@@ -1,11 +1,11 @@
 <?php
 
-namespace Examples\Greeter2\Callables;
+namespace Examples\Greeter\Callables;
 
-use Examples\Greeter2\Greeter;
-use Examples\Greeter2\Greeting;
+use Examples\Greeter\Greeter;
+use Examples\Greeter\Greeting;
 
-class SimpleGreetWithRandomFail
+class SimpleGreetWithFail
 {
     private Greeter $greeter;
 
@@ -16,6 +16,6 @@ class SimpleGreetWithRandomFail
 
     public function __invoke(string $name): Greeting
     {
-        return $this->greeter->simpleGreetWithRandomFail($name);
+        return $this->greeter->simpleGreeterWithFail($name);
     }
 }

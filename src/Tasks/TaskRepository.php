@@ -4,15 +4,14 @@ namespace Tsqm\Tasks;
 
 use DateTime;
 use Exception;
-use Generator;
 use PDO;
 use PDOException;
 use Tsqm\Errors\RepositoryError;
 use Tsqm\Helpers\PdoHelper;
 use Tsqm\Helpers\SerializationHelper;
-use Tsqm\Tasks\Task2;
+use Tsqm\Tasks\Task;
 
-class Task2Repository
+class TaskRepository
 {
     private const MILISECONDS_TS = 'Y-m-d H:i:s.v';
     private const MICROSECONDS_TS = 'Y-m-d H:i:s.u';
@@ -24,7 +23,7 @@ class Task2Repository
         $this->pdo = $pdo;
     }
 
-    public function createTask(Task2 $task): Task2
+    public function createTask(Task $task): Task
     {
         try {
             $res = $this->pdo->prepare("
@@ -57,7 +56,7 @@ class Task2Repository
         }
     }
 
-    public function updateTask(Task2 $task): void
+    public function updateTask(Task $task): void
     {
         if (!$task->getId()) {
             throw new RepositoryError("Task id is required for update");
@@ -100,7 +99,7 @@ class Task2Repository
         ]);
     }
 
-    public function getTaskByTransId(string $transId): ?Task2
+    public function getTaskByTransId(string $transId): ?Task
     {
         $res = $this->pdo->prepare("SELECT * FROM tsqm_tasks WHERE trans_id=:trans_id ORDER BY id LIMIT 1");
         if (!$res) {
@@ -111,13 +110,13 @@ class Task2Repository
         if (!$row) {
             return null;
         }
-        return Task2::fromArray($row);
+        return Task::fromArray($row);
     }
 
     /**
      * @param DateTime $until
      * @param int $limit
-     * @return array<Task2>
+     * @return array<Task>
      * @throws RepositoryError
      */
     public function getScheduledTasks(DateTime $until, int $limit): array
@@ -139,7 +138,7 @@ class Task2Repository
 
             $tasks = [];
             while ($row = $res->fetch(PDO::FETCH_ASSOC)) {
-                $tasks[] = Task2::fromArray($row);
+                $tasks[] = Task::fromArray($row);
             }
 
             return $tasks;
@@ -150,7 +149,7 @@ class Task2Repository
 
     /**
      * @param int $parentId
-     * @return array<Task2>
+     * @return array<Task>
      * @throws Exception
      * @throws PDOException
      */
@@ -164,7 +163,7 @@ class Task2Repository
         $res->execute(['parent_id' => $parentId]);
 
         while ($row = $res->fetch(PDO::FETCH_ASSOC)) {
-            $tasks[] = Task2::fromArray($row);
+            $tasks[] = Task::fromArray($row);
         }
 
         return $tasks;

@@ -2,23 +2,23 @@
 
 namespace Examples\Commands;
 
-use Examples\Greeter2\Callables\GreetWithRandomFail;
+use Examples\Greeter\Callables\GreetWithRandomFail;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Psr\Log\LoggerInterface;
-use Tsqm\Tsqm2;
-use Tsqm\Tasks\Task2;
+use Tsqm\Tsqm;
+use Tsqm\Tasks\Task;
 
 class HelloWorldCommand extends Command
 {
-    private Tsqm2 $tsqm;
+    private Tsqm $tsqm;
     private LoggerInterface $logger;
     private GreetWithRandomFail $greetWithRandomFail;
 
     public function __construct(
-        Tsqm2 $tsqm,
+        Tsqm $tsqm,
         LoggerInterface $logger,
         GreetWithRandomFail $greetWithRandomFail
     ) {
@@ -34,7 +34,7 @@ class HelloWorldCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $task = (new Task2())
+        $task = (new Task())
             ->setCallable($this->greetWithRandomFail)
             ->setArgs($input->getArgument("name"));
 

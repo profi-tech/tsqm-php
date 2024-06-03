@@ -1,26 +1,23 @@
-CREATE TABLE
-    `runs` (
-        id VARCHAR(36) PRIMARY KEY NOT NULL,
-        `created_at` TIMESTAMP(6) NOT NULL,
-        `run_at` TIMESTAMP(3) NOT NULL,
-        `task` BLOB NOT NULL,
-        `status` VARCHAR(32) NOT NULL
-    );
-
-CREATE INDEX
-    `idx_status_run_at` ON `runs` (`status`, `run_at`);
 
 CREATE TABLE
-    `events` (
+    `tsqm_tasks` (
         `id` INTEGER PRIMARY KEY AUTOINCREMENT,
-        `run_id` VARCHAR(36) NOT NULL,
-        `ts` TIMESTAMP(6) NOT NULL,
-        `type` VARCHAR(32) NOT NULL,
-        `task_id` VARCHAR(36) NOT NULL,
-        `payload` BLOB NOT NULL,
+        `parent_id` INTEGER NOT NULL DEFAULT 0,
+        `trans_id` VARCHAR(36) NOT NULL,
+        `created_at` TIMESTAMP(6) NOT NULL,
+        `scheduled_for` TIMESTAMP(3) NOT NULL,
+        `started_at` TIMESTAMP(6),
+        `finished_at` TIMESTAMP(6),
+        `name` VARCHAR(255) NOT NULL,
+        `args` BLOB,
+        `result` BLOB,
+        `error` BLOB,
+        `retry_policy` JSON,
+        `retried` INTEGER NOT NULL DEFAULT 0,
         `hash` VARCHAR(32) NOT NULL
     );
 
-CREATE INDEX `idx_run_id` ON `events` (`run_id`);
+CREATE INDEX `idx_trans_id` ON `tsqm_tasks` (`trans_id`);
+CREATE INDEX `idx_scheduled_for` ON `tsqm_tasks` (`scheduled_for`);
+CREATE UNIQUE INDEX `idx_hash` ON `tsqm_tasks` (`hash`);
 
-CREATE UNIQUE INDEX `idx_hash` ON `events` (`hash`);

@@ -10,14 +10,14 @@ use Examples\Commands\ResetDbCommand;
 use Examples\Commands\ListScheduledCommand;
 use Examples\Commands\RunTaskCommand;
 use Examples\Commands\RunScheduledCommand;
-use Examples\Helpers\DbHelper;
+use Examples\Helpers\DBHelper;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use PDO;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Application;
-use Tsqm\Tasks\Task2Repository;
-use Tsqm\Tsqm2;
+use Tsqm\Tasks\TaskRepository;
+use Tsqm\Tsqm;
 
 class Container
 {
@@ -26,11 +26,11 @@ class Container
         return (new ContainerBuilder())
             ->addDefinitions([
 
-                ContainerInterface::class => static function (ContainerInterface $c) {
+                ContainerInterface::class => static function (ContainerInterface $c): ContainerInterface {
                     return $c;
                 },
 
-                Application::class => static function (ContainerInterface $c) {
+                Application::class => static function (ContainerInterface $c): Application {
                     $app = new Application();
                     $app->add($c->get(ResetDbCommand::class));
                     $app->add($c->get(RunTaskCommand::class));
@@ -41,16 +41,21 @@ class Container
                     return $app;
                 },
 
-                PDO::class => static function (ContainerInterface $c) {
-                    /** @var DbHelper */
-                    $dbHelper = $c->get(DbHelper::class);
-                    return $dbHelper->getPdoFromEnv();
+                PDO::class => static function (): PDO {
+                    $dsn = isset($_ENV['DB_PDO_DSN']) ? $_ENV['DB_PDO_DSN'] : null;
+                    $username = isset($_ENV['DB_PDO_USERNAME']) ? $_ENV['DB_PDO_USERNAME'] : null;
+                    $password = isset($_ENV['DB_PDO_PASSWORD']) ? $_ENV['DB_PDO_PASSWORD'] : null;
+
+                    $dsn = $dsn ?? "sqlite::memory:";
+                    $pdo = new PDO($dsn, $username, $password);
+                    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+                    return $pdo;
                 },
 
-                Tsqm2::class => static function (ContainerInterface $c) {
-                    return new Tsqm2(
+                Tsqm::class => static function (ContainerInterface $c) {
+                    return new Tsqm(
                         $c->get(ContainerInterface::class),
-                        $c->get(Task2Repository::class),
+                        $c->get(TaskRepository::class),
                         $c->get(LoggerInterface::class)
                     );
                 },

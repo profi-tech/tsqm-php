@@ -8,18 +8,18 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Psr\Log\LoggerInterface;
-use Tsqm\Tasks\RetryPolicy2;
-use Tsqm\Tasks\Task2;
-use Tsqm\Tsqm2;
+use Tsqm\Tasks\RetryPolicy;
+use Tsqm\Tasks\Task;
+use Tsqm\Tsqm;
 
 class HelloWorldSimpleCommand extends Command
 {
-    private Tsqm2 $tsqm;
+    private Tsqm $tsqm;
     private LoggerInterface $logger;
     private SimpleGreetWithRandomFail $simpleGreetWithRandomFail;
 
     public function __construct(
-        Tsqm2 $tsqm,
+        Tsqm $tsqm,
         LoggerInterface $logger,
         SimpleGreetWithRandomFail $simpleGreetWithRandomFail
     ) {
@@ -35,11 +35,11 @@ class HelloWorldSimpleCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $task = (new Task2())
+        $task = (new Task())
             ->setCallable($this->simpleGreetWithRandomFail)
             ->setArgs($input->getArgument("name"))
             ->setRetryPolicy(
-                (new RetryPolicy2())
+                (new RetryPolicy())
                     ->setMaxRetries(3)
                     ->setMinInterval(5000)
             );

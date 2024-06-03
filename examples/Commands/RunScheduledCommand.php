@@ -7,13 +7,13 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Tsqm\Tsqm2;
+use Tsqm\Tsqm;
 
 class RunScheduledCommand extends Command
 {
-    private Tsqm2 $tsqm;
+    private Tsqm $tsqm;
 
-    public function __construct(Tsqm2 $tsqm)
+    public function __construct(Tsqm $tsqm)
     {
         parent::__construct("run:scheduled");
         $this

@@ -4,7 +4,7 @@ namespace Examples;
 
 use Monolog\Formatter\NormalizerFormatter;
 use Monolog\Logger;
-use Tsqm\Tasks\Task2;
+use Tsqm\Tasks\Task;
 
 class LoggerFormatter extends NormalizerFormatter
 {
@@ -26,7 +26,7 @@ class LoggerFormatter extends NormalizerFormatter
             'context'    => $record['context'],
         ];
 
-        if (isset($record['context']['task']) && $record['context']['task'] instanceof Task2) {
+        if (isset($record['context']['task']) && $record['context']['task'] instanceof Task) {
             $task = $record['context']['task'];
             if ($task->hasError()) {
                 $formatted['log.level'] = Logger::getLevelName(Logger::ERROR);

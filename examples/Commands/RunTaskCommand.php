@@ -7,14 +7,14 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Tsqm\Tsqm2;
+use Tsqm\Tsqm;
 
 class RunTaskCommand extends Command
 {
-    private Tsqm2 $tsqm;
+    private Tsqm $tsqm;
     private LoggerInterface $logger;
 
-    public function __construct(Tsqm2 $tsqm, LoggerInterface $logger)
+    public function __construct(Tsqm $tsqm, LoggerInterface $logger)
     {
         parent::__construct("run:task");
         $this
