@@ -14,8 +14,9 @@ class PurchaseWithRandomFail
         $this->purchaser = $purchaser;
     }
 
-    public function __invoke(Greeting $greeting): void
+    public function __invoke(Greeting $greeting): Greeting
     {
         $this->purchaser->purchaseWithRandomFail($greeting);
+        return $greeting;
     }
 }

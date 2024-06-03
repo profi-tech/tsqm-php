@@ -59,7 +59,7 @@ class Greeter
             return false;
         }
         $greeting = yield (new Task())->setCallable($this->createGreeting)->setArgs($name);
-        yield (new Task())->setCallable($this->purchase)->setArgs($greeting);
+        $greeting = yield (new Task())->setCallable($this->purchase)->setArgs($greeting);
 
         return yield (new Task())->setCallable($this->sendGreeting)->setArgs($greeting);
     }
@@ -76,7 +76,7 @@ class Greeter
             ->setArgs($name);
 
         try {
-            yield (new Task())->setCallable($this->purchaseWithRandomFail)
+            $greeting = yield (new Task())->setCallable($this->purchaseWithRandomFail)
                 ->setArgs($greeting)
                 ->setRetryPolicy((new RetryPolicy())->setMaxRetries(3)->setMinInterval(10000));
         } catch (Exception $e) {
@@ -84,8 +84,17 @@ class Greeter
             return false;
         }
 
-        yield (new Task())->setCallable($this->sendGreeting)->setArgs($greeting);
-        return $greeting;
+        return yield (new Task())->setCallable($this->sendGreeting)->setArgs($greeting);
+    }
+
+    public function greetWithFail(string $name): Generator
+    {
+        $valid = yield (new Task())->setCallable($this->validateName)->setArgs($name);
+        if (!$valid) {
+            return false;
+        }
+        yield (new Task())->setCallable($this->createGreeting)->setArgs($name);
+        throw new GreeterError("Greet failed", 1717422042);
     }
 
     public function greetWith3Fails(string $name): Generator
@@ -109,10 +118,10 @@ class Greeter
         }
         $greeting = yield (new Task())->setCallable($this->createGreeting)->setArgs($name);
 
-        yield (new Task())
+        $greeting = yield (new Task())
             ->setCallable($this->purchaseWith3Fails)
             ->setArgs($greeting)
-            ->setRetryPolicy((new RetryPolicy())->setMaxRetries(3));
+            ->setRetryPolicy((new RetryPolicy())->setMaxRetries(3)->setMinInterval(0));
 
         return yield (new Task())->setCallable($this->sendGreeting)->setArgs($greeting);
     }
@@ -125,10 +134,10 @@ class Greeter
         }
         $greeting = yield (new Task())->setCallable($this->createGreeting)->setArgs($name);
 
-        yield (new Task())
+        $greeting = yield (new Task())
             ->setCallable($this->purchaseWith3Fails)
             ->setArgs($greeting)
-            ->setRetryPolicy((new RetryPolicy())->setMaxRetries(2));
+            ->setRetryPolicy((new RetryPolicy())->setMaxRetries(2)->setMinInterval(0));
 
         return yield (new Task())->setCallable($this->sendGreeting)->setArgs($greeting);
     }
@@ -141,10 +150,10 @@ class Greeter
         }
         $greeting = yield (new Task())->setCallable($this->createGreeting)->setArgs($name);
         try {
-            yield (new Task())
+            $greeting = yield (new Task())
                 ->setCallable($this->purchaseWith3Fails)
                 ->setArgs($greeting)
-                ->setRetryPolicy((new RetryPolicy())->setMaxRetries(2));
+                ->setRetryPolicy((new RetryPolicy())->setMaxRetries(2)->setMinInterval(0));
         } catch (Exception $e) {
             return yield (new Task())->setCallable($this->revertGreeting)->setArgs($greeting);
         }

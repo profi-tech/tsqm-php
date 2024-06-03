@@ -14,8 +14,9 @@ class PurchaseWith3Fails
         $this->purchaser = $purchaser;
     }
 
-    public function __invoke(Greeting $greeting): void
+    public function __invoke(Greeting $greeting): Greeting
     {
         $this->purchaser->purchaseWith3Fails($greeting);
+        return $greeting;
     }
 }

@@ -24,13 +24,13 @@ class TaskTest extends TestCase
 
         $this->assertTrue(preg_match('/^[a-f0-9]{8}-([a-f0-9]{4}-){3}[a-f0-9]{12}$/', $task->getTransId()) === 1);
 
-        $this->assertTrue($this->assertHelper->isDateTimeEqualsWithDelta($task->getCreatedAt(), $now, 10));
+        $this->assertTrue($this->assertHelper->assertDateEquals($task->getCreatedAt(), $now, 10));
 
-        $this->assertTrue($this->assertHelper->isDateTimeEqualsWithDelta($task->getScheduledFor(), $now, 10));
+        $this->assertTrue($this->assertHelper->assertDateEquals($task->getScheduledFor(), $now, 10));
 
-        $this->assertTrue($this->assertHelper->isDateTimeEqualsWithDelta($task->getStartedAt(), $now, 10));
+        $this->assertTrue($this->assertHelper->assertDateEquals($task->getStartedAt(), $now, 10));
 
-        $this->assertTrue($this->assertHelper->isDateTimeEqualsWithDelta($task->getFinishedAt(), $now, 10));
+        $this->assertTrue($this->assertHelper->assertDateEquals($task->getFinishedAt(), $now, 10));
 
         $this->assertEquals(get_class($this->simpleGreet), $task->getName());
 

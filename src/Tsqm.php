@@ -105,7 +105,6 @@ class Tsqm
                             ->setParentId($task->getId())
                             ->setTransId($task->getTransId());
 
-
                         $startedTask = current($startedTasks);
                         if ($startedTask && $startedTask instanceof Task) {
                             if ($startedTask->getHash() != $generatedTask->getHash()) {
