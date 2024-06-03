@@ -36,6 +36,7 @@ class SmokeTest extends TestCase
 
         $this->assertEquals(
             md5(implode('::', [
+                $task->getParentId(),
                 $task->getTransId(),
                 $task->getName(),
                 SerializationHelper::serialize($task->getArgs()),

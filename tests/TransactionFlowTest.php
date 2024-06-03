@@ -184,6 +184,23 @@ class TransactionFlowTest extends TestCase
         );
     }
 
+    public function testNestedGenerator(): void
+    {
+        $task = (new Task())
+            ->setCallable($this->greetNested)
+            ->setArgs('John Doe');
+        $task = $this->tsqm->run($task);
+
+        $result = $task->getResult();
+        $this->assertEquals(
+            [
+                (new Greeting("Hello, John Doe!"))->setSent(false)->setPurchased(true),
+                (new Greeting("Hello, John Doe!"))->setSent(true)->setPurchased(true)
+            ],
+            $result
+        );
+    }
+
     public function testDuplicatedTasks(): void
     {
         $task = (new Task())

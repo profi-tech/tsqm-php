@@ -12,6 +12,7 @@ use Examples\Greeter\GreetWithDeterministicArgsFailure;
 use Examples\Greeter\GreetWithDeterministicNameFailure;
 use Examples\Greeter\GreetWithDuplicatedTask;
 use Examples\Greeter\GreetWithFail;
+use Examples\Greeter\GreetNested;
 use Examples\Greeter\SimpleGreet;
 use Examples\Greeter\SimpleGreetWith3Fails;
 use Examples\Greeter\SimpleGreetWithFail;
@@ -43,6 +44,7 @@ class TestCase extends \PHPUnit\Framework\TestCase
     protected GreetWithDuplicatedTask $greetWithDuplicatedTask;
     protected GreetWithDeterministicArgsFailure $greetWithDeterministicArgsFailure;
     protected GreetWithDeterministicNameFailure $greetWithDeterministicNameFailure;
+    protected GreetNested $greetNested;
 
     protected function setUp(): void
     {
@@ -50,7 +52,11 @@ class TestCase extends \PHPUnit\Framework\TestCase
 
         $this->assertHelper = new AssertHelper();
 
-        $pdo = new PDO("sqlite::memory:");
+        $dsn = 'sqlite::memory:';
+        $dsn = "mysql:host=db;dbname=tsqm";
+        $username = "root";
+        $password = "root";
+        $pdo = new PDO($dsn, $username, $password);
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
         $dbHelper = new DBHelper($pdo);
@@ -79,5 +85,6 @@ class TestCase extends \PHPUnit\Framework\TestCase
         $this->greetWithDuplicatedTask = $this->container->get(GreetWithDuplicatedTask::class);
         $this->greetWithDeterministicArgsFailure = $this->container->get(GreetWithDeterministicArgsFailure::class);
         $this->greetWithDeterministicNameFailure = $this->container->get(GreetWithDeterministicNameFailure::class);
+        $this->greetNested = $this->container->get(GreetNested::class);
     }
 }

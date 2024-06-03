@@ -210,6 +210,7 @@ class Task implements JsonSerializable
     public function getHash(): string
     {
         return md5(implode('::', [
+            $this->parent_id,
             $this->trans_id,
             $this->name,
             SerializationHelper::serialize($this->args),
