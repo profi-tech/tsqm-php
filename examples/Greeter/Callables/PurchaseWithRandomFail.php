@@ -2,21 +2,16 @@
 
 namespace Examples\Greeter\Callables;
 
+use Examples\Greeter\GreeterError;
 use Examples\Greeter\Greeting;
-use Examples\Greeter\Purchaser;
 
 class PurchaseWithRandomFail
 {
-    private Purchaser $purchaser;
-
-    public function __construct(Purchaser $purchaser)
-    {
-        $this->purchaser = $purchaser;
-    }
-
     public function __invoke(Greeting $greeting): Greeting
     {
-        $this->purchaser->purchaseWithRandomFail($greeting);
-        return $greeting;
+        if (mt_rand(1, 3) === 1) {
+            throw new GreeterError("Random purchase error", 1700584048);
+        }
+        return $greeting->setPurchased(true);
     }
 }

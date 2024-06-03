@@ -2,20 +2,26 @@
 
 namespace Examples\Greeter\Callables;
 
-use Examples\Greeter\Greeter;
 use Examples\Greeter\Greeting;
+use Exception;
 
 class SimpleGreetWithRandomFail
 {
-    private Greeter $greeter;
+    private CreateGreeting $createGreeting;
+    private SendGreeting $sendGreeting;
 
-    public function __construct(Greeter $greeter)
+    public function __construct(CreateGreeting $createGreeting, SendGreeting $sendGreeting)
     {
-        $this->greeter = $greeter;
+        $this->createGreeting = $createGreeting;
+        $this->sendGreeting = $sendGreeting;
     }
 
     public function __invoke(string $name): Greeting
     {
-        return $this->greeter->simpleGreetWithRandomFail($name);
+        if (mt_rand(1, 3) === 1) {
+            throw new Exception("Random greeter error", 1700584032);
+        }
+        $greeting = $this->createGreeting->__invoke($name);
+        return $this->sendGreeting->__invoke($greeting);
     }
 }

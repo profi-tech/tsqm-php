@@ -2,20 +2,30 @@
 
 namespace Examples\Greeter\Callables;
 
-use Examples\Greeter\Greeter;
+use Examples\Greeter\GreeterError;
 use Generator;
+use Tsqm\Tasks\Task;
 
 class GreetWithFail
 {
-    private Greeter $greeter;
+    private ValidateName $validateName;
+    private CreateGreeting $createGreeting;
 
-    public function __construct(Greeter $greeter)
-    {
-        $this->greeter = $greeter;
+    public function __construct(
+        ValidateName $validateName,
+        CreateGreeting $createGreeting
+    ) {
+        $this->validateName = $validateName;
+        $this->createGreeting = $createGreeting;
     }
 
     public function __invoke(string $name): Generator
     {
-        return $this->greeter->greetWithFail($name);
+        $valid = yield (new Task())->setCallable($this->validateName)->setArgs($name);
+        if (!$valid) {
+            return false;
+        }
+        yield (new Task())->setCallable($this->createGreeting)->setArgs($name);
+        throw new GreeterError("Greet failed", 1717422042);
     }
 }

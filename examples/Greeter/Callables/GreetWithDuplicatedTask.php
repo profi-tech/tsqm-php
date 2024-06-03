@@ -2,20 +2,23 @@
 
 namespace Examples\Greeter\Callables;
 
-use Examples\Greeter\Greeter;
 use Generator;
+use Tsqm\Tasks\Task;
 
 class GreetWithDuplicatedTask
 {
-    private Greeter $greeter;
+    private CreateGreeting $createGreeting;
 
-    public function __construct(Greeter $greeter)
+    public function __construct(CreateGreeting $createGreeting)
     {
-        $this->greeter = $greeter;
+        $this->createGreeting = $createGreeting;
     }
 
     public function __invoke(string $name): Generator
     {
-        return $this->greeter->greetWithDuplicatedTask($name);
+        yield (new Task())->setCallable($this->createGreeting)->setArgs($name);
+        yield (new Task())->setCallable($this->createGreeting)->setArgs($name);
+        yield (new Task())->setCallable($this->createGreeting)->setArgs($name);
+        return true;
     }
 }

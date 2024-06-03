@@ -2,21 +2,18 @@
 
 namespace Examples\Greeter\Callables;
 
+use Examples\Greeter\GreeterError;
 use Examples\Greeter\Greeting;
-use Examples\Greeter\Purchaser;
 
 class PurchaseWith3Fails
 {
-    private Purchaser $purchaser;
-
-    public function __construct(Purchaser $purchaser)
-    {
-        $this->purchaser = $purchaser;
-    }
+    private int $failsCount = 0;
 
     public function __invoke(Greeting $greeting): Greeting
     {
-        $this->purchaser->purchaseWith3Fails($greeting);
-        return $greeting;
+        if ($this->failsCount++ < 3) {
+            throw new GreeterError("Purchase failed", 1700410299);
+        }
+        return $greeting->setPurchased(true);
     }
 }

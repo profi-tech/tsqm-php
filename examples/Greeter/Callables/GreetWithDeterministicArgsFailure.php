@@ -2,20 +2,27 @@
 
 namespace Examples\Greeter\Callables;
 
-use Examples\Greeter\Greeter;
+use Exception;
 use Generator;
+use Tsqm\Tasks\Task;
 
 class GreetWithDeterministicArgsFailure
 {
-    private Greeter $greeter;
+    private int $runsCount = 0;
+    private CreateGreeting $createGreeting;
 
-    public function __construct(Greeter $greeter)
+    public function __construct(CreateGreeting $createGreeting)
     {
-        $this->greeter = $greeter;
+        $this->createGreeting = $createGreeting;
     }
 
     public function __invoke(string $name): Generator
     {
-        return $this->greeter->greetWithDeterministicArgsFailure($name);
+        if ($this->runsCount++ == 0) {
+            yield (new Task())->setCallable($this->createGreeting)->setArgs($name . "1");
+            throw new Exception("Variable error", 1717426551);
+        } else {
+            yield (new Task())->setCallable($this->createGreeting)->setArgs($name . "2");
+        }
     }
 }
