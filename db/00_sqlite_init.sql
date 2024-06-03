@@ -5,7 +5,7 @@ CREATE TABLE
         `parent_id` INTEGER NOT NULL DEFAULT 0,
         `trans_id` VARCHAR(36) NOT NULL,
         `created_at` TIMESTAMP(6) NOT NULL,
-        `scheduled_for` TIMESTAMP(3) NOT NULL,
+        `scheduled_for` TIMESTAMP(6) NOT NULL,
         `started_at` TIMESTAMP(6),
         `finished_at` TIMESTAMP(6),
         `name` VARCHAR(255) NOT NULL,

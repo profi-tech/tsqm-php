@@ -13,7 +13,6 @@ use Tsqm\Tasks\Task;
 
 class TaskRepository
 {
-    private const MILISECONDS_TS = 'Y-m-d H:i:s.v';
     private const MICROSECONDS_TS = 'Y-m-d H:i:s.u';
 
     private PDO $pdo;
@@ -37,7 +36,7 @@ class TaskRepository
             $res->execute([
                 'trans_id' => $task->getTransId(),
                 'created_at' => $task->getCreatedAt()->format(self::MICROSECONDS_TS),
-                'scheduled_for' => $task->getScheduledFor()->format(self::MILISECONDS_TS),
+                'scheduled_for' => $task->getScheduledFor()->format(self::MICROSECONDS_TS),
                 'name' => $task->getName(),
                 'args' => $task->getArgs()
                     ? SerializationHelper::serialize($task->getArgs())
@@ -84,7 +83,7 @@ class TaskRepository
                 ? $task->getStartedAt()->format(self::MICROSECONDS_TS)
                 : null,
             'scheduled_for' => $task->getScheduledFor()
-                ? $task->getScheduledFor()->format(self::MILISECONDS_TS)
+                ? $task->getScheduledFor()->format(self::MICROSECONDS_TS)
                 : null,
             'finished_at' => $task->getFinishedAt()
                 ? $task->getFinishedAt()->format(self::MICROSECONDS_TS)
@@ -133,7 +132,7 @@ class TaskRepository
             }
 
             $res->execute([
-                'until' => $until->format('Y-m-d H:i:s.v'),
+                'until' => $until->format(self::MICROSECONDS_TS),
             ]);
 
             $tasks = [];

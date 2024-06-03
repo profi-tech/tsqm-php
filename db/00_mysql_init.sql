@@ -4,7 +4,7 @@ CREATE TABLE `tsqm_tasks` (
     `parent_id` BIGINT UNSIGNED NOT NULL DEFAULT 0,
     `trans_id` varchar(36) NOT NULL,
     `created_at` TIMESTAMP(6) NOT NULL,
-    `scheduled_for` TIMESTAMP(3) NOT NULL,
+    `scheduled_for` TIMESTAMP(6) NOT NULL,
     `started_at` TIMESTAMP(6),
     `finished_at` TIMESTAMP(6),
     `name` VARCHAR(255) NOT NULL,

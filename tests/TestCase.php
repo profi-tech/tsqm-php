@@ -50,7 +50,8 @@ class TestCase extends \PHPUnit\Framework\TestCase
 
         $this->assertHelper = new AssertHelper();
 
-        $pdo = new PDO("sqlite::memory:");
+        //$pdo = new PDO("sqlite::memory:");
+        $pdo = new PDO("mysql:host=db;port=3306;dbname=tsqm", "root", "root");
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
         $dbHelper = new DBHelper($pdo);
