@@ -12,7 +12,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Examples\Helpers\DbHelper;
 use Psr\Log\LoggerInterface;
-use Tsqm\Runner;
+use Tsqm\Tsqm2;
 use Tsqm\Tasks\Task2Repository;
 use Tsqm\Tasks\Task2;
 
@@ -40,7 +40,7 @@ class HelloWorld2Command extends Command
         $pdo->exec("delete from tasks;");
         $repository = new Task2Repository($pdo);
 
-        $runner = new Runner(
+        $runner = new Tsqm2(
             $container,
             $repository,
             $logger

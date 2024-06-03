@@ -6,7 +6,7 @@ use DateTime;
 use Exception;
 use PDO;
 use Tsqm\Errors\RepositoryError;
-use Tsqm\Errors\RunNotFound;
+use Tsqm\Errors\TransactionNotFound;
 use Tsqm\Helpers\PdoHelper;
 use Tsqm\Helpers\SerializationHelper;
 use Tsqm\Helpers\UuidHelper;
@@ -61,7 +61,7 @@ class RunRepository implements RunRepositoryInterface
             $res->execute([$runId]);
             $data = $res->fetch(PDO::FETCH_ASSOC);
             if (!$data) {
-                throw new RunNotFound("Run not found: $runId");
+                throw new TransactionNotFound("Run not found: $runId");
             }
 
             return Run::fromArray($data);

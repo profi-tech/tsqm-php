@@ -36,6 +36,11 @@
         "phpstan/phpstan": "^1.11"
     },
     "scripts": {
+        "check": [
+            "@lint",
+            "@analyse",
+            "@test"
+        ],
         "test": "./vendor/bin/phpunit tests",
         "lint": "./vendor/bin/phpcs --standard=PSR12 ./src ./tests ./examples",
         "lint-fix": "./vendor/bin/phpcbf --standard=PSR12 ./src ./tests ./examples",

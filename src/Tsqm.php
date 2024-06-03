@@ -14,7 +14,7 @@ use Tsqm\Errors\ThrowMe;
 use Tsqm\Errors\InvalidGeneratorItem;
 use Tsqm\Errors\StopTheRun;
 use Tsqm\Errors\TaskClassDefinitionNotFound;
-use Tsqm\Errors\CrashTheRun;
+use Tsqm\Errors\TsqmCrash;
 use Tsqm\Errors\DuplicatedTask;
 use Tsqm\Events\Event;
 use Tsqm\Events\EventRepositoryInterface;
@@ -108,7 +108,7 @@ class Tsqm
             $this->finishRun($run);
         } catch (StopTheRun $e) {
             $this->logger->notice("Run stopped", ['run' => $run]);
-        } catch (CrashTheRun $e) {
+        } catch (TsqmCrash $e) {
             $this->logger->critical("Run crashed", ['run' => $run]);
             $this->eventRepository->addEvent(
                 $run->getId(),
@@ -306,7 +306,7 @@ class Tsqm
                 // we need to throw an exception to generator using Generator::throw()
                 return new ThrowMe($e);
             } else { // Otherwise we just crash
-                throw new CrashTheRun("Run " . $run->getId() . " crashed", 0, $e);
+                throw new TsqmCrash("Run " . $run->getId() . " crashed", 0, $e);
             }
         }
     }

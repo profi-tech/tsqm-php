@@ -2,6 +2,6 @@
 
 namespace Tsqm\Errors;
 
-class TaskHashMismatch extends TsqmError
+class TaskHashMismatch extends TsqmCrash
 {
 }

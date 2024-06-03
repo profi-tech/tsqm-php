@@ -11,11 +11,13 @@ use Tsqm\Errors\InvalidGeneratorItem;
 use Tsqm\Errors\TaskClassDefinitionNotFound;
 use Tsqm\Errors\TaskHashMismatch;
 use Tsqm\Errors\ToManyTasks;
+use Tsqm\Errors\TransactionNotFound;
+use Tsqm\Errors\TsqmCrash;
 use Tsqm\Helpers\UuidHelper;
 use Tsqm\Tasks\Task2Repository;
 use Tsqm\Tasks\Task2;
 
-class Runner
+class Tsqm2
 {
     private const GENERATOR_LIMIT = 1000;
     private ContainerInterface $container;
@@ -83,7 +85,7 @@ class Runner
             $result = call_user_func($callable, ...$task->getArgs());
 
             if ($result instanceof Generator) {
-                $savedTasks = $this->repository->getTasksByParentId($task->getId());
+                $startedTasks = $this->repository->getTasksByParentId($task->getId());
 
                 $this->logger->debug("Start generator", ['task' => $task]);
                 $generated = 0;
@@ -97,18 +99,18 @@ class Runner
                         if (!$generatedTask instanceof Task2) {
                             throw new InvalidGeneratorItem("Generator item is not a task instance");
                         }
+                        $generatedTask
+                            ->setParentId($task->getId())
+                            ->setTransId($task->getTransId());
 
-                        $savedTask = current($savedTasks);
-                        if ($savedTask instanceof Task2) {
-                            if ($savedTask->getHash() != $generatedTask->getHash()) {
+
+                        $startedTask = current($startedTasks);
+                        if ($startedTask && $startedTask instanceof Task2) {
+                            if ($startedTask->getHash() != $generatedTask->getHash()) {
                                 throw new TaskHashMismatch();
                             }
-                            $generatedTask = $savedTask;
-                            next($savedTasks);
-                        } else {
-                            $generatedTask
-                                ->setParentId($task->getId())
-                                ->setTransId($task->getTransId());
+                            $generatedTask = $startedTask;
+                            next($startedTasks);
                         }
 
                         $generatedTask = $this->run($generatedTask);
@@ -136,6 +138,8 @@ class Runner
                 ->setResult($result);
             $this->repository->updateTask($task);
             return $task;
+        } catch (TsqmCrash $e) {
+            throw $e;
         } catch (Exception $e) {
             $task->setError($e);
 
@@ -156,5 +160,14 @@ class Runner
             $this->repository->updateTask($task);
             return $task;
         }
+    }
+
+    public function getTransactionTask(string $transId): Task2
+    {
+        $task = $this->repository->getTransactionTask($transId);
+        if (!$task) {
+            throw new TransactionNotFound($transId);
+        }
+        return $task;
     }
 }

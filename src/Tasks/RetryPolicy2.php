@@ -51,8 +51,8 @@ class RetryPolicy2 implements JsonSerializable
     public static function fromArray(array $data): self
     {
         return (new self())
-            ->setMaxRetries($data['max_retries'])
-            ->setMinInterval($data['min_interval']);
+            ->setMaxRetries($data['maxRetries'])
+            ->setMinInterval($data['minInterval']);
     }
 
     /**

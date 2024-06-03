@@ -247,7 +247,7 @@ class Task2 implements JsonSerializable
             $task->setName($data['name']);
         }
         if (isset($data['args'])) {
-            $task->setArgs(SerializationHelper::unserialize($data['args']));
+            $task->setArgs(...SerializationHelper::unserialize($data['args']));
         }
         if (isset($data['result'])) {
             $task->setResult(SerializationHelper::unserialize($data['result']));

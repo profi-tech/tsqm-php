@@ -100,6 +100,20 @@ class Task2Repository
         ]);
     }
 
+    public function getTransactionTask(string $transId): ?Task2
+    {
+        $res = $this->pdo->prepare("SELECT * FROM tasks WHERE trans_id=:trans_id ORDER BY id LIMIT 1");
+        if (!$res) {
+            throw new Exception(PdoHelper::formatErrorInfo($this->pdo->errorInfo()));
+        }
+        $res->execute(['trans_id' => $transId]);
+        $row = $res->fetch(PDO::FETCH_ASSOC);
+        if (!$row) {
+            return null;
+        }
+        return Task2::fromArray($row);
+    }
+
     /**
      * @param int $parentId
      * @return array<Task2>
