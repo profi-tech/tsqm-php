@@ -27,7 +27,7 @@ class TaskRepository
     public function createTask(Task $task): Task
     {
         try {
-            if ($task->getTransId() === 0) {
+            if ($task->getRootId() === 0) {
                 return $this->createRootTask($task);
             } else {
                 return $this->createChildTask($task);
@@ -43,8 +43,8 @@ class TaskRepository
             $this->pdo->beginTransaction();
 
             $res = $this->pdo->prepare("
-                INSERT INTO tsqm_tasks (parent_id, trans_id, created_at, scheduled_for, name, args, retry_policy, hash)
-                VALUES (:parent_id, :trans_id, :created_at, :scheduled_for, :name, :args, :retry_policy, :hash)
+                INSERT INTO tsqm_tasks (parent_id, root_id, created_at, scheduled_for, name, args, retry_policy, hash)
+                VALUES (:parent_id, :root_id, :created_at, :scheduled_for, :name, :args, :retry_policy, :hash)
             ");
             if (!$res) {
                 throw new Exception(PdoHelper::formatErrorInfo($this->pdo->errorInfo()));
@@ -52,7 +52,7 @@ class TaskRepository
 
             $res->execute([
                 'parent_id' => 0,
-                'trans_id' => 0,
+                'root_id' => 0,
                 'created_at' => $task->getCreatedAt()->format(self::MICROSECONDS_TS),
                 'scheduled_for' => $task->getScheduledFor()->format(self::MICROSECONDS_TS),
                 'name' => $task->getName(),
@@ -69,14 +69,14 @@ class TaskRepository
 
             $task
                 ->setId($taskId)
-                ->setTransId($taskId);
+                ->setRootId($taskId);
 
-            $res = $this->pdo->prepare("UPDATE tsqm_tasks SET trans_id=:trans_id, hash=:hash WHERE id=:id");
+            $res = $this->pdo->prepare("UPDATE tsqm_tasks SET root_id=:root_id, hash=:hash WHERE id=:id");
             if (!$res) {
                 throw new Exception(PdoHelper::formatErrorInfo($this->pdo->errorInfo()));
             }
             $res->execute([
-                'trans_id' => $task->getTransId(),
+                'root_id' => $task->getRootId(),
                 'hash' => $task->getHash(), // Permanent hash
                 'id' => $task->getId()
             ]);
@@ -92,23 +92,23 @@ class TaskRepository
     private function createChildTask(Task $task): Task
     {
         $res = $this->pdo->prepare("
-            INSERT INTO tsqm_tasks (trans_id, parent_id, created_at, scheduled_for, name, args, retry_policy, hash)
-            VALUES (:trans_id, :parent_id, :created_at, :scheduled_for, :name, :args, :retry_policy, :hash)
+            INSERT INTO tsqm_tasks (root_id, parent_id, created_at, scheduled_for, name, args, retry_policy, hash)
+            VALUES (:root_id, :parent_id, :created_at, :scheduled_for, :name, :args, :retry_policy, :hash)
         ");
         if (!$res) {
             throw new Exception(PdoHelper::formatErrorInfo($this->pdo->errorInfo()));
         }
 
         if (!$task->getParentId()) {
-            throw new Exception("Parent id is required for child task");
+            throw new Exception("Parent ID is required for child task");
         }
 
-        if (!$task->getTransId()) {
-            throw new Exception("Trans id is required for child task");
+        if (!$task->getRootId()) {
+            throw new Exception("Root ID is required for child task");
         }
 
         $res->execute([
-            'trans_id' => $task->getTransId(),
+            'root_id' => $task->getRootId(),
             'parent_id' => $task->getParentId(),
             'created_at' => $task->getCreatedAt()->format(self::MICROSECONDS_TS),
             'scheduled_for' => $task->getScheduledFor()->format(self::MICROSECONDS_TS),
@@ -168,13 +168,13 @@ class TaskRepository
         ]);
     }
 
-    public function getTaskByTransId(int $transId): ?Task
+    public function getTask(int $id): ?Task
     {
-        $res = $this->pdo->prepare("SELECT * FROM tsqm_tasks WHERE trans_id=:trans_id ORDER BY id LIMIT 1");
+        $res = $this->pdo->prepare("SELECT * FROM tsqm_tasks WHERE id=:id");
         if (!$res) {
             throw new Exception(PdoHelper::formatErrorInfo($this->pdo->errorInfo()));
         }
-        $res->execute(['trans_id' => $transId]);
+        $res->execute(['id' => $id]);
         $row = $res->fetch(PDO::FETCH_ASSOC);
         if (!$row) {
             return null;

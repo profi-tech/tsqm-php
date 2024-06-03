@@ -66,7 +66,7 @@ class SchedulerTest extends TestCase
         $task = $this->tsqm->run($task);
         $this->assertTrue($task->isFinished());
 
-        $task = $this->tsqm->getTaskByTransId($task->getTransId());
+        $task = $this->tsqm->getTask($task->getRootId());
         $this->assertTrue($task->isFinished());
     }
 

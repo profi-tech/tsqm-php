@@ -12,7 +12,7 @@ class Task implements JsonSerializable
 {
     private ?int $id = null;
     private int $parent_id = 0;
-    private int $trans_id = 0;
+    private int $root_id = 0;
     private ?DateTime $createdAt = null;
     private ?DateTime $scheduledFor = null;
     private ?DateTime $startedAt = null;
@@ -64,15 +64,15 @@ class Task implements JsonSerializable
         return $this->parent_id;
     }
 
-    public function setTransId(int $trans_id): self
+    public function setRootId(int $root_id): self
     {
-        $this->trans_id = $trans_id;
+        $this->root_id = $root_id;
         return $this;
     }
 
-    public function getTransId(): int
+    public function getRootId(): int
     {
-        return $this->trans_id;
+        return $this->root_id;
     }
 
     public function setCreatedAt(?DateTime $createdAt): self
@@ -211,7 +211,7 @@ class Task implements JsonSerializable
     {
         return md5(implode('::', [
             $this->parent_id,
-            $this->trans_id,
+            $this->root_id,
             $this->name,
             SerializationHelper::serialize($this->args),
         ]));
@@ -229,8 +229,8 @@ class Task implements JsonSerializable
         if (isset($data['parent_id'])) {
             $task->setParentId((int)$data['parent_id']);
         }
-        if (isset($data['trans_id'])) {
-            $task->setTransId((int)$data['trans_id']);
+        if (isset($data['root_id'])) {
+            $task->setRootId((int)$data['root_id']);
         }
         if (isset($data['created_at'])) {
             $task->setCreatedAt(new DateTime($data['created_at']));
@@ -274,7 +274,7 @@ class Task implements JsonSerializable
         return [
             'id' => $this->id,
             'parent_id' => $this->parent_id,
-            'trans_id' => $this->trans_id,
+            'root_id' => $this->root_id,
             'created_at' => $this->createdAt ? $this->createdAt->format(DateTime::ATOM) : null,
             'scheduled_for' => $this->scheduledFor ? $this->scheduledFor->format(DateTime::ATOM) : null,
             'started_at' => $this->startedAt ? $this->startedAt->format(DateTime::ATOM) : null,

@@ -21,7 +21,7 @@ class SmokeTest extends TestCase
         $now = new DateTime();
 
         $this->assertEquals(0, $task->getParentId());
-        $this->assertIsNumeric($task->getTransId());
+        $this->assertIsNumeric($task->getRootId());
         $this->assertTrue($this->assertHelper->assertDateEquals($task->getCreatedAt(), $now));
         $this->assertTrue($this->assertHelper->assertDateEquals($task->getScheduledFor(), $now));
         $this->assertTrue($this->assertHelper->assertDateEquals($task->getStartedAt(), $now));
@@ -37,7 +37,7 @@ class SmokeTest extends TestCase
         $this->assertEquals(
             md5(implode('::', [
                 $task->getParentId(),
-                $task->getTransId(),
+                $task->getRootId(),
                 $task->getName(),
                 SerializationHelper::serialize($task->getArgs()),
             ])),

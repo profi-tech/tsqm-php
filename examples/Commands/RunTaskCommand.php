@@ -18,8 +18,8 @@ class RunTaskCommand extends Command
     {
         parent::__construct("run:task");
         $this
-            ->setDescription("Run task by transaction id")
-            ->addArgument("transId", InputArgument::REQUIRED, "Transaction ID");
+            ->setDescription("Run task by ID")
+            ->addArgument("taskId", InputArgument::REQUIRED, "Task ID");
 
         $this->tsqm = $tsqm;
         $this->logger = $logger;
@@ -27,8 +27,8 @@ class RunTaskCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $transId = $input->getArgument("transId");
-        $task = $this->tsqm->getTaskByTransId($transId);
+        $taskId = $input->getArgument("taskId");
+        $task = $this->tsqm->getTask($taskId);
         $task = $this->tsqm->run($task);
         $this->logger->debug("Final run result:", ['task' => $task]);
         return self::SUCCESS;

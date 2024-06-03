@@ -104,7 +104,7 @@ class Tsqm
                         }
                         $generatedTask
                             ->setParentId($task->getId())
-                            ->setTransId($task->getTransId());
+                            ->setRootId($task->getRootId());
 
                         $startedTask = current($startedTasks);
                         if ($startedTask && $startedTask instanceof Task) {
@@ -166,11 +166,11 @@ class Tsqm
         }
     }
 
-    public function getTaskByTransId(int $transId): Task
+    public function getTask(int $id): Task
     {
-        $task = $this->repository->getTaskByTransId($transId);
+        $task = $this->repository->getTask($id);
         if (!$task) {
-            throw new TaskNotFound($transId);
+            throw new TaskNotFound("Task not found: $id");
         }
         return $task;
     }

@@ -2,7 +2,7 @@
 CREATE TABLE `tsqm_tasks` (
     `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     `parent_id` BIGINT UNSIGNED NOT NULL DEFAULT 0,
-    `trans_id` BIGINT UNSIGNED NOT NULL DEFAULT 0,
+    `root_id` BIGINT UNSIGNED NOT NULL DEFAULT 0,
     `created_at` TIMESTAMP(6) NOT NULL,
     `scheduled_for` TIMESTAMP(6) NOT NULL,
     `started_at` TIMESTAMP(6),
@@ -15,7 +15,7 @@ CREATE TABLE `tsqm_tasks` (
     `retried` INT UNSIGNED NOT NULL DEFAULT 0,
     `hash` varchar(32) NOT NULL,
     PRIMARY KEY (`id`),
-    KEY `idx_trans_id` (`trans_id`),
+    KEY `idx_root_id` (`root_id`),
     KEY `idx_scheduled_for` (`scheduled_for`),
     UNIQUE KEY `idx_hash` (`hash`)
 );

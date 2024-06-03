@@ -10,9 +10,9 @@ use Tsqm\Errors\DuplicatedTask;
 use Tsqm\Tasks\RetryPolicy;
 use Tsqm\Tasks\Task;
 
-class TransactionFlowTest extends TestCase
+class TaskGeneratorFlowTest extends TestCase
 {
-    public function testTransactionSuccess(): void
+    public function testGeneratorSuccess(): void
     {
         $task = (new Task())
             ->setCallable($this->greet)
@@ -32,7 +32,7 @@ class TransactionFlowTest extends TestCase
         $this->assertNull($task->getError());
     }
 
-    public function testTransactionSuccessRerun(): void
+    public function testGeneratorSuccessRerun(): void
     {
         $task = (new Task())
             ->setCallable($this->greet)
@@ -42,7 +42,7 @@ class TransactionFlowTest extends TestCase
         $now = new DateTime();
 
         for ($i = 0; $i < 3; $i++) {
-            $task = $this->tsqm->getTaskByTransId($task->getTransId());
+            $task = $this->tsqm->getTask($task->getRootId());
             $task = $this->tsqm->run($task);
             $this->assertTrue($this->assertHelper->assertDateEquals($task->getFinishedAt(), $now));
             $this->assertEquals(
@@ -55,7 +55,7 @@ class TransactionFlowTest extends TestCase
         }
     }
 
-    public function testTransactionFailed(): void
+    public function testGeneratorFailed(): void
     {
         $task = (new Task())
             ->setCallable($this->greetWithFail)
@@ -72,7 +72,7 @@ class TransactionFlowTest extends TestCase
         );
     }
 
-    public function testTransactionFailedRerun(): void
+    public function testGeneratorFailedRerun(): void
     {
         $task = (new Task())
             ->setCallable($this->greetWithFail)
@@ -89,7 +89,7 @@ class TransactionFlowTest extends TestCase
         );
 
         for ($i = 0; $i < 3; $i++) {
-            $task = $this->tsqm->getTaskByTransId($task->getTransId());
+            $task = $this->tsqm->getTask($task->getRootId());
             $task = $this->tsqm->run($task);
             $this->assertTrue($this->assertHelper->assertDateEquals($task->getFinishedAt(), $now));
             $this->assertNull($task->getResult());
@@ -100,7 +100,7 @@ class TransactionFlowTest extends TestCase
         }
     }
 
-    public function testTransactionFailedAndScheduled(): void
+    public function testGeneratorFailedAndScheduled(): void
     {
         $task = (new Task())
             ->setCallable($this->greetWithFail)
@@ -120,7 +120,7 @@ class TransactionFlowTest extends TestCase
         );
     }
 
-    public function testTransactionFailedAndSuccesfullyRetried(): void
+    public function testGeneratorFailedAndSuccesfullyRetried(): void
     {
         $task = (new Task())
             ->setCallable($this->greetWith3PurchaseFailsAnd3Retries)
@@ -134,7 +134,7 @@ class TransactionFlowTest extends TestCase
 
         // Two failed retries
         for ($i = 0; $i < 2; $i++) {
-            $task = $this->tsqm->getTaskByTransId($task->getTransId());
+            $task = $this->tsqm->getTask($task->getRootId());
             $task = $this->tsqm->run($task);
             $this->assertNull($task->getFinishedAt());
             $this->assertNull($task->getResult());
@@ -142,7 +142,7 @@ class TransactionFlowTest extends TestCase
         }
 
         // Last success retry
-        $task = $this->tsqm->getTaskByTransId($task->getTransId());
+        $task = $this->tsqm->getTask($task->getRootId());
         $task = $this->tsqm->run($task);
         $this->assertTrue($this->assertHelper->assertDateEquals($task->getFinishedAt(), new DateTime()));
         $this->assertEquals(
@@ -154,7 +154,7 @@ class TransactionFlowTest extends TestCase
         $this->assertNull($task->getError());
     }
 
-    public function testTransactionFailedAndFailedToRetry(): void
+    public function testGeneratorFailedAndFailedToRetry(): void
     {
         $task = (new Task())
             ->setCallable($this->greetWith3PurchaseFailsAnd2Retries)
@@ -167,14 +167,14 @@ class TransactionFlowTest extends TestCase
         $this->assertNull($task->getError());
 
         // Failed retry
-        $task = $this->tsqm->getTaskByTransId($task->getTransId());
+        $task = $this->tsqm->getTask($task->getRootId());
         $task = $this->tsqm->run($task);
         $this->assertNull($task->getFinishedAt());
         $this->assertNull($task->getResult());
         $this->assertNull($task->getError());
 
         // Last failed retry
-        $task = $this->tsqm->getTaskByTransId($task->getTransId());
+        $task = $this->tsqm->getTask($task->getRootId());
         $task = $this->tsqm->run($task);
         $this->assertTrue($this->assertHelper->assertDateEquals($task->getFinishedAt(), new DateTime()));
         $this->assertNull($task->getResult());
@@ -211,7 +211,7 @@ class TransactionFlowTest extends TestCase
         $this->tsqm->run($task);
     }
 
-    public function testTransactionNameDeterminismViolation(): void
+    public function testGeneratorNameDeterminismViolation(): void
     {
         $task = (new Task())
             ->setCallable($this->greetWithDeterministicNameFailure)
@@ -219,12 +219,12 @@ class TransactionFlowTest extends TestCase
             ->setRetryPolicy((new RetryPolicy())->setMaxRetries(1)->setMinInterval(0));
 
         $task = $this->tsqm->run($task);
-        $task = $this->tsqm->getTaskByTransId($task->getTransId());
+        $task = $this->tsqm->getTask($task->getRootId());
         $this->expectException(DeterminismViolation::class);
         $this->tsqm->run($task);
     }
 
-    public function testTransactionArgsDeterminismViolation(): void
+    public function testGeneratorArgsDeterminismViolation(): void
     {
         $task = (new Task())
             ->setCallable($this->greetWithDeterministicArgsFailure)
@@ -232,7 +232,7 @@ class TransactionFlowTest extends TestCase
             ->setRetryPolicy((new RetryPolicy())->setMaxRetries(1)->setMinInterval(0));
 
         $task = $this->tsqm->run($task);
-        $task = $this->tsqm->getTaskByTransId($task->getTransId());
+        $task = $this->tsqm->getTask($task->getRootId());
         $this->expectException(DeterminismViolation::class);
         $this->tsqm->run($task);
     }
