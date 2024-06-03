@@ -52,10 +52,10 @@ class TestCase extends \PHPUnit\Framework\TestCase
 
         $this->assertHelper = new AssertHelper();
 
-        $dsn = 'sqlite::memory:';
-        $dsn = "mysql:host=db;dbname=tsqm";
+        $dsn = getenv("TSQM_TEST_MYSQL") ? "mysql:host=db;dbname=tsqm;" : "sqlite::memory:";
         $username = "root";
         $password = "root";
+
         $pdo = new PDO($dsn, $username, $password);
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 

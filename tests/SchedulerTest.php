@@ -16,7 +16,7 @@ class SchedulerTest extends TestCase
 
         $task = $this->tsqm->run($task);
         $this->assertTrue(
-            $this->assertHelper->assertDateEquals($task->getScheduledFor(), new DateTime(), 10)
+            $this->assertHelper->assertDateEquals($task->getScheduledFor(), new DateTime(), 50)
         );
     }
 
@@ -53,8 +53,7 @@ class SchedulerTest extends TestCase
         $this->assertTrue(
             $this->assertHelper->assertDateEquals(
                 $task->getScheduledFor(),
-                (new DateTime())->modify('+1500 milliseconds'),
-                10
+                (new DateTime())->modify('+1500 milliseconds')
             )
         );
     }

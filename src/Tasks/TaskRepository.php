@@ -6,9 +6,11 @@ use DateTime;
 use Exception;
 use PDO;
 use PDOException;
+use Ramsey\Uuid\Uuid;
 use Tsqm\Errors\RepositoryError;
 use Tsqm\Helpers\PdoHelper;
 use Tsqm\Helpers\SerializationHelper;
+use Tsqm\Helpers\UuidHelper;
 use Tsqm\Tasks\Task;
 
 class TaskRepository
@@ -25,16 +27,32 @@ class TaskRepository
     public function createTask(Task $task): Task
     {
         try {
+            if ($task->getTransId() === 0) {
+                return $this->createRootTask($task);
+            } else {
+                return $this->createChildTask($task);
+            }
+        } catch (Exception $e) {
+            throw new RepositoryError("Failed to create run: " . $e->getMessage(), 0, $e);
+        }
+    }
+
+    private function createRootTask(Task $task): Task
+    {
+        try {
+            $this->pdo->beginTransaction();
+
             $res = $this->pdo->prepare("
-                INSERT INTO tsqm_tasks (trans_id, created_at, scheduled_for, name, args, retry_policy, hash)
-                VALUES (:trans_id, :created_at, :scheduled_for, :name, :args, :retry_policy, :hash)
+                INSERT INTO tsqm_tasks (parent_id, trans_id, created_at, scheduled_for, name, args, retry_policy, hash)
+                VALUES (:parent_id, :trans_id, :created_at, :scheduled_for, :name, :args, :retry_policy, :hash)
             ");
             if (!$res) {
                 throw new Exception(PdoHelper::formatErrorInfo($this->pdo->errorInfo()));
             }
 
             $res->execute([
-                'trans_id' => $task->getTransId(),
+                'parent_id' => 0,
+                'trans_id' => 0,
                 'created_at' => $task->getCreatedAt()->format(self::MICROSECONDS_TS),
                 'scheduled_for' => $task->getScheduledFor()->format(self::MICROSECONDS_TS),
                 'name' => $task->getName(),
@@ -44,15 +62,69 @@ class TaskRepository
                 'retry_policy' => $task->getRetryPolicy()
                     ? json_encode($task->getRetryPolicy())
                     : null,
-                'hash' => $task->getHash(),
+                'hash' => md5(Uuid::uuid4()->toString()) // Temporary hash
             ]);
 
-            return $task->setId(
-                (int)$this->pdo->lastInsertId()
-            );
+            $taskId = (int)$this->pdo->lastInsertId();
+
+            $task
+                ->setId($taskId)
+                ->setTransId($taskId);
+
+            $res = $this->pdo->prepare("UPDATE tsqm_tasks SET trans_id=:trans_id, hash=:hash WHERE id=:id");
+            if (!$res) {
+                throw new Exception(PdoHelper::formatErrorInfo($this->pdo->errorInfo()));
+            }
+            $res->execute([
+                'trans_id' => $task->getTransId(),
+                'hash' => $task->getHash(), // Permanent hash
+                'id' => $task->getId()
+            ]);
+
+            $this->pdo->commit();
+            return $task;
         } catch (Exception $e) {
-            throw new RepositoryError("Failed to create run: " . $e->getMessage(), 0, $e);
+            $this->pdo->rollBack();
+            throw $e;
         }
+    }
+
+    private function createChildTask(Task $task): Task
+    {
+        $res = $this->pdo->prepare("
+            INSERT INTO tsqm_tasks (trans_id, parent_id, created_at, scheduled_for, name, args, retry_policy, hash)
+            VALUES (:trans_id, :parent_id, :created_at, :scheduled_for, :name, :args, :retry_policy, :hash)
+        ");
+        if (!$res) {
+            throw new Exception(PdoHelper::formatErrorInfo($this->pdo->errorInfo()));
+        }
+
+        if (!$task->getParentId()) {
+            throw new Exception("Parent id is required for child task");
+        }
+
+        if (!$task->getTransId()) {
+            throw new Exception("Trans id is required for child task");
+        }
+
+        $res->execute([
+            'trans_id' => $task->getTransId(),
+            'parent_id' => $task->getParentId(),
+            'created_at' => $task->getCreatedAt()->format(self::MICROSECONDS_TS),
+            'scheduled_for' => $task->getScheduledFor()->format(self::MICROSECONDS_TS),
+            'name' => $task->getName(),
+            'args' => $task->getArgs()
+                ? SerializationHelper::serialize($task->getArgs())
+                : null,
+            'retry_policy' => $task->getRetryPolicy()
+                ? json_encode($task->getRetryPolicy())
+                : null,
+            'hash' => $task->getHash(),
+        ]);
+
+        return $task->setId(
+            (int)$this->pdo->lastInsertId()
+        );
     }
 
     public function updateTask(Task $task): void
@@ -63,7 +135,6 @@ class TaskRepository
 
         $res = $this->pdo->prepare("
             UPDATE tsqm_tasks SET 
-                parent_id=:parent_id,
                 scheduled_for=:scheduled_for,
                 started_at=:started_at,
                 finished_at=:finished_at,
@@ -78,7 +149,6 @@ class TaskRepository
 
         $res->execute([
             'id' => $task->getId(),
-            'parent_id' => $task->getParentId(),
             'started_at' => $task->getStartedAt()
                 ? $task->getStartedAt()->format(self::MICROSECONDS_TS)
                 : null,
@@ -98,7 +168,7 @@ class TaskRepository
         ]);
     }
 
-    public function getTaskByTransId(string $transId): ?Task
+    public function getTaskByTransId(int $transId): ?Task
     {
         $res = $this->pdo->prepare("SELECT * FROM tsqm_tasks WHERE trans_id=:trans_id ORDER BY id LIMIT 1");
         if (!$res) {

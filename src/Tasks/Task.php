@@ -12,7 +12,7 @@ class Task implements JsonSerializable
 {
     private ?int $id = null;
     private int $parent_id = 0;
-    private ?string $trans_id = null;
+    private int $trans_id = 0;
     private ?DateTime $createdAt = null;
     private ?DateTime $scheduledFor = null;
     private ?DateTime $startedAt = null;
@@ -64,13 +64,13 @@ class Task implements JsonSerializable
         return $this->parent_id;
     }
 
-    public function setTransId(string $trans_id): self
+    public function setTransId(int $trans_id): self
     {
         $this->trans_id = $trans_id;
         return $this;
     }
 
-    public function getTransId(): ?string
+    public function getTransId(): int
     {
         return $this->trans_id;
     }
@@ -230,7 +230,7 @@ class Task implements JsonSerializable
             $task->setParentId((int)$data['parent_id']);
         }
         if (isset($data['trans_id'])) {
-            $task->setTransId($data['trans_id']);
+            $task->setTransId((int)$data['trans_id']);
         }
         if (isset($data['created_at'])) {
             $task->setCreatedAt(new DateTime($data['created_at']));

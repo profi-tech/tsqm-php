@@ -12,7 +12,7 @@ class AssertHelper
      * @param DateTime $dt2
      * @param int $deltaMs in milliseconds
      */
-    public function assertDateEquals(DateTime $dt1, DateTime $dt2, int $deltaMs): bool
+    public function assertDateEquals(DateTime $dt1, DateTime $dt2, int $deltaMs = 10): bool
     {
         return abs((int)$dt1->format('Uv') - (int)$dt2->format('Uv')) <= $deltaMs;
     }

@@ -3,7 +3,7 @@ CREATE TABLE
     `tsqm_tasks` (
         `id` INTEGER PRIMARY KEY AUTOINCREMENT,
         `parent_id` INTEGER NOT NULL DEFAULT 0,
-        `trans_id` VARCHAR(36) NOT NULL,
+        `trans_id` INTEGER NOT NULL DEFAULT 0,
         `created_at` TIMESTAMP(6) NOT NULL,
         `scheduled_for` TIMESTAMP(6) NOT NULL,
         `started_at` TIMESTAMP(6),

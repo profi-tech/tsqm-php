@@ -21,12 +21,12 @@ class SmokeTest extends TestCase
         $now = new DateTime();
 
         $this->assertEquals(0, $task->getParentId());
-        $this->assertTrue(preg_match('/^[a-f0-9]{8}-([a-f0-9]{4}-){3}[a-f0-9]{12}$/', $task->getTransId()) === 1);
-        $this->assertTrue($this->assertHelper->assertDateEquals($task->getCreatedAt(), $now, 10));
-        $this->assertTrue($this->assertHelper->assertDateEquals($task->getScheduledFor(), $now, 10));
-        $this->assertTrue($this->assertHelper->assertDateEquals($task->getStartedAt(), $now, 10));
+        $this->assertIsNumeric($task->getTransId());
+        $this->assertTrue($this->assertHelper->assertDateEquals($task->getCreatedAt(), $now));
+        $this->assertTrue($this->assertHelper->assertDateEquals($task->getScheduledFor(), $now));
+        $this->assertTrue($this->assertHelper->assertDateEquals($task->getStartedAt(), $now));
         $this->assertTrue($task->isFinished());
-        $this->assertTrue($this->assertHelper->assertDateEquals($task->getFinishedAt(), $now, 10));
+        $this->assertTrue($this->assertHelper->assertDateEquals($task->getFinishedAt(), $now));
         $this->assertEquals(get_class($this->simpleGreet), $task->getName());
         $this->assertEquals(['John Doe'], $task->getArgs());
         $this->assertEquals((new RetryPolicy())->setMaxRetries(3)->setMinInterval(1000), $task->getRetryPolicy());
@@ -61,15 +61,30 @@ class SmokeTest extends TestCase
 
     public function testDifferentTaskRunSmoke(): void
     {
-        $task = (new Task())
-            ->setCallable($this->simpleGreet)
-            ->setArgs('John Doe');
+        $task0 = $this->tsqm->run(
+            (new Task())
+                ->setCallable($this->simpleGreet)
+                ->setArgs('John Doe 1')
+        );
+        $task1 = $this->tsqm->run(
+            (new Task())
+                ->setCallable($this->greet)
+                ->setArgs('John Doe 2')
+        );
+        $task2 = $this->tsqm->run(
+            (new Task())
+                ->setCallable($this->greetNested)
+                ->setArgs('John Doe 3')
+        );
 
-        $task0 = $this->tsqm->run($task);
-        $task1 = $this->tsqm->run($task);
-        $task2 = $this->tsqm->run($task);
+        $this->assertTrue($task0->isFinished());
+        $this->assertEquals('Hello, John Doe 1!', $task0->getResult()->getText());
 
-        $this->assertNotEquals($task0, $task1);
-        $this->assertNotEquals($task0, $task2);
+        $this->assertTrue($task1->isFinished());
+        $this->assertEquals('Hello, John Doe 2!', $task1->getResult()->getText());
+
+        $this->assertTrue($task2->isFinished());
+        $this->assertEquals('Hello, John Doe 3!', $task2->getResult()[0]->getText());
+        $this->assertEquals('Hello, John Doe 3!', $task2->getResult()[1]->getText());
     }
 }

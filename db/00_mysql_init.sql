@@ -2,7 +2,7 @@
 CREATE TABLE `tsqm_tasks` (
     `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     `parent_id` BIGINT UNSIGNED NOT NULL DEFAULT 0,
-    `trans_id` varchar(36) NOT NULL,
+    `trans_id` BIGINT UNSIGNED NOT NULL DEFAULT 0,
     `created_at` TIMESTAMP(6) NOT NULL,
     `scheduled_for` TIMESTAMP(6) NOT NULL,
     `started_at` TIMESTAMP(6),

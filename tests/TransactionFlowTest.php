@@ -22,7 +22,7 @@ class TransactionFlowTest extends TestCase
 
         $now = new DateTime();
 
-        $this->assertTrue($this->assertHelper->assertDateEquals($task->getFinishedAt(), $now, 10));
+        $this->assertTrue($this->assertHelper->assertDateEquals($task->getFinishedAt(), $now));
         $this->assertEquals(
             (new Greeting("Hello, John Doe!"))
                 ->setSent(true)
@@ -44,7 +44,7 @@ class TransactionFlowTest extends TestCase
         for ($i = 0; $i < 3; $i++) {
             $task = $this->tsqm->getTaskByTransId($task->getTransId());
             $task = $this->tsqm->run($task);
-            $this->assertTrue($this->assertHelper->assertDateEquals($task->getFinishedAt(), $now, 10));
+            $this->assertTrue($this->assertHelper->assertDateEquals($task->getFinishedAt(), $now));
             $this->assertEquals(
                 (new Greeting("Hello, John Doe!"))
                     ->setSent(true)
@@ -64,7 +64,7 @@ class TransactionFlowTest extends TestCase
         $task = $this->tsqm->run($task);
         $now = new DateTime();
 
-        $this->assertTrue($this->assertHelper->assertDateEquals($task->getFinishedAt(), $now, 10));
+        $this->assertTrue($this->assertHelper->assertDateEquals($task->getFinishedAt(), $now));
         $this->assertNull($task->getResult());
         $this->assertEquals(
             new GreeterError("Greet failed", 1717422042),
@@ -81,7 +81,7 @@ class TransactionFlowTest extends TestCase
         $task = $this->tsqm->run($task);
         $now = new DateTime();
 
-        $this->assertTrue($this->assertHelper->assertDateEquals($task->getFinishedAt(), $now, 10));
+        $this->assertTrue($this->assertHelper->assertDateEquals($task->getFinishedAt(), $now));
         $this->assertNull($task->getResult());
         $this->assertEquals(
             new GreeterError("Greet failed", 1717422042),
@@ -91,7 +91,7 @@ class TransactionFlowTest extends TestCase
         for ($i = 0; $i < 3; $i++) {
             $task = $this->tsqm->getTaskByTransId($task->getTransId());
             $task = $this->tsqm->run($task);
-            $this->assertTrue($this->assertHelper->assertDateEquals($task->getFinishedAt(), $now, 10));
+            $this->assertTrue($this->assertHelper->assertDateEquals($task->getFinishedAt(), $now));
             $this->assertNull($task->getResult());
             $this->assertEquals(
                 new GreeterError("Greet failed", 1717422042),
@@ -112,7 +112,7 @@ class TransactionFlowTest extends TestCase
         $sheduledFor = (new DateTime())->modify("+10 second");
 
         $this->assertNull($task->getFinishedAt());
-        $this->assertTrue($this->assertHelper->assertDateEquals($task->getScheduledFor(), $sheduledFor, 10));
+        $this->assertTrue($this->assertHelper->assertDateEquals($task->getScheduledFor(), $sheduledFor));
         $this->assertNull($task->getResult());
         $this->assertEquals(
             new GreeterError("Greet failed", 1717422042),
@@ -144,7 +144,7 @@ class TransactionFlowTest extends TestCase
         // Last success retry
         $task = $this->tsqm->getTaskByTransId($task->getTransId());
         $task = $this->tsqm->run($task);
-        $this->assertTrue($this->assertHelper->assertDateEquals($task->getFinishedAt(), new DateTime(), 10));
+        $this->assertTrue($this->assertHelper->assertDateEquals($task->getFinishedAt(), new DateTime()));
         $this->assertEquals(
             (new Greeting("Hello, John Doe!"))
                 ->setSent(true)
@@ -176,7 +176,7 @@ class TransactionFlowTest extends TestCase
         // Last failed retry
         $task = $this->tsqm->getTaskByTransId($task->getTransId());
         $task = $this->tsqm->run($task);
-        $this->assertTrue($this->assertHelper->assertDateEquals($task->getFinishedAt(), new DateTime(), 10));
+        $this->assertTrue($this->assertHelper->assertDateEquals($task->getFinishedAt(), new DateTime()));
         $this->assertNull($task->getResult());
         $this->assertEquals(
             new GreeterError("Purchase failed", 1700410299),

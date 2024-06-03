@@ -15,7 +15,6 @@ use Tsqm\Errors\ToManyTasks;
 use Tsqm\Errors\TaskNotFound;
 use Tsqm\Errors\TsqmError;
 use Tsqm\Helpers\PdoHelper;
-use Tsqm\Helpers\UuidHelper;
 use Tsqm\Tasks\TaskRepository;
 use Tsqm\Tasks\Task;
 
@@ -47,12 +46,6 @@ class Tsqm
             return $task;
         }
 
-        if (is_null($task->getTransId())) {
-            $this->logger->debug("Create transaction", ['task' => $task]);
-            $trans_id = UuidHelper::random();
-            $task->setTransId($trans_id);
-        }
-
         if (!$this->container->has($task->getName())) {
             throw new TaskClassDefinitionNotFound($task->getName() . " not found in container");
         }
@@ -65,9 +58,7 @@ class Tsqm
         if (is_null($task->getId())) {
             $task->setCreatedAt(new DateTime());
             if (is_null($task->getScheduledFor())) {
-                $task->setScheduledFor(
-                    $task->getCreatedAt()
-                );
+                $task->setScheduledFor($task->getCreatedAt());
             }
             try {
                 $task = $this->repository->createTask($task);
@@ -175,7 +166,7 @@ class Tsqm
         }
     }
 
-    public function getTaskByTransId(string $transId): Task
+    public function getTaskByTransId(int $transId): Task
     {
         $task = $this->repository->getTaskByTransId($transId);
         if (!$task) {
