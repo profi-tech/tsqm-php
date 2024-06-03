@@ -3,23 +3,27 @@
 namespace Examples\Commands;
 
 use Examples\Helpers\DbHelper;
+use PDO;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class InitDbCommand extends Command
+class ResetDbCommand extends Command
 {
-    protected function configure(): void
+    private DbHelper $dbHelper;
+    private PDO $pdo;
+
+    public function __construct(PDO $pdo, DbHelper $dbHelper)
     {
-        $this
-            ->setName("init:db")
-            ->setDescription("Init database for examples");
+        parent::__construct("reset:db");
+        $this->setDescription("Reset database for examples");
+        $this->dbHelper = $dbHelper;
+        $this->pdo = $pdo;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $pdo = DbHelper::createPdoFromEnv();
-        DbHelper::initPdoDb($pdo);
+        $this->dbHelper->resetDb($this->pdo);
         $output->writeln("Done");
         return self::SUCCESS;
     }

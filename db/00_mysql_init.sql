@@ -30,7 +30,7 @@ CREATE TABLE `events` (
     KEY `idx_run_id` (`run_id`)
 );
 
-CREATE TABLE `tasks` (
+CREATE TABLE `tsqm_tasks` (
     `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     `parent_id` BIGINT UNSIGNED NOT NULL DEFAULT 0,
     `trans_id` varchar(36) NOT NULL,

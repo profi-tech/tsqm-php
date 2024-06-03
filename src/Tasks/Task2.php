@@ -169,7 +169,7 @@ class Task2 implements JsonSerializable
         return $this->result;
     }
 
-    public function setError(Throwable $error): self
+    public function setError(?Throwable $error): self
     {
         $this->error = $error;
         return $this;

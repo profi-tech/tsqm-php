@@ -28,7 +28,7 @@ class Task2Repository
     {
         try {
             $res = $this->pdo->prepare("
-                INSERT INTO tasks (trans_id, created_at, scheduled_for, name, args, retry_policy, hash)
+                INSERT INTO tsqm_tasks (trans_id, created_at, scheduled_for, name, args, retry_policy, hash)
                 VALUES (:trans_id, :created_at, :scheduled_for, :name, :args, :retry_policy, :hash)
             ");
             if (!$res) {
@@ -64,7 +64,7 @@ class Task2Repository
         }
 
         $res = $this->pdo->prepare("
-            UPDATE tasks SET 
+            UPDATE tsqm_tasks SET 
                 parent_id=:parent_id,
                 scheduled_for=:scheduled_for,
                 started_at=:started_at,
@@ -100,9 +100,9 @@ class Task2Repository
         ]);
     }
 
-    public function getTransactionTask(string $transId): ?Task2
+    public function getTaskByTransId(string $transId): ?Task2
     {
-        $res = $this->pdo->prepare("SELECT * FROM tasks WHERE trans_id=:trans_id ORDER BY id LIMIT 1");
+        $res = $this->pdo->prepare("SELECT * FROM tsqm_tasks WHERE trans_id=:trans_id ORDER BY id LIMIT 1");
         if (!$res) {
             throw new Exception(PdoHelper::formatErrorInfo($this->pdo->errorInfo()));
         }
@@ -115,6 +115,40 @@ class Task2Repository
     }
 
     /**
+     * @param DateTime $until
+     * @param int $limit
+     * @return array<Task2>
+     * @throws RepositoryError
+     */
+    public function getScheduledTasks(DateTime $until, int $limit): array
+    {
+        try {
+            $res = $this->pdo->prepare("
+                SELECT * FROM tsqm_tasks
+                WHERE scheduled_for <= :until AND finished_at IS NULL AND parent_id = 0
+                ORDER BY scheduled_for ASC
+                LIMIT $limit
+            ");
+            if (!$res) {
+                throw new Exception(PdoHelper::formatErrorInfo($this->pdo->errorInfo()));
+            }
+
+            $res->execute([
+                'until' => $until->format('Y-m-d H:i:s.v'),
+            ]);
+
+            $tasks = [];
+            while ($row = $res->fetch(PDO::FETCH_ASSOC)) {
+                $tasks[] = Task2::fromArray($row);
+            }
+
+            return $tasks;
+        } catch (Exception $e) {
+            throw new RepositoryError("Failed to get scheduled tasks: " . $e->getMessage(), 0, $e);
+        }
+    }
+
+    /**
      * @param int $parentId
      * @return array<Task2>
      * @throws Exception
@@ -123,7 +157,7 @@ class Task2Repository
     public function getTasksByParentId(int $parentId): array
     {
         $tasks = [];
-        $res = $this->pdo->prepare("SELECT * FROM tasks WHERE parent_id = :parent_id ORDER BY id");
+        $res = $this->pdo->prepare("SELECT * FROM tsqm_tasks WHERE parent_id = :parent_id ORDER BY id");
         if (!$res) {
             throw new Exception(PdoHelper::formatErrorInfo($this->pdo->errorInfo()));
         }

@@ -7,16 +7,16 @@ use PDO;
 
 class DbHelper
 {
-    public static function createPdoFromEnv(): PDO
+    public function getPdoFromEnv(): PDO
     {
-        return self::createPdo(
-            $_ENV['DB_PDO_DSN'],
-            $_ENV['DB_PDO_USERNAME'],
-            $_ENV['DB_PDO_PASSWORD']
+        return $this->getPdo(
+            isset($_ENV['DB_PDO_DSN']) ? $_ENV['DB_PDO_DSN'] : null,
+            isset($_ENV['DB_PDO_USERNAME']) ? $_ENV['DB_PDO_USERNAME'] : null,
+            isset($_ENV['DB_PDO_PASSWORD']) ? $_ENV['DB_PDO_PASSWORD'] : null
         );
     }
 
-    public static function createPdo(string $dsn = null, string $username = null, string $password = null): PDO
+    public function getPdo(string $dsn = null, string $username = null, string $password = null): PDO
     {
         $dsn = $dsn ?? "sqlite::memory:";
         $pdo = new PDO($dsn, $username, $password);
@@ -24,7 +24,7 @@ class DbHelper
         return $pdo;
     }
 
-    public static function initPdoDb(PDO $pdo): void
+    public function resetDb(PDO $pdo): void
     {
         $driver = $pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
         switch ($driver) {
@@ -38,8 +38,7 @@ class DbHelper
                 throw new Exception("Unsupported database driver: $driver");
         }
 
-        $pdo->prepare("DROP TABLE IF EXISTS `runs`")->execute();
-        $pdo->prepare("DROP TABLE IF EXISTS `events`")->execute();
+        $pdo->prepare("DROP TABLE IF EXISTS `tsqm_tasks`")->execute();
 
         $queries = explode(";", $sql);
         foreach ($queries as $query) {

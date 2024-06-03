@@ -26,5 +26,11 @@ jobs:
     - name: Install dependencies
       run: composer install --prefer-dist --no-progress
 
-    - name: Run all checks
-      run: composer check
+    - name: Lint
+      run: composer lint
+
+    - name: Analyse
+      run: composer analyse
+
+    - name: Test
+      run: composer test

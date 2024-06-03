@@ -4,11 +4,11 @@ namespace Examples;
 
 use Psr\Container\ContainerInterface;
 use DI\ContainerBuilder;
-use Examples\Commands\HelloWorld2Command;
+use Examples\Commands\HelloWorldCommand;
 use Examples\Commands\HelloWorldSimpleCommand;
-use Examples\Commands\InitDbCommand;
+use Examples\Commands\ResetDbCommand;
 use Examples\Commands\ListScheduledCommand;
-use Examples\Commands\RunTransactionCommand;
+use Examples\Commands\RunTaskCommand;
 use Examples\Commands\RunScheduledCommand;
 use Examples\Helpers\DbHelper;
 use Monolog\Handler\StreamHandler;
@@ -32,17 +32,19 @@ class Container
 
                 Application::class => static function (ContainerInterface $c) {
                     $app = new Application();
-                    $app->add($c->get(InitDbCommand::class));
-                    $app->add($c->get(RunTransactionCommand::class));
+                    $app->add($c->get(ResetDbCommand::class));
+                    $app->add($c->get(RunTaskCommand::class));
                     $app->add($c->get(ListScheduledCommand::class));
                     $app->add($c->get(RunScheduledCommand::class));
-                    $app->add($c->get(HelloWorld2Command::class));
+                    $app->add($c->get(HelloWorldCommand::class));
                     $app->add($c->get(HelloWorldSimpleCommand::class));
                     return $app;
                 },
 
-                PDO::class => static function () {
-                    return DbHelper::createPdoFromEnv();
+                PDO::class => static function (ContainerInterface $c) {
+                    /** @var DbHelper */
+                    $dbHelper = $c->get(DbHelper::class);
+                    return $dbHelper->getPdoFromEnv();
                 },
 
                 Tsqm2::class => static function (ContainerInterface $c) {

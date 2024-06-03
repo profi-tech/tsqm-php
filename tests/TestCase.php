@@ -41,10 +41,11 @@ class TestCase extends \PHPUnit\Framework\TestCase
 
         $this->assertHelper = new AssertHelper();
 
-        $this->pdo = DbHelper::createPdo();
-        DbHelper::initPdoDb($this->pdo);
-
         $this->container = Container::create();
+
+        $this->pdo = $this->container->get(PDO::class);
+        $dbHelper = $this->container->get(DbHelper::class);
+        $dbHelper->resetDb($this->pdo);
 
         $this->tsqm = new Tsqm(
             (new Config())

@@ -8,6 +8,7 @@ use Generator;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use Tsqm\Errors\InvalidGeneratorItem;
+use Tsqm\Errors\RepositoryError;
 use Tsqm\Errors\TaskClassDefinitionNotFound;
 use Tsqm\Errors\TaskHashMismatch;
 use Tsqm\Errors\ToManyTasks;
@@ -132,11 +133,13 @@ class Tsqm2
                 }
             }
 
-            $this->logger->debug("Task finished", ['task' => $task]);
             $task
                 ->setFinishedAt(new DateTime())
-                ->setResult($result);
+                ->setResult($result)
+                ->setError(null);
+            $this->logger->debug("Task finished", ['task' => $task]);
             $this->repository->updateTask($task);
+
             return $task;
         } catch (TsqmCrash $e) {
             throw $e;
@@ -162,12 +165,20 @@ class Tsqm2
         }
     }
 
-    public function getTransactionTask(string $transId): Task2
+    public function getTaskByTransId(string $transId): Task2
     {
-        $task = $this->repository->getTransactionTask($transId);
+        $task = $this->repository->getTaskByTransId($transId);
         if (!$task) {
             throw new TransactionNotFound($transId);
         }
         return $task;
+    }
+
+    /**
+     * @return array<Task2>
+     */
+    public function getScheduledTasks(DateTime $until, int $limit): array
+    {
+        return $this->repository->getScheduledTasks($until, $limit);
     }
 }
