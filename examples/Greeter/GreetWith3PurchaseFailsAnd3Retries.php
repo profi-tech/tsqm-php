@@ -1,6 +1,6 @@
 <?php
 
-namespace Examples\Greeter\Callables;
+namespace Examples\Greeter;
 
 use Generator;
 use Tsqm\Tasks\RetryPolicy;

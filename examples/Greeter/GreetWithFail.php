@@ -1,8 +1,7 @@
 <?php
 
-namespace Examples\Greeter\Callables;
+namespace Examples\Greeter;
 
-use Examples\Greeter\GreeterError;
 use Generator;
 use Tsqm\Tasks\Task;
 

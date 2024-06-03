@@ -1,27 +1,26 @@
 <?php
 
-namespace Examples\Greeter\Callables;
+namespace Examples\Greeter;
 
 use Generator;
-use Tsqm\Tasks\RetryPolicy;
 use Tsqm\Tasks\Task;
 
-class GreetWith3PurchaseFailsAnd2Retries
+class Greet
 {
     private ValidateName $validateName;
     private CreateGreeting $createGreeting;
-    private PurchaseWith3Fails $purchaseWith3Fails;
+    private Purchase $purchase;
     private SendGreeting $sendGreeting;
 
     public function __construct(
         ValidateName $validateName,
         CreateGreeting $createGreeting,
-        PurchaseWith3Fails $purchaseWith3Fails,
+        Purchase $purchase,
         SendGreeting $sendGreeting
     ) {
         $this->validateName = $validateName;
         $this->createGreeting = $createGreeting;
-        $this->purchaseWith3Fails = $purchaseWith3Fails;
+        $this->purchase = $purchase;
         $this->sendGreeting = $sendGreeting;
     }
 
@@ -32,11 +31,7 @@ class GreetWith3PurchaseFailsAnd2Retries
             return false;
         }
         $greeting = yield (new Task())->setCallable($this->createGreeting)->setArgs($name);
-
-        $greeting = yield (new Task())
-            ->setCallable($this->purchaseWith3Fails)
-            ->setArgs($greeting)
-            ->setRetryPolicy((new RetryPolicy())->setMaxRetries(2)->setMinInterval(0));
+        $greeting = yield (new Task())->setCallable($this->purchase)->setArgs($greeting);
 
         return yield (new Task())->setCallable($this->sendGreeting)->setArgs($greeting);
     }

@@ -1,9 +1,6 @@
 <?php
 
-namespace Examples\Greeter\Callables;
-
-use Examples\Greeter\GreeterError;
-use Examples\Greeter\Greeting;
+namespace Examples\Greeter;
 
 class SimpleGreetWith3Fails
 {

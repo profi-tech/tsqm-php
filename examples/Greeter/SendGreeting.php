@@ -1,8 +1,6 @@
 <?php
 
-namespace Examples\Greeter\Callables;
-
-use Examples\Greeter\Greeting;
+namespace Examples\Greeter;
 
 class SendGreeting
 {

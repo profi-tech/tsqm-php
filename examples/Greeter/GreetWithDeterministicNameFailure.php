@@ -1,6 +1,6 @@
 <?php
 
-namespace Examples\Greeter\Callables;
+namespace Examples\Greeter;
 
 use Examples\Greeter\Greeting;
 use Exception;

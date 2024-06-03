@@ -1,30 +1,30 @@
 <?php
 
-namespace Examples\Greeter\Callables;
+namespace Examples\Greeter;
 
 use Exception;
 use Generator;
 use Tsqm\Tasks\RetryPolicy;
 use Tsqm\Tasks\Task;
 
-class GreetWith3PurchaseFailsAndRevert
+class GreetWithRandomFail
 {
     private ValidateName $validateName;
     private CreateGreeting $createGreeting;
-    private PurchaseWith3Fails $purchaseWith3Fails;
+    private PurchaseWithRandomFail $purchaseWithRandomFail;
     private RevertGreeting $revertGreeting;
     private SendGreeting $sendGreeting;
 
     public function __construct(
         ValidateName $validateName,
         CreateGreeting $createGreeting,
-        PurchaseWith3Fails $purchaseWith3Fails,
+        PurchaseWithRandomFail $purchaseWithRandomFail,
         RevertGreeting $revertGreeting,
         SendGreeting $sendGreeting
     ) {
         $this->validateName = $validateName;
         $this->createGreeting = $createGreeting;
-        $this->purchaseWith3Fails = $purchaseWith3Fails;
+        $this->purchaseWithRandomFail = $purchaseWithRandomFail;
         $this->revertGreeting = $revertGreeting;
         $this->sendGreeting = $sendGreeting;
     }
@@ -35,14 +35,18 @@ class GreetWith3PurchaseFailsAndRevert
         if (!$valid) {
             return false;
         }
-        $greeting = yield (new Task())->setCallable($this->createGreeting)->setArgs($name);
+
+        $greeting = yield (new Task())
+            ->setCallable($this->createGreeting)
+            ->setArgs($name);
+
         try {
-            $greeting = yield (new Task())
-                ->setCallable($this->purchaseWith3Fails)
+            $greeting = yield (new Task())->setCallable($this->purchaseWithRandomFail)
                 ->setArgs($greeting)
-                ->setRetryPolicy((new RetryPolicy())->setMaxRetries(2)->setMinInterval(0));
+                ->setRetryPolicy((new RetryPolicy())->setMaxRetries(3)->setMinInterval(10000));
         } catch (Exception $e) {
-            return yield (new Task())->setCallable($this->revertGreeting)->setArgs($greeting);
+            yield (new Task())->setCallable($this->revertGreeting)->setArgs($greeting);
+            return false;
         }
 
         return yield (new Task())->setCallable($this->sendGreeting)->setArgs($greeting);
