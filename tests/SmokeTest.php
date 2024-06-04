@@ -22,11 +22,11 @@ class SmokeTest extends TestCase
 
         $this->assertEquals(0, $task->getParentId());
         $this->assertIsNumeric($task->getRootId());
-        $this->assertTrue($this->assertHelper->assertDateEquals($task->getCreatedAt(), $now));
-        $this->assertTrue($this->assertHelper->assertDateEquals($task->getScheduledFor(), $now));
-        $this->assertTrue($this->assertHelper->assertDateEquals($task->getStartedAt(), $now));
+        $this->assertDateEquals($task->getCreatedAt(), $now);
+        $this->assertDateEquals($task->getScheduledFor(), $now);
+        $this->assertDateEquals($task->getStartedAt(), $now);
         $this->assertTrue($task->isFinished());
-        $this->assertTrue($this->assertHelper->assertDateEquals($task->getFinishedAt(), $now));
+        $this->assertDateEquals($task->getFinishedAt(), $now);
         $this->assertEquals(get_class($this->simpleGreet), $task->getName());
         $this->assertEquals(['John Doe'], $task->getArgs());
         $this->assertEquals((new RetryPolicy())->setMaxRetries(3)->setMinInterval(1000), $task->getRetryPolicy());

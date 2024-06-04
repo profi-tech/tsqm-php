@@ -15,9 +15,19 @@ class SchedulerTest extends TestCase
             ->setArgs('John Doe');
 
         $task = $this->tsqm->runTask($task);
-        $this->assertTrue(
-            $this->assertHelper->assertDateEquals($task->getScheduledFor(), new DateTime(), 50)
-        );
+        $this->assertDateEquals($task->getScheduledFor(), new DateTime(), 50);
+        $this->assertTrue($task->isFinished());
+    }
+
+    public function testForceAsync(): void
+    {
+        $task = (new Task())
+            ->setCallable($this->simpleGreet)
+            ->setArgs('John Doe');
+
+        $task = $this->tsqm->runTask($task, true);
+        $this->assertDateEquals($task->getScheduledFor(), new DateTime(), 50);
+        $this->assertFalse($task->isFinished());
     }
 
     public function testScheduledFor(): void
@@ -31,10 +41,8 @@ class SchedulerTest extends TestCase
 
         $task = $this->tsqm->runTask($task);
 
-        $this->assertEquals(
-            $scheduleFor->format('Y-m-d H:i:s.v'),
-            $task->getScheduledFor()->format('Y-m-d H:i:s.v')
-        );
+        $this->assertDateEquals($scheduleFor, $task->getScheduledFor());
+        $this->assertFalse($task->isFinished());
     }
 
     public function testRetryScheduleFor(): void
@@ -50,12 +58,11 @@ class SchedulerTest extends TestCase
 
         $task = $this->tsqm->runTask($task);
 
-        $this->assertTrue(
-            $this->assertHelper->assertDateEquals(
-                $task->getScheduledFor(),
-                (new DateTime())->modify('+1500 milliseconds')
-            )
+        $this->assertDateEquals(
+            $task->getScheduledFor(),
+            (new DateTime())->modify('+1500 milliseconds')
         );
+        $this->assertFalse($task->isFinished());
     }
 
     public function testRunScheduledRun(): void

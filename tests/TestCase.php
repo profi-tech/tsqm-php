@@ -2,6 +2,7 @@
 
 namespace Tests;
 
+use DateTime;
 use DI\ContainerBuilder;
 use Examples\Greeter\Greet;
 use Examples\Greeter\GreetWith3Fails;
@@ -17,17 +18,12 @@ use Examples\Greeter\SimpleGreet;
 use Examples\Greeter\SimpleGreetWith3Fails;
 use Examples\Greeter\SimpleGreetWithFail;
 use Examples\Helpers\DbHelper;
-use Monolog\Logger;
 use PDO;
 use Psr\Container\ContainerInterface;
-use Tests\Helpers\AssertHelper;
-use Tsqm\Options;
-use Tsqm\Tasks\TaskRepository;
 use Tsqm\Tsqm;
 
 class TestCase extends \PHPUnit\Framework\TestCase
 {
-    protected AssertHelper $assertHelper;
     protected PDO $pdo;
     protected ContainerInterface $container;
 
@@ -51,23 +47,21 @@ class TestCase extends \PHPUnit\Framework\TestCase
     {
         parent::setUp();
 
-        $this->assertHelper = new AssertHelper();
-
         $dsn = getenv("TSQM_TEST_MYSQL") ? "mysql:host=db;dbname=tsqm;" : "sqlite::memory:";
         $username = "root";
         $password = "root";
 
-        $pdo = new PDO($dsn, $username, $password);
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        $this->pdo = new PDO($dsn, $username, $password);
+        $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-        $dbHelper = new DbHelper($pdo);
+        $dbHelper = new DbHelper($this->pdo);
         $dbHelper->resetDb();
 
         $this->container = (new ContainerBuilder())
             ->useAutowiring(true)
             ->build();
 
-        $this->tsqm = new Tsqm($this->container, $pdo);
+        $this->tsqm = new Tsqm($this->container, $this->pdo);
 
         $this->simpleGreet = $this->container->get(SimpleGreet::class);
         $this->simpleGreetWithFail = $this->container->get(SimpleGreetWithFail::class);
@@ -83,5 +77,14 @@ class TestCase extends \PHPUnit\Framework\TestCase
         $this->greetWithDeterministicArgsFailure = $this->container->get(GreetWithDeterministicArgsFailure::class);
         $this->greetWithDeterministicNameFailure = $this->container->get(GreetWithDeterministicNameFailure::class);
         $this->greetNested = $this->container->get(GreetNested::class);
+    }
+
+    public function assertDateEquals(DateTime $expected, DateTime $actual, int $deltaMs = 10): bool
+    {
+        $isEqual = abs((int)$expected->format('Uv') - (int)$actual->format('Uv')) <= $deltaMs;
+        if (!$isEqual) {
+            $this->fail("Failed asserting that two DateTime instances are equal with $deltaMs ms delta");
+        }
+        return $isEqual;
     }
 }

@@ -22,14 +22,10 @@ class RetryPolicyTest extends TestCase
         $retryPolicy->setMinInterval(300);
 
         $retryAt = $retryPolicy->getRetryAt(1);
-        $this->assertTrue(
-            $this->assertHelper->assertDateEquals((new DateTime())->modify('+300 milliseconds'), $retryAt)
-        );
+        $this->assertDateEquals((new DateTime())->modify('+300 milliseconds'), $retryAt);
 
         $retryAt = $retryPolicy->getRetryAt(4);
-        $this->assertTrue(
-            $this->assertHelper->assertDateEquals((new DateTime())->modify('+300 milliseconds'), $retryAt)
-        );
+        $this->assertDateEquals((new DateTime())->modify('+300 milliseconds'), $retryAt);
 
         $retryAt = $retryPolicy->getRetryAt(5);
         $this->assertNull($retryAt);

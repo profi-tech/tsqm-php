@@ -20,7 +20,7 @@ class TaskFlowTest extends TestCase
 
         $now = new DateTime();
 
-        $this->assertTrue($this->assertHelper->assertDateEquals($task->getFinishedAt(), $now));
+        $this->assertDateEquals($task->getFinishedAt(), $now);
         $this->assertEquals((new Greeting("Hello, John Doe!"))->setSent(true), $task->getResult());
         $this->assertNull($task->getError());
     }
@@ -35,7 +35,7 @@ class TaskFlowTest extends TestCase
 
         $task = $this->tsqm->runTask($task);
 
-        $this->assertTrue($this->assertHelper->assertDateEquals($task->getFinishedAt(), $now));
+        $this->assertDateEquals($task->getFinishedAt(), $now);
         $this->assertEquals((new Greeting("Hello, John Doe!"))->setSent(true), $task->getResult());
         $this->assertNull($task->getError());
         $this->assertEquals(0, $task->getRetried());
@@ -43,7 +43,7 @@ class TaskFlowTest extends TestCase
         for ($i = 0; $i < 3; $i++) {
             $task = $this->tsqm->getTask($task->getRootId());
             $task = $this->tsqm->runTask($task);
-            $this->assertTrue($this->assertHelper->assertDateEquals($task->getFinishedAt(), $now));
+            $this->assertDateEquals($task->getFinishedAt(), $now);
             $this->assertEquals((new Greeting("Hello, John Doe!"))->setSent(true), $task->getResult());
             $this->assertNull($task->getError());
             $this->assertEquals(0, $task->getRetried());
@@ -61,9 +61,7 @@ class TaskFlowTest extends TestCase
 
         $scheduledFor = (new DateTime())->modify("+10 second");
 
-        $this->assertTrue(
-            $this->assertHelper->assertDateEquals($task->getScheduledFor(), $scheduledFor)
-        );
+        $this->assertDateEquals($task->getScheduledFor(), $scheduledFor);
         $this->assertNull($task->getFinishedAt());
         $this->assertNull($task->getResult());
         $this->assertNull($task->getError());
@@ -80,9 +78,7 @@ class TaskFlowTest extends TestCase
 
         $scheduledFor = (new DateTime())->modify("+10 second");
 
-        $this->assertTrue(
-            $this->assertHelper->assertDateEquals($task->getScheduledFor(), $scheduledFor)
-        );
+        $this->assertDateEquals($task->getScheduledFor(), $scheduledFor);
         $this->assertNull($task->getFinishedAt());
         $this->assertNull($task->getResult());
         $this->assertNull($task->getError());
@@ -90,9 +86,7 @@ class TaskFlowTest extends TestCase
         for ($i = 0; $i < 3; $i++) {
             $task = $this->tsqm->getTask($task->getRootId());
             $task = $this->tsqm->runTask($task);
-            $this->assertTrue(
-                $this->assertHelper->assertDateEquals($task->getScheduledFor(), $scheduledFor)
-            );
+            $this->assertDateEquals($task->getScheduledFor(), $scheduledFor);
             $this->assertNull($task->getFinishedAt());
             $this->assertNull($task->getResult());
             $this->assertNull($task->getError());
@@ -110,9 +104,7 @@ class TaskFlowTest extends TestCase
 
         $scheduledFor = (new DateTime())->modify("+10 second");
 
-        $this->assertTrue(
-            $this->assertHelper->assertDateEquals($task->getScheduledFor(), $scheduledFor)
-        );
+        $this->assertDateEquals($task->getScheduledFor(), $scheduledFor);
         $this->assertNull($task->getFinishedAt());
         $this->assertNull($task->getResult());
         $this->assertNull($task->getError());
@@ -129,7 +121,7 @@ class TaskFlowTest extends TestCase
 
         $now = new DateTime();
 
-        $this->assertTrue($this->assertHelper->assertDateEquals($task->getFinishedAt(), $now));
+        $this->assertDateEquals($task->getFinishedAt(), $now);
         $this->assertEquals(new GreeterError("Greet John Doe failed", 1717414866), $task->getError());
         $this->assertNull($this->getResult());
     }
@@ -144,7 +136,7 @@ class TaskFlowTest extends TestCase
 
         $now = new DateTime();
 
-        $this->assertTrue($this->assertHelper->assertDateEquals($task->getFinishedAt(), $now));
+        $this->assertDateEquals($task->getFinishedAt(), $now);
         $this->assertEquals(new GreeterError("Greet John Doe failed", 1717414866), $task->getError());
         $this->assertNull($this->getResult());
         $this->assertEquals(0, $task->getRetried());
@@ -152,7 +144,7 @@ class TaskFlowTest extends TestCase
         for ($i = 0; $i < 3; $i++) {
             $task = $this->tsqm->getTask($task->getRootId());
             $task = $this->tsqm->runTask($task);
-            $this->assertTrue($this->assertHelper->assertDateEquals($task->getFinishedAt(), $now));
+            $this->assertDateEquals($task->getFinishedAt(), $now);
             $this->assertEquals(new GreeterError("Greet John Doe failed", 1717414866), $task->getError());
             $this->assertNull($this->getResult());
             $this->assertEquals(0, $task->getRetried());
@@ -174,9 +166,7 @@ class TaskFlowTest extends TestCase
 
         $scheduledFor = (new DateTime())->modify("+10 second");
 
-        $this->assertTrue(
-            $this->assertHelper->assertDateEquals($task->getScheduledFor(), $scheduledFor)
-        );
+        $this->assertDateEquals($task->getScheduledFor(), $scheduledFor);
         $this->assertNull($task->getFinishedAt());
         $this->assertNull($task->getResult());
         $this->assertEquals(new GreeterError("Greet John Doe failed", 1717414866), $task->getError());

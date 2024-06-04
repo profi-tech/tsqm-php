@@ -8,7 +8,6 @@ use Generator;
 use PDO;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
-use Psr\Log\NullLogger;
 use Tsqm\Errors\DuplicatedTask;
 use Tsqm\Errors\InvalidGeneratorItem;
 use Tsqm\Errors\TaskClassDefinitionNotFound;
@@ -17,6 +16,7 @@ use Tsqm\Errors\ToManyTasks;
 use Tsqm\Errors\TaskNotFound;
 use Tsqm\Errors\TsqmError;
 use Tsqm\Helpers\PdoHelper;
+use Tsqm\Queue\QueueInterface;
 use Tsqm\Tasks\TaskRepository;
 use Tsqm\Tasks\Task;
 
@@ -26,6 +26,7 @@ class Tsqm
 
     private ContainerInterface $container;
     private TaskRepository $repository;
+    private QueueInterface $queue;
     private LoggerInterface $logger;
 
     public function __construct(
@@ -33,12 +34,15 @@ class Tsqm
         PDO $pdo,
         ?Options $options = null
     ) {
+        $options = $options ?? new Options();
+
         $this->container = $container;
         $this->repository = new TaskRepository($pdo);
-        $this->logger = $options ? $options->getLogger() : new NullLogger();
+        $this->logger = $options->getLogger();
+        $this->queue = $options->getQueue();
     }
 
-    public function runTask(Task $task): Task
+    public function runTask(Task $task, bool $forceAsync = false): Task
     {
         $task = clone $task; // Make task immutable
 
@@ -74,7 +78,8 @@ class Tsqm
             }
         }
 
-        if ($task->getScheduledFor() > new DateTime()) {
+        if ($forceAsync || $task->getScheduledFor() > new DateTime()) {
+            $this->enqueue($task);
             $this->logger->debug("Task scheduled", ['task' => $task]);
             return $task;
         }
@@ -159,6 +164,7 @@ class Tsqm
 
             if (!is_null($retryAt)) {
                 $task->setScheduledFor($retryAt);
+                $this->enqueue($task);
                 $this->logger->debug("Task failed and retry scheduled", ['task' => $task]);
             } else {
                 $task->setFinishedAt(new DateTime());
@@ -185,5 +191,14 @@ class Tsqm
     public function getScheduledTasks(DateTime $until, int $limit): array
     {
         return $this->repository->getScheduledTasks($until, $limit);
+    }
+
+    private function enqueue(Task $task): void
+    {
+        try {
+            $this->queue->enqueue($task->getId(), $task->getScheduledFor());
+        } catch (Exception $e) {
+            throw new TsqmError("Failed to enqueue task", 0, $e);
+        }
     }
 }
