@@ -19,10 +19,10 @@ class DbHelper
         $driver = $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
         switch ($driver) {
             case 'mysql':
-                $sql = file_get_contents(__DIR__ . "/../../db/00_mysql_init.sql");
+                $sql = file_get_contents(__DIR__ . "/../../db/mysql_init.sql");
                 break;
             case 'sqlite':
-                $sql = file_get_contents(__DIR__ . "/../../db/00_sqlite_init.sql");
+                $sql = file_get_contents(__DIR__ . "/../../db/sqlite_init.sql");
                 break;
             default:
                 throw new Exception("Unsupported database driver: $driver");
