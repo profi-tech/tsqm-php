@@ -75,6 +75,11 @@ class Task implements JsonSerializable
         return $this->root_id;
     }
 
+    public function isRoot(): bool
+    {
+        return $this->id === $this->root_id;
+    }
+
     public function setCreatedAt(?DateTime $createdAt): self
     {
         $this->createdAt = $createdAt;

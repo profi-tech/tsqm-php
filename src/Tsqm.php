@@ -13,8 +13,8 @@ use Tsqm\Errors\DuplicatedTask;
 use Tsqm\Errors\InvalidGeneratorItem;
 use Tsqm\Errors\TaskClassDefinitionNotFound;
 use Tsqm\Errors\DeterminismViolation;
+use Tsqm\Errors\EnqueueFailed;
 use Tsqm\Errors\ToManyTasks;
-use Tsqm\Errors\TaskNotFound;
 use Tsqm\Errors\TsqmError;
 use Tsqm\Helpers\PdoHelper;
 use Tsqm\Queue\QueueInterface;
@@ -148,8 +148,13 @@ class Tsqm
                 ->setResult($result)
                 ->setError(null);
 
-            $this->log(Logger::INFO, "Task finished", ['task' => $task]);
-            $this->repository->updateTask($task);
+            if ($task->isRoot()) {
+                $this->log(Logger::INFO, "Root task finished, cleanup started", ['task' => $task]);
+                $this->repository->deleteTask($task->getRootId());
+            } else {
+                $this->log(Logger::INFO, "Task finished", ['task' => $task]);
+                $this->repository->updateTask($task);
+            }
 
             return $task;
         } catch (TsqmError $e) {
@@ -177,11 +182,11 @@ class Tsqm
         }
     }
 
-    public function getTask(int $id): Task
+    public function getTask(int $id): ?Task
     {
         $task = $this->repository->getTask($id);
-        if (!$task) {
-            throw new TaskNotFound("Task not found: $id");
+        if (is_null($task)) {
+            $this->log(Logger::WARNING, "Task not found", ['id' => $id]);
         }
         return $task;
     }
@@ -199,7 +204,7 @@ class Tsqm
         try {
             $this->queue->enqueue($task->getId(), $task->getScheduledFor());
         } catch (Exception $e) {
-            throw new TsqmError("Failed to enqueue task", 0, $e);
+            throw new EnqueueFailed("Failed to enqueue task", 0, $e);
         }
     }
 
@@ -212,7 +217,7 @@ class Tsqm
         try {
             $this->logger->log($level, $message, $context);
         } catch (Exception $e) {
-            throw new TsqmError("Failed to log debug message", 0, $e);
+            throw new TsqmError("Failed to log message", 0, $e);
         }
     }
 }

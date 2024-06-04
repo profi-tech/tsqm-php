@@ -237,4 +237,13 @@ class TaskRepository
 
         return $tasks;
     }
+
+    public function deleteTask(int $id): void
+    {
+        $res = $this->pdo->prepare("DELETE FROM tsqm_tasks WHERE root_id=:root_id");
+        if (!$res) {
+            throw new Exception(PdoHelper::formatErrorInfo($this->pdo->errorInfo()));
+        }
+        $res->execute(['root_id' => $id]);
+    }
 }

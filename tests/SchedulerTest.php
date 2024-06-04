@@ -72,9 +72,6 @@ class SchedulerTest extends TestCase
             ->setArgs('John Doe');
         $task = $this->tsqm->runTask($task);
         $this->assertTrue($task->isFinished());
-
-        $task = $this->tsqm->getTask($task->getRootId());
-        $this->assertTrue($task->isFinished());
     }
 
     public function testListScheduledTasks(): void

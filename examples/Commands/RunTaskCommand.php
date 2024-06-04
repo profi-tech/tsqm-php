@@ -29,6 +29,11 @@ class RunTaskCommand extends Command
     {
         $taskId = $input->getArgument("taskId");
         $task = $this->tsqm->getTask($taskId);
+        if (!$task) {
+            $this->logger->error("Task not found", ['taskId' => $taskId]);
+            return self::FAILURE;
+        }
+
         $task = $this->tsqm->runTask($task);
         $this->logger->debug("Final run result:", ['task' => $task]);
         return self::SUCCESS;
