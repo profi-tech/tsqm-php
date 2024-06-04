@@ -6,5 +6,5 @@ use DateTime;
 
 interface QueueInterface
 {
-    public function enqueue(int $taskId, DateTime $scheduledFor): void;
+    public function enqueue(string $taskId, DateTime $scheduledFor): void;
 }

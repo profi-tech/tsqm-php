@@ -17,6 +17,7 @@ use Tsqm\Errors\EnqueueFailed;
 use Tsqm\Errors\ToManyTasks;
 use Tsqm\Errors\TsqmError;
 use Tsqm\Helpers\PdoHelper;
+use Tsqm\Helpers\UuidHelper;
 use Tsqm\Queue\QueueInterface;
 use Tsqm\Tasks\TaskRepository;
 use Tsqm\Tasks\Task;
@@ -63,9 +64,14 @@ class Tsqm
             throw new TaskClassDefinitionNotFound($task->getName() . " is not callable");
         }
 
-        if (is_null($task->getId())) {
+        if ($task->isNullCreatedAt()) {
+            $taskId = UuidHelper::random();
+            $task->setId($taskId);
+            if ($task->isNullRoot()) {
+                $task->setRootId($task->getId());
+            }
             $task->setCreatedAt(new DateTime());
-            if (is_null($task->getScheduledFor())) {
+            if ($task->isNullScheduledFor()) {
                 $task->setScheduledFor($task->getCreatedAt());
             }
             try {
@@ -182,7 +188,7 @@ class Tsqm
         }
     }
 
-    public function getTask(int $id): ?Task
+    public function getTask(string $id): ?Task
     {
         $task = $this->repository->getTask($id);
         if (is_null($task)) {

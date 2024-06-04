@@ -20,8 +20,9 @@ class SmokeTest extends TestCase
 
         $now = new DateTime();
 
-        $this->assertEquals(0, $task->getParentId());
-        $this->assertIsNumeric($task->getRootId());
+        $this->assertUuid($task->getId());
+        $this->assertNull($task->getParentId());
+        $this->assertUuid($task->getRootId());
         $this->assertDateEquals($task->getCreatedAt(), $now);
         $this->assertDateEquals($task->getScheduledFor(), $now);
         $this->assertDateEquals($task->getStartedAt(), $now);

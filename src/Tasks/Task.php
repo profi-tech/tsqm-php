@@ -10,9 +10,9 @@ use Tsqm\Helpers\SerializationHelper;
 
 class Task implements JsonSerializable
 {
-    private ?int $id = null;
-    private int $parent_id = 0;
-    private int $root_id = 0;
+    private ?string $id = null;
+    private ?string $parent_id = null;
+    private ?string $root_id = null;
     private ?DateTime $createdAt = null;
     private ?DateTime $scheduledFor = null;
     private ?DateTime $startedAt = null;
@@ -42,42 +42,53 @@ class Task implements JsonSerializable
         return $this;
     }
 
-    public function setId(int $id): self
+    public function setId(string $id): self
     {
         $this->id = $id;
         return $this;
     }
 
-    public function getId(): ?int
+    public function getId(): string
     {
+        if (is_null($this->id)) {
+            throw new InvalidTask("ID is required");
+        }
         return $this->id;
     }
 
-    public function setParentId(int $parent_id): self
+    public function setParentId(string $parent_id): self
     {
         $this->parent_id = $parent_id;
         return $this;
     }
 
-    public function getParentId(): int
+    public function getParentId(): ?string
     {
         return $this->parent_id;
     }
 
-    public function setRootId(int $root_id): self
+    public function setRootId(string $root_id): self
     {
         $this->root_id = $root_id;
         return $this;
     }
 
-    public function getRootId(): int
+    public function getRootId(): string
     {
+        if ($this->isNullRoot()) {
+            throw new InvalidTask("Root ID is required");
+        }
         return $this->root_id;
+    }
+
+    public function isNullRoot(): bool
+    {
+        return is_null($this->root_id);
     }
 
     public function isRoot(): bool
     {
-        return $this->id === $this->root_id;
+        return $this->getId() === $this->getRootId();
     }
 
     public function setCreatedAt(?DateTime $createdAt): self
@@ -86,8 +97,16 @@ class Task implements JsonSerializable
         return $this;
     }
 
+    public function isNullCreatedAt(): bool
+    {
+        return is_null($this->createdAt);
+    }
+
     public function getCreatedAt(): ?DateTime
     {
+        if ($this->isNullCreatedAt()) {
+            throw new InvalidTask("Task created at is required");
+        }
         return $this->createdAt;
     }
 
@@ -97,8 +116,16 @@ class Task implements JsonSerializable
         return $this;
     }
 
+    public function isNullScheduledFor(): bool
+    {
+        return is_null($this->scheduledFor);
+    }
+
     public function getScheduledFor(): ?DateTime
     {
+        if ($this->isNullScheduledFor()) {
+            throw new InvalidTask("Task scheduled for is required");
+        }
         return $this->scheduledFor;
     }
 
@@ -137,6 +164,9 @@ class Task implements JsonSerializable
 
     public function getName(): string
     {
+        if (is_null($this->name)) {
+            throw new InvalidTask("Task name is required");
+        }
         return $this->name;
     }
 
@@ -229,13 +259,13 @@ class Task implements JsonSerializable
     {
         $task = new self();
         if (isset($data['id'])) {
-            $task->setId((int)$data['id']);
+            $task->setId($data['id']);
         }
         if (isset($data['parent_id'])) {
-            $task->setParentId((int)$data['parent_id']);
+            $task->setParentId($data['parent_id']);
         }
         if (isset($data['root_id'])) {
-            $task->setRootId((int)$data['root_id']);
+            $task->setRootId($data['root_id']);
         }
         if (isset($data['created_at'])) {
             $task->setCreatedAt(new DateTime($data['created_at']));

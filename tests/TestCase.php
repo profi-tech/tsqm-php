@@ -20,6 +20,7 @@ use Examples\Greeter\SimpleGreetWithFail;
 use Examples\Helpers\DbHelper;
 use PDO;
 use Psr\Container\ContainerInterface;
+use Ramsey\Uuid\Uuid;
 use Tsqm\Tsqm;
 
 class TestCase extends \PHPUnit\Framework\TestCase
@@ -47,7 +48,7 @@ class TestCase extends \PHPUnit\Framework\TestCase
     {
         parent::setUp();
 
-        $dsn = getenv("TSQM_TEST_MYSQL") ? "mysql:host=db;dbname=tsqm;" : "sqlite::memory:";
+        $dsn = getenv("TSQM_USE_MYSQL") ? "mysql:host=db;dbname=tsqm;" : "sqlite::memory:";
         $username = "root";
         $password = "root";
 
@@ -86,5 +87,14 @@ class TestCase extends \PHPUnit\Framework\TestCase
             $this->fail("Failed asserting that two DateTime instances are equal with $deltaMs ms delta");
         }
         return $isEqual;
+    }
+
+    public function assertUuid(string $uuid): bool
+    {
+        $isValid = (bool)preg_match('/' . Uuid::VALID_PATTERN . '/D', $uuid);
+        if (!$isValid) {
+            $this->fail("Failed asserting that '$uuid' is a valid UUID");
+        }
+        return $isValid;
     }
 }
