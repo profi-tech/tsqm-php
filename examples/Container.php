@@ -55,7 +55,7 @@ class Container
                     return new Tsqm(
                         $c->get(ContainerInterface::class),
                         $c->get(PDO::class),
-                        (new Options)
+                        (new Options())
                             ->setLogger($c->get(LoggerInterface::class))
                     );
                 },
