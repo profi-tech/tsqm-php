@@ -4,6 +4,7 @@ namespace Tests;
 
 use DateTime;
 use Tsqm\Helpers\SerializationHelper;
+use Tsqm\Helpers\UuidHelper;
 use Tsqm\Tasks\RetryPolicy;
 use Tsqm\Tasks\Task;
 
@@ -36,13 +37,13 @@ class SmokeTest extends TestCase
         $this->assertNull($task->getError());
 
         $this->assertEquals(
-            md5(implode('::', [
+            UuidHelper::named(implode('::', [
                 $task->getParentId(),
                 $task->getRootId(),
                 $task->getName(),
                 SerializationHelper::serialize($task->getArgs()),
             ])),
-            $task->getHash()
+            $task->getDeterminedUuid()
         );
     }
 

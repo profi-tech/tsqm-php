@@ -26,9 +26,9 @@ class TaskRepository
         try {
             $res = $this->pdo->prepare("
                 INSERT INTO tsqm_tasks 
-                    (id, parent_id, root_id, created_at, scheduled_for, name, args, retry_policy, hash)
+                    (id, parent_id, root_id, created_at, scheduled_for, name, args, retry_policy)
                 VALUES 
-                    (:id, :parent_id, :root_id, :created_at, :scheduled_for, :name, :args, :retry_policy, :hash)
+                    (:id, :parent_id, :root_id, :created_at, :scheduled_for, :name, :args, :retry_policy)
             ");
             if (!$res) {
                 throw new Exception(PdoHelper::formatErrorInfo($this->pdo->errorInfo()));
@@ -46,7 +46,6 @@ class TaskRepository
                 'retry_policy' => $task->getRetryPolicy()
                     ? json_encode($task->getRetryPolicy())
                     : null,
-                'hash' => $task->getHash(),
             ]);
             return $task;
         } catch (Exception $e) {

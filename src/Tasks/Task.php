@@ -7,6 +7,7 @@ use JsonSerializable;
 use Throwable;
 use Tsqm\Errors\InvalidTask;
 use Tsqm\Helpers\SerializationHelper;
+use Tsqm\Helpers\UuidHelper;
 
 class Task implements JsonSerializable
 {
@@ -54,6 +55,16 @@ class Task implements JsonSerializable
             throw new InvalidTask("ID is required");
         }
         return $this->id;
+    }
+
+    public function getDeterminedUuid(): string
+    {
+        return UuidHelper::named(implode('::', [
+            $this->parent_id,
+            $this->root_id,
+            $this->name,
+            SerializationHelper::serialize($this->args),
+        ]));
     }
 
     public function setParentId(string $parent_id): self
@@ -240,16 +251,6 @@ class Task implements JsonSerializable
     public function getRetried(): int
     {
         return $this->retried;
-    }
-
-    public function getHash(): string
-    {
-        return md5(implode('::', [
-            $this->parent_id,
-            $this->root_id,
-            $this->name,
-            SerializationHelper::serialize($this->args),
-        ]));
     }
 
     /**

@@ -17,6 +17,7 @@ use Tsqm\Errors\EnqueueFailed;
 use Tsqm\Errors\ToManyTasks;
 use Tsqm\Errors\TsqmError;
 use Tsqm\Helpers\PdoHelper;
+use Tsqm\Helpers\SerializationHelper;
 use Tsqm\Helpers\UuidHelper;
 use Tsqm\Queue\QueueInterface;
 use Tsqm\Tasks\TaskRepository;
@@ -65,15 +66,22 @@ class Tsqm
         }
 
         if ($task->isNullCreatedAt()) {
-            $taskId = UuidHelper::random();
-            $task->setId($taskId);
             if ($task->isNullRoot()) {
+                // For root tasks we generate random task id
+                $taskId = UuidHelper::random();
+                $task->setId($taskId);
                 $task->setRootId($task->getId());
+            } else {
+                // For child tasks id is derivative from the task args to garantee uniqueness among childs
+                $taskId = $task->getDeterminedUuid();
+                $task->setId($taskId);
             }
+
             $task->setCreatedAt(new DateTime());
             if ($task->isNullScheduledFor()) {
                 $task->setScheduledFor($task->getCreatedAt());
             }
+
             try {
                 $task = $this->repository->createTask($task);
             } catch (Exception $e) {
@@ -123,7 +131,7 @@ class Tsqm
 
                         $startedTask = current($startedTasks);
                         if ($startedTask && $startedTask instanceof Task) {
-                            if ($startedTask->getHash() != $generatedTask->getHash()) {
+                            if ($startedTask->getDeterminedUuid() != $generatedTask->getDeterminedUuid()) {
                                 throw new DeterminismViolation();
                             }
                             $generatedTask = $startedTask;
