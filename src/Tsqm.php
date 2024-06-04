@@ -21,6 +21,7 @@ use Tsqm\Tasks\Task;
 class Tsqm
 {
     private const GENERATOR_LIMIT = 1000;
+
     private ContainerInterface $container;
     private TaskRepository $repository;
     private LoggerInterface $logger;
@@ -35,7 +36,7 @@ class Tsqm
         $this->logger = $logger;
     }
 
-    public function run(Task $task): Task
+    public function runTask(Task $task): Task
     {
         $task = clone $task; // Make task immutable
 
@@ -115,7 +116,7 @@ class Tsqm
                             next($startedTasks);
                         }
 
-                        $generatedTask = $this->run($generatedTask);
+                        $generatedTask = $this->runTask($generatedTask);
 
                         if ($generatedTask->isFinished()) {
                             if ($generatedTask->hasError()) {
@@ -138,6 +139,7 @@ class Tsqm
                 ->setFinishedAt(new DateTime())
                 ->setResult($result)
                 ->setError(null);
+
             $this->logger->debug("Task finished", ['task' => $task]);
             $this->repository->updateTask($task);
 

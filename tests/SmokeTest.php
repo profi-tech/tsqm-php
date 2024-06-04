@@ -16,7 +16,7 @@ class SmokeTest extends TestCase
             ->setRetryPolicy((new RetryPolicy())->setMaxRetries(3)->setMinInterval(1000))
             ->setArgs('John Doe');
 
-        $task = $this->tsqm->run($task);
+        $task = $this->tsqm->runTask($task);
 
         $now = new DateTime();
 
@@ -51,9 +51,9 @@ class SmokeTest extends TestCase
             ->setCallable($this->simpleGreet)
             ->setArgs('John Doe');
 
-        $task0 = $this->tsqm->run($task);
-        $task1 = $this->tsqm->run($task0);
-        $task2 = $this->tsqm->run($task0);
+        $task0 = $this->tsqm->runTask($task);
+        $task1 = $this->tsqm->runTask($task0);
+        $task2 = $this->tsqm->runTask($task0);
 
         $this->assertEquals($task0, $task1);
         $this->assertEquals($task0, $task2);
@@ -61,17 +61,17 @@ class SmokeTest extends TestCase
 
     public function testDifferentTaskRunSmoke(): void
     {
-        $task0 = $this->tsqm->run(
+        $task0 = $this->tsqm->runTask(
             (new Task())
                 ->setCallable($this->simpleGreet)
                 ->setArgs('John Doe 1')
         );
-        $task1 = $this->tsqm->run(
+        $task1 = $this->tsqm->runTask(
             (new Task())
                 ->setCallable($this->greet)
                 ->setArgs('John Doe 2')
         );
-        $task2 = $this->tsqm->run(
+        $task2 = $this->tsqm->runTask(
             (new Task())
                 ->setCallable($this->greetNested)
                 ->setArgs('John Doe 3')

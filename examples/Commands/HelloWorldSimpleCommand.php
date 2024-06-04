@@ -44,7 +44,7 @@ class HelloWorldSimpleCommand extends Command
                     ->setMinInterval(5000)
             );
 
-        $task = $this->tsqm->run($task);
+        $task = $this->tsqm->runTask($task);
         $this->logger->debug("Final result", ['task' => $task]);
 
         return self::SUCCESS;

@@ -26,7 +26,7 @@ class RunScheduledCommand extends Command
     {
         $tasks = $this->tsqm->getScheduledTasks(new DateTime(), $input->getOption("limit"));
         foreach ($tasks as $task) {
-            $this->tsqm->run($task);
+            $this->tsqm->runTask($task);
         }
         return self::SUCCESS;
     }

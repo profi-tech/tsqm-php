@@ -14,7 +14,7 @@ class SchedulerTest extends TestCase
             ->setCallable($this->simpleGreet)
             ->setArgs('John Doe');
 
-        $task = $this->tsqm->run($task);
+        $task = $this->tsqm->runTask($task);
         $this->assertTrue(
             $this->assertHelper->assertDateEquals($task->getScheduledFor(), new DateTime(), 50)
         );
@@ -29,7 +29,7 @@ class SchedulerTest extends TestCase
             ->setArgs('John Doe')
             ->setScheduledFor($scheduleFor);
 
-        $task = $this->tsqm->run($task);
+        $task = $this->tsqm->runTask($task);
 
         $this->assertEquals(
             $scheduleFor->format('Y-m-d H:i:s.v'),
@@ -48,7 +48,7 @@ class SchedulerTest extends TestCase
                     ->setMinInterval(1500)
             );
 
-        $task = $this->tsqm->run($task);
+        $task = $this->tsqm->runTask($task);
 
         $this->assertTrue(
             $this->assertHelper->assertDateEquals(
@@ -63,7 +63,7 @@ class SchedulerTest extends TestCase
         $task = (new Task())
             ->setCallable($this->simpleGreet)
             ->setArgs('John Doe');
-        $task = $this->tsqm->run($task);
+        $task = $this->tsqm->runTask($task);
         $this->assertTrue($task->isFinished());
 
         $task = $this->tsqm->getTask($task->getRootId());
@@ -78,9 +78,9 @@ class SchedulerTest extends TestCase
             ->setArgs('John Doe')
             ->setScheduledFor($scheduledFor);
 
-        $task1 = $this->tsqm->run($task);
-        $task2 = $this->tsqm->run($task);
-        $task3 = $this->tsqm->run($task);
+        $task1 = $this->tsqm->runTask($task);
+        $task2 = $this->tsqm->runTask($task);
+        $task3 = $this->tsqm->runTask($task);
 
         $scheduledTasks = $this->tsqm->getScheduledTasks($scheduledFor, 10);
         $this->assertCount(3, $scheduledTasks);
@@ -94,9 +94,9 @@ class SchedulerTest extends TestCase
             ->setRetryPolicy((new RetryPolicy())->setMaxRetries(1)->setMinInterval(0))
             ->setArgs('John Doe');
 
-        $this->tsqm->run($task);
-        $this->tsqm->run($task);
-        $this->tsqm->run($task);
+        $this->tsqm->runTask($task);
+        $this->tsqm->runTask($task);
+        $this->tsqm->runTask($task);
 
         $scheduledTasks = $this->tsqm->getScheduledTasks((new DateTime())->modify("-10 second"), 10);
         $this->assertCount(0, $scheduledTasks);
@@ -110,8 +110,8 @@ class SchedulerTest extends TestCase
             ->setArgs('John Doe')
             ->setScheduledFor($scheduledFor);
 
-        $task1 = $this->tsqm->run($task);
-        $task2 = $this->tsqm->run($task);
+        $task1 = $this->tsqm->runTask($task);
+        $task2 = $this->tsqm->runTask($task);
 
         $scheduledTasks = $this->tsqm->getScheduledTasks($scheduledFor, 2);
         $this->assertCount(2, $scheduledTasks);

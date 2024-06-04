@@ -29,7 +29,7 @@ class RunTaskCommand extends Command
     {
         $taskId = $input->getArgument("taskId");
         $task = $this->tsqm->getTask($taskId);
-        $task = $this->tsqm->run($task);
+        $task = $this->tsqm->runTask($task);
         $this->logger->debug("Final run result:", ['task' => $task]);
         return self::SUCCESS;
     }
