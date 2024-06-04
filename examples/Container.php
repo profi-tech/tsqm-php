@@ -10,13 +10,12 @@ use Examples\Commands\ResetDbCommand;
 use Examples\Commands\ListScheduledCommand;
 use Examples\Commands\RunTaskCommand;
 use Examples\Commands\RunScheduledCommand;
-use Examples\Helpers\DbHelper;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use PDO;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Application;
-use Tsqm\Tasks\TaskRepository;
+use Tsqm\Options;
 use Tsqm\Tsqm;
 
 class Container
@@ -55,8 +54,9 @@ class Container
                 Tsqm::class => static function (ContainerInterface $c) {
                     return new Tsqm(
                         $c->get(ContainerInterface::class),
-                        $c->get(TaskRepository::class),
-                        $c->get(LoggerInterface::class)
+                        $c->get(PDO::class),
+                        (new Options)
+                            ->setLogger($c->get(LoggerInterface::class))
                     );
                 },
 

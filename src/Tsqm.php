@@ -5,8 +5,10 @@ namespace Tsqm;
 use DateTime;
 use Exception;
 use Generator;
+use PDO;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use Tsqm\Errors\DuplicatedTask;
 use Tsqm\Errors\InvalidGeneratorItem;
 use Tsqm\Errors\TaskClassDefinitionNotFound;
@@ -28,12 +30,12 @@ class Tsqm
 
     public function __construct(
         ContainerInterface $container,
-        TaskRepository $repository,
-        LoggerInterface $logger
+        PDO $pdo,
+        ?Options $options = null
     ) {
         $this->container = $container;
-        $this->repository = $repository;
-        $this->logger = $logger;
+        $this->repository = new TaskRepository($pdo);
+        $this->logger = $options ? $options->getLogger() : new NullLogger();
     }
 
     public function runTask(Task $task): Task

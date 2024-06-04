@@ -21,6 +21,7 @@ use Monolog\Logger;
 use PDO;
 use Psr\Container\ContainerInterface;
 use Tests\Helpers\AssertHelper;
+use Tsqm\Options;
 use Tsqm\Tasks\TaskRepository;
 use Tsqm\Tsqm;
 
@@ -66,11 +67,7 @@ class TestCase extends \PHPUnit\Framework\TestCase
             ->useAutowiring(true)
             ->build();
 
-        $this->tsqm = new Tsqm(
-            $this->container,
-            new TaskRepository($pdo),
-            new Logger('tests')
-        );
+        $this->tsqm = new Tsqm($this->container, $pdo);
 
         $this->simpleGreet = $this->container->get(SimpleGreet::class);
         $this->simpleGreetWithFail = $this->container->get(SimpleGreetWithFail::class);
