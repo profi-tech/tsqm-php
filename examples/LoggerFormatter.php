@@ -26,13 +26,6 @@ class LoggerFormatter extends NormalizerFormatter
             'context'    => $record['context'],
         ];
 
-        if (isset($record['context']['task']) && $record['context']['task'] instanceof Task) {
-            $task = $record['context']['task'];
-            if ($task->hasError()) {
-                $formatted['log.level'] = Logger::getLevelName(Logger::ERROR);
-            }
-        }
-
         return $this->toJson($formatted) . "\n";
     }
 }

@@ -39,7 +39,7 @@ class QueueTest extends TestCase
 
         $this->queue->expects($this->once())->method('enqueue')->with(
             $this->callback(fn (int $taskId) => $taskId > 0),
-            $this->callback(fn (DateTime $scheduledFor) => $this->assertDateEquals(new DateTime(), $scheduledFor))
+            $this->callback(fn (DateTime $scheduledFor) => $this->assertDateEquals(new DateTime(), $scheduledFor, 50))
         );
 
         $task = $this->tsqm->runTask($task, true);

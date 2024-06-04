@@ -5,6 +5,7 @@ namespace Tsqm;
 use DateTime;
 use Exception;
 use Generator;
+use Monolog\Logger;
 use PDO;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
@@ -46,10 +47,10 @@ class Tsqm
     {
         $task = clone $task; // Make task immutable
 
-        $this->logger->debug("Start task", ['task' => $task]);
+        $this->log(Logger::INFO, "Start task", ['task' => $task]);
 
         if ($task->isFinished()) {
-            $this->logger->debug("Task already finished", ['task' => $task]);
+            $this->log(Logger::INFO, "Task already finished", ['task' => $task]);
             return $task;
         }
 
@@ -80,7 +81,7 @@ class Tsqm
 
         if ($forceAsync || $task->getScheduledFor() > new DateTime()) {
             $this->enqueue($task);
-            $this->logger->debug("Task scheduled", ['task' => $task]);
+            $this->log(Logger::INFO, "Task scheduled", ['task' => $task]);
             return $task;
         }
 
@@ -92,13 +93,13 @@ class Tsqm
         $this->repository->updateTask($task);
 
         try {
-            $this->logger->debug("Start callable", ['task' => $task]);
+            $this->log(Logger::DEBUG, "Start callable", ['task' => $task]);
             $result = call_user_func($callable, ...$task->getArgs());
 
             if ($result instanceof Generator) {
                 $startedTasks = $this->repository->getTasksByParentId($task->getId());
 
-                $this->logger->debug("Start generator", ['task' => $task]);
+                $this->log(Logger::DEBUG, "Start generator", ['task' => $task]);
                 $generated = 0;
                 $generator = $result;
                 while (true) {
@@ -135,7 +136,7 @@ class Tsqm
                             return $task;
                         }
                     } else {
-                        $this->logger->debug("Generator finished", ['task' => $task]);
+                        $this->log(Logger::DEBUG, "Generator finished", ['task' => $task]);
                         $result = $generator->getReturn();
                         break;
                     }
@@ -147,7 +148,7 @@ class Tsqm
                 ->setResult($result)
                 ->setError(null);
 
-            $this->logger->debug("Task finished", ['task' => $task]);
+            $this->log(Logger::INFO, "Task finished", ['task' => $task]);
             $this->repository->updateTask($task);
 
             return $task;
@@ -165,10 +166,10 @@ class Tsqm
             if (!is_null($retryAt)) {
                 $task->setScheduledFor($retryAt);
                 $this->enqueue($task);
-                $this->logger->debug("Task failed and retry scheduled", ['task' => $task]);
+                $this->log(Logger::ERROR, "Task failed and retry scheduled", ['task' => $task]);
             } else {
                 $task->setFinishedAt(new DateTime());
-                $this->logger->debug("Task failed", ['task' => $task]);
+                $this->log(Logger::ERROR, "Task failed", ['task' => $task]);
             }
 
             $this->repository->updateTask($task);
@@ -199,6 +200,19 @@ class Tsqm
             $this->queue->enqueue($task->getId(), $task->getScheduledFor());
         } catch (Exception $e) {
             throw new TsqmError("Failed to enqueue task", 0, $e);
+        }
+    }
+
+    /**
+     * @param mixed $level
+     * @param array<mixed> $context
+     */
+    private function log($level, string $message, array $context = []): void
+    {
+        try {
+            $this->logger->log($level, $message, $context);
+        } catch (Exception $e) {
+            throw new TsqmError("Failed to log debug message", 0, $e);
         }
     }
 }
