@@ -9,21 +9,18 @@ use Tsqm\Queue\QueueInterface;
 class Options
 {
     private ?QueueInterface $queue = null;
+    private string $table = "tsqm_tasks";
     private ?LoggerInterface $logger = null;
 
-    public function setLogger(LoggerInterface $logger): self
+    public function setTable(string $table): self
     {
-        $this->logger = $logger;
+        $this->table = $table;
         return $this;
     }
 
-    public function getLogger(): LoggerInterface
+    public function getTable(): string
     {
-        if (!is_null($this->logger)) {
-            return $this->logger;
-        } else {
-            return new NullLogger();
-        }
+        return $this->table;
     }
 
     public function setQueue(QueueInterface $queue): self
@@ -38,6 +35,21 @@ class Options
             return $this->queue;
         } else {
             return new Queue\NullQueue();
+        }
+    }
+
+    public function setLogger(LoggerInterface $logger): self
+    {
+        $this->logger = $logger;
+        return $this;
+    }
+
+    public function getLogger(): LoggerInterface
+    {
+        if (!is_null($this->logger)) {
+            return $this->logger;
+        } else {
+            return new NullLogger();
         }
     }
 }

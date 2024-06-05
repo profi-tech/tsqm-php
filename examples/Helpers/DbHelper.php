@@ -14,7 +14,7 @@ class DbHelper
         $this->pdo = $pdo;
     }
 
-    public function resetDb(): void
+    public function resetDb(string $table = "tsqm_tasks"): void
     {
         $driver = $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
         switch ($driver) {
@@ -27,8 +27,9 @@ class DbHelper
             default:
                 throw new Exception("Unsupported database driver: $driver");
         }
+        $sql = str_replace("tsqm_tasks", "$table", $sql);
 
-        $this->pdo->prepare("DROP TABLE IF EXISTS `tsqm_tasks`")->execute();
+        $this->pdo->prepare("DROP TABLE IF EXISTS `$table`")->execute();
 
         $queries = explode(";", $sql);
         foreach ($queries as $query) {

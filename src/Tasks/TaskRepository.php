@@ -15,17 +15,19 @@ class TaskRepository
     private const MICROSECONDS_TS = 'Y-m-d H:i:s.u';
 
     private PDO $pdo;
+    private string $table;
 
-    public function __construct(PDO $pdo)
+    public function __construct(PDO $pdo, string $table)
     {
         $this->pdo = $pdo;
+        $this->table = $table;
     }
 
     public function createTask(Task $task): Task
     {
         try {
             $res = $this->pdo->prepare("
-                INSERT INTO tsqm_tasks 
+                INSERT INTO $this->table 
                     (id, parent_id, root_id, created_at, scheduled_for, name, args, retry_policy)
                 VALUES 
                     (:id, :parent_id, :root_id, :created_at, :scheduled_for, :name, :args, :retry_policy)
@@ -60,7 +62,7 @@ class TaskRepository
         }
 
         $res = $this->pdo->prepare("
-            UPDATE tsqm_tasks SET 
+            UPDATE $this->table SET 
                 scheduled_for=:scheduled_for,
                 started_at=:started_at,
                 finished_at=:finished_at,
@@ -96,7 +98,7 @@ class TaskRepository
 
     public function getTask(string $id): ?Task
     {
-        $res = $this->pdo->prepare("SELECT * FROM tsqm_tasks WHERE id=:id");
+        $res = $this->pdo->prepare("SELECT * FROM $this->table WHERE id=:id");
         if (!$res) {
             throw new Exception(PdoHelper::formatErrorInfo($this->pdo->errorInfo()));
         }
@@ -118,7 +120,7 @@ class TaskRepository
     {
         try {
             $res = $this->pdo->prepare("
-                SELECT * FROM tsqm_tasks
+                SELECT * FROM $this->table
                 WHERE scheduled_for <= :until AND finished_at IS NULL AND parent_id IS NULL
                 ORDER BY scheduled_for ASC
                 LIMIT $limit
@@ -148,7 +150,7 @@ class TaskRepository
     public function getTasksByParentId(string $parentId): array
     {
         $tasks = [];
-        $res = $this->pdo->prepare("SELECT * FROM tsqm_tasks WHERE parent_id = :parent_id ORDER BY n");
+        $res = $this->pdo->prepare("SELECT * FROM $this->table WHERE parent_id = :parent_id ORDER BY n");
         if (!$res) {
             throw new Exception(PdoHelper::formatErrorInfo($this->pdo->errorInfo()));
         }
@@ -163,7 +165,7 @@ class TaskRepository
 
     public function deleteTask(string $id): void
     {
-        $res = $this->pdo->prepare("DELETE FROM tsqm_tasks WHERE root_id=:root_id");
+        $res = $this->pdo->prepare("DELETE FROM $this->table WHERE root_id=:root_id");
         if (!$res) {
             throw new Exception(PdoHelper::formatErrorInfo($this->pdo->errorInfo()));
         }

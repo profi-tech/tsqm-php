@@ -26,6 +26,7 @@ use Tsqm\Tsqm;
 class TestCase extends \PHPUnit\Framework\TestCase
 {
     protected PDO $pdo;
+    protected DbHelper $dbHelper;
     protected ContainerInterface $container;
 
     protected Tsqm $tsqm;
@@ -55,8 +56,8 @@ class TestCase extends \PHPUnit\Framework\TestCase
         $this->pdo = new PDO($dsn, $username, $password);
         $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-        $dbHelper = new DbHelper($this->pdo);
-        $dbHelper->resetDb();
+        $this->dbHelper = new DbHelper($this->pdo);
+        $this->dbHelper->resetDb();
 
         $this->container = (new ContainerBuilder())
             ->useAutowiring(true)

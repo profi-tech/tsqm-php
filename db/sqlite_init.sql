@@ -17,6 +17,6 @@ CREATE TABLE
         `retried` SMALLINT NOT NULL DEFAULT 0
     );
 
-CREATE UNIQUE INDEX `idx_id` ON `tsqm_tasks` (`id`);
-CREATE INDEX `idx_root_id` ON `tsqm_tasks` (`root_id`);
-CREATE INDEX `idx_scheduled_for` ON `tsqm_tasks` (`scheduled_for`);
+CREATE UNIQUE INDEX `tsqm_tasks_idx_id` ON `tsqm_tasks` (`id`);
+CREATE INDEX `tsqm_tasks_idx_root_id` ON `tsqm_tasks` (`root_id`);
+CREATE INDEX `tsqm_tasks_idx_scheduled_for` ON `tsqm_tasks` (`scheduled_for`);

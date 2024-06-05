@@ -39,7 +39,7 @@ class Tsqm
         $options = $options ?? new Options();
 
         $this->container = $container;
-        $this->repository = new TaskRepository($pdo);
+        $this->repository = new TaskRepository($pdo, $options->getTable());
         $this->logger = $options->getLogger();
         $this->queue = $options->getQueue();
     }
