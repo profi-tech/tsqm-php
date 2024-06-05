@@ -5,7 +5,7 @@ namespace Tests;
 use DI\ContainerBuilder;
 use Examples\Greeter\RawGreet;
 use Tsqm\Options;
-use Tsqm\Tasks\Task;
+use Tsqm\Task;
 use Tsqm\Tsqm;
 
 function rawGreet(string $name): string

@@ -5,7 +5,7 @@ namespace Examples\Greeter;
 use Examples\Greeter\Greeting;
 use Exception;
 use Generator;
-use Tsqm\Tasks\Task;
+use Tsqm\Task;
 
 class GreetWithDeterministicNameFailure
 {

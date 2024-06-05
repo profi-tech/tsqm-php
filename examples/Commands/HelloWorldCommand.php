@@ -9,7 +9,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Psr\Log\LoggerInterface;
 use Tsqm\Tsqm;
-use Tsqm\Tasks\Task;
+use Tsqm\Task;
 
 class HelloWorldCommand extends Command
 {

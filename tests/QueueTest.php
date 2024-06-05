@@ -5,10 +5,10 @@ namespace Tests;
 use DateTime;
 use Tsqm\Tsqm;
 use Tsqm\Queue\QueueInterface;
-use Tsqm\Tasks\Task;
+use Tsqm\Task;
 use PHPUnit\Framework\MockObject\MockObject;
 use Tsqm\Options;
-use Tsqm\Tasks\RetryPolicy;
+use Tsqm\RetryPolicy;
 
 class QueueTest extends TestCase
 {

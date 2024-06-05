@@ -8,8 +8,8 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Psr\Log\LoggerInterface;
-use Tsqm\Tasks\RetryPolicy;
-use Tsqm\Tasks\Task;
+use Tsqm\RetryPolicy;
+use Tsqm\Task;
 use Tsqm\Tsqm;
 
 class HelloWorldSimpleCommand extends Command

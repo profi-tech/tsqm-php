@@ -2,7 +2,7 @@
 
 namespace Tests;
 
-use Tsqm\Tasks\Task;
+use Tsqm\Task;
 
 class SecretTaskTest extends TestCase
 {

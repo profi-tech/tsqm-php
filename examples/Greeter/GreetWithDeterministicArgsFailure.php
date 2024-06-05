@@ -3,7 +3,7 @@
 namespace Examples\Greeter;
 
 use Generator;
-use Tsqm\Tasks\Task;
+use Tsqm\Task;
 
 class GreetWithDeterministicArgsFailure
 {

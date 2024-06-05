@@ -3,8 +3,8 @@
 namespace Tests;
 
 use Tsqm\Options;
-use Tsqm\Tasks\RetryPolicy;
-use Tsqm\Tasks\Task;
+use Tsqm\RetryPolicy;
+use Tsqm\Task;
 use Tsqm\Tsqm;
 
 class OptionsTest extends TestCase

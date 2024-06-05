@@ -6,8 +6,8 @@ use DateTime;
 use Examples\Greeter\GreeterError;
 use Examples\Greeter\Greeting;
 use Tsqm\Errors\TsqmError;
-use Tsqm\Tasks\RetryPolicy;
-use Tsqm\Tasks\Task;
+use Tsqm\RetryPolicy;
+use Tsqm\Task;
 
 class TaskFlowTest extends TestCase
 {

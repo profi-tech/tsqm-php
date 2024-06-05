@@ -7,8 +7,8 @@ use Examples\Greeter\GreeterError;
 use Examples\Greeter\Greeting;
 use Tsqm\Errors\DeterminismViolation;
 use Tsqm\Errors\DuplicatedTask;
-use Tsqm\Tasks\RetryPolicy;
-use Tsqm\Tasks\Task;
+use Tsqm\RetryPolicy;
+use Tsqm\Task;
 
 class TaskGeneratorFlowTest extends TestCase
 {

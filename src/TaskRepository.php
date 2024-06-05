@@ -1,6 +1,6 @@
 <?php
 
-namespace Tsqm\Tasks;
+namespace Tsqm;
 
 use DateTime;
 use Exception;
@@ -8,7 +8,7 @@ use PDO;
 use Tsqm\Errors\RepositoryError;
 use Tsqm\Helpers\PdoHelper;
 use Tsqm\Helpers\SerializationHelper;
-use Tsqm\Tasks\Task;
+use Tsqm\Task;
 
 class TaskRepository
 {

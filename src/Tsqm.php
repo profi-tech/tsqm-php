@@ -19,8 +19,6 @@ use Tsqm\Errors\TsqmError;
 use Tsqm\Helpers\PdoHelper;
 use Tsqm\Helpers\UuidHelper;
 use Tsqm\Queue\QueueInterface;
-use Tsqm\Tasks\TaskRepository;
-use Tsqm\Tasks\Task;
 
 class Tsqm
 {

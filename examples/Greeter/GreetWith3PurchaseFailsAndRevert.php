@@ -4,8 +4,8 @@ namespace Examples\Greeter;
 
 use Exception;
 use Generator;
-use Tsqm\Tasks\RetryPolicy;
-use Tsqm\Tasks\Task;
+use Tsqm\RetryPolicy;
+use Tsqm\Task;
 
 class GreetWith3PurchaseFailsAndRevert
 {
