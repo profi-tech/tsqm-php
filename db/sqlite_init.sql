@@ -1,7 +1,7 @@
 
 CREATE TABLE
     `tsqm_tasks` (
-        `n` INTEGER PRIMARY KEY AUTOINCREMENT,
+        `nid` INTEGER PRIMARY KEY AUTOINCREMENT,
         `id` VARCHAR(36) NOT NULL,
         `parent_id` VARCHAR(36),
         `root_id` VARCHAR(36) NOT NULL,
@@ -18,5 +18,6 @@ CREATE TABLE
     );
 
 CREATE UNIQUE INDEX `tsqm_tasks_idx_id` ON `tsqm_tasks` (`id`);
+CREATE INDEX `tsqm_tasks_idx_parent_id` ON `tsqm_tasks` (`parent_id`);
 CREATE INDEX `tsqm_tasks_idx_root_id` ON `tsqm_tasks` (`root_id`);
 CREATE INDEX `tsqm_tasks_idx_scheduled_for` ON `tsqm_tasks` (`scheduled_for`);

@@ -150,7 +150,7 @@ class TaskRepository
     public function getTasksByParentId(string $parentId): array
     {
         $tasks = [];
-        $res = $this->pdo->prepare("SELECT * FROM $this->table WHERE parent_id = :parent_id ORDER BY n");
+        $res = $this->pdo->prepare("SELECT * FROM $this->table WHERE parent_id = :parent_id ORDER BY nid");
         if (!$res) {
             throw new Exception(PdoHelper::formatErrorInfo($this->pdo->errorInfo()));
         }
