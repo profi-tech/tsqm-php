@@ -59,7 +59,7 @@ class Container
                 LoggerInterface::class => function () {
                     $logger = new Logger('examples');
                     $handler = new StreamHandler('php://stdout');
-                    $handler->setFormatter(new LoggerFormatter());
+                    $handler->setFormatter(new LogFormatter());
                     $logger->pushHandler($handler);
                     return $logger;
                 }
