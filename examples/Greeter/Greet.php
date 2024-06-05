@@ -30,8 +30,15 @@ class Greet
         if (!$valid) {
             return false;
         }
-        $greeting = yield (new Task())->setCallable($this->createGreeting)->setArgs($name);
-        $greeting = yield (new Task())->setCallable($this->purchase)->setArgs($greeting);
+
+        $greeting = yield (new Task())
+            ->setCallable($this->createGreeting)
+            ->setArgs($name);
+
+        $greeting = yield (new Task())
+            ->setCallable($this->purchase)
+            ->setArgs($greeting)
+            ->setIsSecret(true);
 
         return yield (new Task())->setCallable($this->sendGreeting)->setArgs($greeting);
     }

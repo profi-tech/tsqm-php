@@ -43,6 +43,7 @@ class GreetWithRandomFail
         try {
             $greeting = yield (new Task())->setCallable($this->purchaseWithRandomFail)
                 ->setArgs($greeting)
+                ->setIsSecret(true)
                 ->setRetryPolicy((new RetryPolicy())->setMaxRetries(3)->setMinInterval(10000));
         } catch (Exception $e) {
             yield (new Task())->setCallable($this->revertGreeting)->setArgs($greeting);

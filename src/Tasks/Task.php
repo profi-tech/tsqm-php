@@ -21,6 +21,7 @@ class Task implements JsonSerializable
     private ?string $name = null;
     /** @var array<mixed> */
     private array $args = [];
+    private bool $isSecret = false;
     /** @var mixed */
     private $result = null;
     private ?Throwable $error = null;
@@ -181,6 +182,17 @@ class Task implements JsonSerializable
         return $this->name;
     }
 
+    public function setIsSecret(bool $isSecret): self
+    {
+        $this->isSecret = $isSecret;
+        return $this;
+    }
+
+    public function getIsSecret(): bool
+    {
+        return $this->isSecret;
+    }
+
     /**
      * @param array<mixed> $args
      */
@@ -283,6 +295,9 @@ class Task implements JsonSerializable
         if (isset($data['name'])) {
             $task->setName($data['name']);
         }
+        if (isset($data['is_secret'])) {
+            $task->setIsSecret((bool)$data['is_secret']);
+        }
         if (isset($data['args'])) {
             $task->setArgs(...SerializationHelper::unserialize($data['args']));
         }
@@ -316,8 +331,9 @@ class Task implements JsonSerializable
             'started_at' => $this->startedAt ? $this->startedAt->format(DateTime::ATOM) : null,
             'finished_at' => $this->finishedAt ? $this->finishedAt->format(DateTime::ATOM) : null,
             'name' => $this->name,
-            'args' => $this->args ?: null,
-            'result' => $this->result,
+            'is_secret' => $this->isSecret,
+            'args' => $this->args ? $this->hideSecret($this->args) : null,
+            'result' => $this->hideSecret($this->result),
             'error' => $this->error ? [
                 'class' => get_class($this->error),
                 'message' => $this->error->getMessage(),
@@ -328,5 +344,18 @@ class Task implements JsonSerializable
             'retry_policy' => $this->retryPolicy,
             'retried' => $this->retried,
         ];
+    }
+
+    /**
+     * @param mixed $value
+     * @return mixed
+     */
+    private function hideSecret($value)
+    {
+        if (!is_null($value)) {
+            return $this->isSecret ? '***' : $value;
+        } else {
+            return $value;
+        }
     }
 }

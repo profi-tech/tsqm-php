@@ -9,6 +9,7 @@ CREATE TABLE `tsqm_tasks` (
     `started_at` TIMESTAMP(6),
     `finished_at` TIMESTAMP(6),
     `name` VARCHAR(255) NOT NULL,
+    `is_secret` BOOLEAN NOT NULL DEFAULT false,
     `args` BLOB,
     `result` BLOB,
     `error` BLOB,

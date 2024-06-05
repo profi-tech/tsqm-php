@@ -9,6 +9,7 @@ CREATE TABLE
         `scheduled_for` TIMESTAMP(6) NOT NULL,
         `started_at` TIMESTAMP(6),
         `finished_at` TIMESTAMP(6),
+        `is_secret` BOOLEAN NOT NULL DEFAULT false,
         `name` VARCHAR(255) NOT NULL,
         `args` BLOB,
         `result` BLOB,

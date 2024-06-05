@@ -228,6 +228,9 @@ class Tsqm
     private function log($level, string $message, array $context = []): void
     {
         try {
+            if (isset($context['task']) && $context['task'] instanceof Task) {
+                $context['task'] = $context['task']->jsonSerialize();
+            }
             $this->logger->log($level, $message, $context);
         } catch (Exception $e) {
             throw new TsqmError("Failed to log message", 0, $e);

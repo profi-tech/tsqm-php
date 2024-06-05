@@ -28,9 +28,9 @@ class TaskRepository
         try {
             $res = $this->pdo->prepare("
                 INSERT INTO $this->table 
-                    (id, parent_id, root_id, created_at, scheduled_for, name, args, retry_policy)
+                    (id, parent_id, root_id, created_at, scheduled_for, name, is_secret, args, retry_policy)
                 VALUES 
-                    (:id, :parent_id, :root_id, :created_at, :scheduled_for, :name, :args, :retry_policy)
+                    (:id, :parent_id, :root_id, :created_at, :scheduled_for, :name, :is_secret, :args, :retry_policy)
             ");
             if (!$res) {
                 throw new Exception(PdoHelper::formatErrorInfo($this->pdo->errorInfo()));
@@ -42,6 +42,7 @@ class TaskRepository
                 'created_at' => $task->getCreatedAt()->format(self::MICROSECONDS_TS),
                 'scheduled_for' => $task->getScheduledFor()->format(self::MICROSECONDS_TS),
                 'name' => $task->getName(),
+                'is_secret' => (int)$task->getIsSecret(),
                 'args' => $task->getArgs()
                     ? SerializationHelper::serialize($task->getArgs())
                     : null,
