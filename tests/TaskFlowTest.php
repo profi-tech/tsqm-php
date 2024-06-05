@@ -5,6 +5,7 @@ namespace Tests;
 use DateTime;
 use Examples\Greeter\GreeterError;
 use Examples\Greeter\Greeting;
+use Tsqm\Errors\TsqmError;
 use Tsqm\Tasks\RetryPolicy;
 use Tsqm\Tasks\Task;
 
@@ -256,5 +257,26 @@ class TaskFlowTest extends TestCase
         $this->assertNotNull($task->getFinishedAt());
         $this->assertNull($task->getResult());
         $this->assertEquals(2, $task->getRetried());
+    }
+
+    public function testTsqmErrorDoesntAffectRetried(): void
+    {
+        $task = (new Task())
+            ->setCallable($this->simpleGreetWithTsqmFail)
+            ->setRetryPolicy((new RetryPolicy())->setMaxRetries(1));
+
+        $this->expectException(TsqmError::class);
+        $task = $this->tsqm->runTask($task);
+        $this->expectException(TsqmError::class);
+        $task = $this->tsqm->runTask($task);
+        $this->expectException(TsqmError::class);
+        $task = $this->tsqm->runTask($task);
+        $this->expectException(TsqmError::class);
+        $task = $this->tsqm->runTask($task);
+
+        $this->assertEquals(0, $task->getRetried());
+
+        $task = $this->tsqm->getTask($task->getId());
+        $this->assertEquals(0, $task->getRetried());
     }
 }

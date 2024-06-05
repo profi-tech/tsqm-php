@@ -17,6 +17,7 @@ use Examples\Greeter\GreetNested;
 use Examples\Greeter\SimpleGreet;
 use Examples\Greeter\SimpleGreetWith3Fails;
 use Examples\Greeter\SimpleGreetWithFail;
+use Examples\Greeter\SimpleGreetWithTsqmFail;
 use Examples\Helpers\DbHelper;
 use PDO;
 use Psr\Container\ContainerInterface;
@@ -35,6 +36,7 @@ class TestCase extends \PHPUnit\Framework\TestCase
     protected SimpleGreet $simpleGreet;
     protected SimpleGreetWithFail $simpleGreetWithFail;
     protected SimpleGreetWith3Fails $simpleGreetWith3Fails;
+    protected SimpleGreetWithTsqmFail $simpleGreetWithTsqmFail;
     protected Greet $greet;
     protected GreetWithFail $greetWithFail;
     protected GreetWith3Fails $greetWith3Fails;
@@ -69,6 +71,7 @@ class TestCase extends \PHPUnit\Framework\TestCase
         $this->simpleGreet = $this->container->get(SimpleGreet::class);
         $this->simpleGreetWithFail = $this->container->get(SimpleGreetWithFail::class);
         $this->simpleGreetWith3Fails = $this->container->get(SimpleGreetWith3Fails::class);
+        $this->simpleGreetWithTsqmFail = $this->container->get(SimpleGreetWithTsqmFail::class);
 
         $this->greet = $this->container->get(Greet::class);
         $this->greetWithFail = $this->container->get(GreetWithFail::class);

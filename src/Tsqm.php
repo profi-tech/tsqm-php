@@ -98,12 +98,11 @@ class Tsqm
             return $task;
         }
 
-        if (is_null($task->getStartedAt())) {
+        $startedBefore = !is_null($task->getStartedAt());
+        if (!$startedBefore) {
             $task->setStartedAt(new DateTime());
-        } else {
-            $task->incRetried();
+            $this->repository->updateTask($task);
         }
-        $this->repository->updateTask($task);
 
         try {
             $this->log(Logger::DEBUG, "Start callable", ['task' => $task]);
@@ -160,6 +159,9 @@ class Tsqm
                 ->setFinishedAt(new DateTime())
                 ->setResult($result)
                 ->setError(null);
+            if ($startedBefore) {
+                $task->incRetried();
+            }
 
             if ($task->isRoot()) {
                 $this->log(Logger::INFO, "Root task finished, cleanup started", ['task' => $task]);
@@ -174,6 +176,9 @@ class Tsqm
             throw $e;
         } catch (Exception $e) {
             $task->setError($e);
+            if ($startedBefore) {
+                $task->incRetried();
+            }
 
             $retryAt = null;
             $retryPolicy = $task->getRetryPolicy();
