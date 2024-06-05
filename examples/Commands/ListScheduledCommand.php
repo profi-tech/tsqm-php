@@ -3,38 +3,34 @@
 namespace Examples\Commands;
 
 use DateTime;
-use Examples\Container;
-use Examples\Helpers\DbHelper;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Tsqm\Tsqm;
-use Tsqm\Config;
 
 class ListScheduledCommand extends Command
 {
-    protected function configure(): void
+    private Tsqm $tsqm;
+    private LoggerInterface $logger;
+
+    public function __construct(Tsqm $tsqm, LoggerInterface $logger)
     {
+        parent::__construct("list:scheduled");
         $this
-            ->setName("list:scheduled")
-            ->setDescription("Get scheduled run ids")
-            ->addOption("limit", "l", InputArgument::OPTIONAL, "Limit number of run ids to get", 10);
+            ->setDescription("Get scheduled tasks")
+            ->addOption("limit", "l", InputArgument::OPTIONAL, "", 10);
+        $this->tsqm = $tsqm;
+        $this->logger = $logger;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $container = Container::create();
-        $tsqm = new Tsqm((new Config())
-                ->setContainer($container)
-                ->setPdo(DbHelper::createPdoFromEnv()));
-
-        $runIds = $tsqm->getNextRunIds(new DateTime(), $input->getOption("limit"));
-        foreach ($runIds as $runId) {
-            $run = $tsqm->getRun($runId);
-            $output->writeln($run->getId() . " run at " . $run->getRunAt()->format("Y-m-d H:i:s.v"));
+        $tasks = $this->tsqm->getScheduledTasks(new DateTime(), $input->getOption("limit"));
+        foreach ($tasks as $task) {
+            $this->logger->debug("Scheduled task", ['task' => $task]);
         }
-
         return self::SUCCESS;
     }
 }

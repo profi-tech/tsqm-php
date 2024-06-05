@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 jobs:
-  test:
+  check:
 
     runs-on: ubuntu-20.04
 
@@ -26,25 +26,11 @@ jobs:
     - name: Install dependencies
       run: composer install --prefer-dist --no-progress
 
-    - name: Run test suite
-      run: composer test
-
-  lint-analyse:
-
-    runs-on: ubuntu-20.04
-
-    steps:
-    - uses: shivammathur/setup-php@v2
-      with:
-        php-version: '7.4'
-    
-    - uses: actions/checkout@v3
-
-    - name: Install dependencies
-      run: composer install --prefer-dist --no-progress
-
     - name: Lint
       run: composer lint
 
     - name: Analyse
       run: composer analyse
+
+    - name: Test
+      run: composer test

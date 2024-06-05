@@ -14,6 +14,7 @@ class SerializationHelper
      * @param mixed $value
      * @return string
      * @throws SerializationError
+     * @codeCoverageIgnore
      */
     public static function serialize($value): string
     {
@@ -30,6 +31,7 @@ class SerializationHelper
      * @param string $value
      * @return mixed
      * @throws SerializationError
+     * @codeCoverageIgnore
      */
     public static function unserialize($value)
     {

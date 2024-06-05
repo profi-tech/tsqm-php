@@ -24,6 +24,11 @@ class RetryPolicy implements JsonSerializable
         return $this->maxRetries;
     }
 
+    /**
+     * Set the minimum time between retries in milliseconds
+     * @param int $minInterval
+     * @return RetryPolicy
+     */
     public function setMinInterval(int $minInterval): self
     {
         $this->minInterval = $minInterval;
@@ -37,11 +42,22 @@ class RetryPolicy implements JsonSerializable
 
     public function getRetryAt(int $retriesSoFar): ?DateTime
     {
-        if ($retriesSoFar >= $this->getMaxRetries()) {
-            return null;
-        } else {
+        if ($retriesSoFar < $this->getMaxRetries()) {
             return (new DateTime())->modify('+' . $this->getMinInterval() . ' milliseconds');
+        } else {
+            return null;
         }
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     * @return RetryPolicy
+     */
+    public static function fromArray(array $data): self
+    {
+        return (new self())
+            ->setMaxRetries($data['maxRetries'])
+            ->setMinInterval($data['minInterval']);
     }
 
     /**
@@ -56,9 +72,9 @@ class RetryPolicy implements JsonSerializable
     }
 
     /**
-     * @return array<string, mixed>
+     * @return mixed
      */
-    public function jsonSerialize(): mixed
+    public function jsonSerialize()
     {
         return $this->__serialize();
     }

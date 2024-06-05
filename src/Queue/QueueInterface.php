@@ -2,9 +2,9 @@
 
 namespace Tsqm\Queue;
 
-use Tsqm\Runs\Run;
+use DateTime;
 
 interface QueueInterface
 {
-    public function enqueue(Run $run): void;
+    public function enqueue(string $taskId, DateTime $scheduledFor): void;
 }

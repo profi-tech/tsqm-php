@@ -3,8 +3,10 @@
 namespace Tsqm\Helpers;
 
 use Exception;
-use PDOException;
 
+/**
+ * @codeCoverageIgnore
+ */
 class PdoHelper
 {
     /**

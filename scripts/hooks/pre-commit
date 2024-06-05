@@ -2,6 +2,6 @@
 
 set -e
 
-composer lint
+composer lint 
 composer analyse
 composer test

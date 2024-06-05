@@ -16,6 +16,17 @@ class Greeting implements JsonSerializable
         $this->text = $text;
     }
 
+    public function setText(string $text): self
+    {
+        $this->text = $text;
+        return $this;
+    }
+
+    public function getText(): string
+    {
+        return $this->text;
+    }
+
     public function setPurchased(bool $purchased): self
     {
         $this->purchased = $purchased;

@@ -1,20 +1,17 @@
 <?php
 
-require __DIR__ . './../vendor/autoload.php';
+namespace Examples;
 
+use Dotenv\Dotenv;
 use Symfony\Component\Console\Application;
 
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . "/../");
+require __DIR__ . './../vendor/autoload.php';
+
+$dotenv = Dotenv::createImmutable(__DIR__ . "/../");
 $dotenv->load();
 
-$app = new Application();
+$container = Container::create();
 
-$app->add(new Examples\Commands\InitDbCommand());
-$app->add(new Examples\Commands\RunOneCommand());
-$app->add(new Examples\Commands\ListScheduledCommand());
-$app->add(new Examples\Commands\RunScheduledCommand());
-
-$app->add(new Examples\Commands\HelloWorldCommand());
-$app->add(new Examples\Commands\HelloWorldSimpleCommand());
-
+/** @var Application */
+$app = $container->get(Application::class);
 $app->run();

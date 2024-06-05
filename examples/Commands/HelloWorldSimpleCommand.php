@@ -2,54 +2,50 @@
 
 namespace Examples\Commands;
 
-use Examples\Container;
-use Examples\Greeter\Callables\SimpleGreetWithRandomFail;
+use Examples\Greeter\SimpleGreetWithRandomFail;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Examples\Helpers\DbHelper;
-use Tsqm\Tsqm;
-use Tsqm\Config;
-use Examples\Logger;
+use Psr\Log\LoggerInterface;
 use Tsqm\Tasks\RetryPolicy;
 use Tsqm\Tasks\Task;
+use Tsqm\Tsqm;
 
 class HelloWorldSimpleCommand extends Command
 {
-    public function __construct()
-    {
-        parent::__construct();
-    }
+    private Tsqm $tsqm;
+    private LoggerInterface $logger;
+    private SimpleGreetWithRandomFail $simpleGreetWithRandomFail;
 
-    protected function configure(): void
-    {
+    public function __construct(
+        Tsqm $tsqm,
+        LoggerInterface $logger,
+        SimpleGreetWithRandomFail $simpleGreetWithRandomFail
+    ) {
+        parent::__construct("example:hello-world-simple");
         $this
-            ->setName("example:hello-world-simple")
             ->setDescription("Runs task with random fail emulation")
             ->addArgument("name", InputArgument::REQUIRED, "Name of the person to greet");
+
+        $this->tsqm = $tsqm;
+        $this->logger = $logger;
+        $this->simpleGreetWithRandomFail = $simpleGreetWithRandomFail;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $container = Container::create();
-        $logger = new Logger();
-        $tsqm = new Tsqm(
-            (new Config())
-                ->setContainer($container)
-                ->setPdo(DbHelper::createPdoFromEnv())
-                ->setLogger($logger)
-        );
-
-        $simpleGreetWithRandomFail = $container->get(SimpleGreetWithRandomFail::class);
-
-        $task = (new Task($simpleGreetWithRandomFail))
+        $task = (new Task())
+            ->setCallable($this->simpleGreetWithRandomFail)
             ->setArgs($input->getArgument("name"))
-            ->setRetryPolicy((new RetryPolicy())->setMaxRetries(3));
+            ->setRetryPolicy(
+                (new RetryPolicy())
+                    ->setMaxRetries(3)
+                    ->setMinInterval(5000)
+            );
 
-        $run = $tsqm->createRun($task);
-        $result = $tsqm->performRun($run);
-        $logger->logRunResult($result);
+        $task = $this->tsqm->runTask($task);
+        $this->logger->debug("Final result", ['task' => $task]);
 
         return self::SUCCESS;
     }

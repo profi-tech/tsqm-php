@@ -4,6 +4,6 @@ namespace Tsqm\Errors;
 
 use Exception;
 
-abstract class TsqmError extends Exception
+class TsqmError extends Exception
 {
 }
