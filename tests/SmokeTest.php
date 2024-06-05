@@ -89,4 +89,14 @@ class SmokeTest extends TestCase
         $this->assertEquals('Hello, John Doe 3!', $task2->getResult()[0]->getText());
         $this->assertEquals('Hello, John Doe 3!', $task2->getResult()[1]->getText());
     }
+
+    public function testTaskMutability(): void
+    {
+        $task1 = (new Task())
+            ->setCallable($this->simpleGreet)
+            ->setArgs('John Doe');
+        $task1_clone = clone $task1;
+        $this->tsqm->runTask($task1);
+        $this->assertEquals($task1, $task1_clone);
+    }
 }
