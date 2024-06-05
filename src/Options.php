@@ -2,14 +2,16 @@
 
 namespace Tsqm;
 
+use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use Tsqm\Queue\QueueInterface;
 
 class Options
 {
-    private ?QueueInterface $queue = null;
     private string $table = "tsqm_tasks";
+    private ?ContainerInterface $container = null;
+    private ?QueueInterface $queue = null;
     private ?LoggerInterface $logger = null;
 
     public function setTable(string $table): self
@@ -21,6 +23,17 @@ class Options
     public function getTable(): string
     {
         return $this->table;
+    }
+
+    public function setContainer(ContainerInterface $container): self
+    {
+        $this->container = $container;
+        return $this;
+    }
+
+    public function getContainer(): ?ContainerInterface
+    {
+        return $this->container;
     }
 
     public function setQueue(QueueInterface $queue): self

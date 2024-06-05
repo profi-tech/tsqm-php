@@ -11,9 +11,9 @@ use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use Tsqm\Errors\DuplicatedTask;
 use Tsqm\Errors\InvalidGeneratorItem;
-use Tsqm\Errors\TaskClassDefinitionNotFound;
 use Tsqm\Errors\DeterminismViolation;
 use Tsqm\Errors\EnqueueFailed;
+use Tsqm\Errors\InvalidTask;
 use Tsqm\Errors\ToManyTasks;
 use Tsqm\Errors\TsqmError;
 use Tsqm\Helpers\PdoHelper;
@@ -26,19 +26,16 @@ class Tsqm
 {
     private const GENERATOR_LIMIT = 1000;
 
-    private ContainerInterface $container;
     private TaskRepository $repository;
+    private ?ContainerInterface $container;
     private QueueInterface $queue;
     private LoggerInterface $logger;
 
-    public function __construct(
-        ContainerInterface $container,
-        PDO $pdo,
-        ?Options $options = null
-    ) {
+    public function __construct(PDO $pdo, ?Options $options = null)
+    {
         $options = $options ?? new Options();
 
-        $this->container = $container;
+        $this->container = $options->getContainer();
         $this->repository = new TaskRepository($pdo, $options->getTable());
         $this->logger = $options->getLogger();
         $this->queue = $options->getQueue();
@@ -55,13 +52,16 @@ class Tsqm
             return $task;
         }
 
-        if (!$this->container->has($task->getName())) {
-            throw new TaskClassDefinitionNotFound($task->getName() . " not found in container");
-        }
-
-        $callable = $this->container->get($task->getName());
-        if (!is_callable($callable)) {
-            throw new TaskClassDefinitionNotFound($task->getName() . " is not callable");
+        if (is_callable($task->getName())) {
+            $callable = $task->getName();
+        } else {
+            if (is_null($this->container)) {
+                throw new InvalidTask("DI container not found");
+            }
+            if (!$this->container->has($task->getName())) {
+                throw new InvalidTask($task->getName() . " not found in DI container");
+            }
+            $callable = $this->container->get($task->getName());
         }
 
         if ($task->isNullCreatedAt()) {

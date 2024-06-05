@@ -21,6 +21,7 @@ use Examples\Helpers\DbHelper;
 use PDO;
 use Psr\Container\ContainerInterface;
 use Ramsey\Uuid\Uuid;
+use Tsqm\Options;
 use Tsqm\Tsqm;
 
 class TestCase extends \PHPUnit\Framework\TestCase
@@ -63,7 +64,7 @@ class TestCase extends \PHPUnit\Framework\TestCase
             ->useAutowiring(true)
             ->build();
 
-        $this->tsqm = new Tsqm($this->container, $this->pdo);
+        $this->tsqm = new Tsqm($this->pdo, (new Options())->setContainer($this->container));
 
         $this->simpleGreet = $this->container->get(SimpleGreet::class);
         $this->simpleGreetWithFail = $this->container->get(SimpleGreetWithFail::class);

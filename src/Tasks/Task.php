@@ -29,17 +29,19 @@ class Task implements JsonSerializable
     private int $retried = 0;
 
     /**
-     * @param mixed $callable
      * @return Task
      * @throws InvalidTask
      */
-    public function setCallable($callable): self
+    public function setCallable(callable $callable): self
     {
-        $is_invokable = is_object($callable) && method_exists($callable, '__invoke');
-        if ($is_invokable) {
+        if (is_object($callable) && method_exists($callable, '__invoke')) {
             $this->name = get_class($callable);
+        } elseif (is_array($callable) && method_exists($callable[0], $callable[1])) {
+            $this->name = implode('::', $callable);
+        } elseif (is_string($callable)) {
+            $this->name = $callable;
         } else {
-            throw new InvalidTask("Callable object with __invoke method");
+            throw new InvalidTask("Callable must be an object with __invoke method, named function or static method");
         }
         return $this;
     }

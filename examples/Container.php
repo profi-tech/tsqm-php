@@ -25,10 +25,6 @@ class Container
         return (new ContainerBuilder())
             ->addDefinitions([
 
-                ContainerInterface::class => static function (ContainerInterface $c): ContainerInterface {
-                    return $c;
-                },
-
                 Application::class => static function (ContainerInterface $c): Application {
                     $app = new Application();
                     $app->add($c->get(ResetDbCommand::class));
@@ -53,9 +49,9 @@ class Container
 
                 Tsqm::class => static function (ContainerInterface $c) {
                     return new Tsqm(
-                        $c->get(ContainerInterface::class),
                         $c->get(PDO::class),
                         (new Options())
+                            ->setContainer($c)
                             ->setLogger($c->get(LoggerInterface::class))
                     );
                 },

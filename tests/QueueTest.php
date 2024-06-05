@@ -24,10 +24,10 @@ class QueueTest extends TestCase
         $this->queue = $this->createMock(QueueInterface::class);
 
         $this->tsqm = new Tsqm(
-            $this->container,
             $this->pdo,
             (new Options())
                 ->setQueue($this->queue)
+                ->setContainer($this->container)
         );
     }
 

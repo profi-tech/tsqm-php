@@ -18,8 +18,8 @@ class OptionsTest extends TestCase
 
     public function testTableOption(): void
     {
-        $tsqm1 = new Tsqm($this->container, $this->pdo, (new Options())->setTable('test_table1'));
-        $tsqm2 = new Tsqm($this->container, $this->pdo, (new Options())->setTable('test_table2'));
+        $tsqm1 = new Tsqm($this->pdo, (new Options())->setTable('test_table1')->setContainer($this->container));
+        $tsqm2 = new Tsqm($this->pdo, (new Options())->setTable('test_table2')->setContainer($this->container));
 
         $task1 = $tsqm1->runTask(
             (new Task())->setCallable($this->simpleGreetWithFail)->setArgs('John Doe1')->setRetryPolicy(
