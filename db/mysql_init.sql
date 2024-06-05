@@ -13,7 +13,7 @@ CREATE TABLE `tsqm_tasks` (
     `result` BLOB,
     `error` BLOB,
     `retry_policy` JSON,
-    `retried` INT UNSIGNED NOT NULL DEFAULT 0,
+    `retried` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
     UNIQUE KEY (`id`),
     KEY `idx_root_id` (`root_id`),
     KEY `idx_scheduled_for` (`scheduled_for`)

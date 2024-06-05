@@ -17,7 +17,6 @@ use Tsqm\Errors\EnqueueFailed;
 use Tsqm\Errors\ToManyTasks;
 use Tsqm\Errors\TsqmError;
 use Tsqm\Helpers\PdoHelper;
-use Tsqm\Helpers\SerializationHelper;
 use Tsqm\Helpers\UuidHelper;
 use Tsqm\Queue\QueueInterface;
 use Tsqm\Tasks\TaskRepository;

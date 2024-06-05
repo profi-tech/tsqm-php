@@ -14,7 +14,7 @@ CREATE TABLE
         `result` BLOB,
         `error` BLOB,
         `retry_policy` JSON,
-        `retried` INTEGER NOT NULL DEFAULT 0
+        `retried` SMALLINT NOT NULL DEFAULT 0
     );
 
 CREATE UNIQUE INDEX `idx_id` ON `tsqm_tasks` (`id`);
