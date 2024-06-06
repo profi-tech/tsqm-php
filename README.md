@@ -37,13 +37,14 @@ vendor/bin/tsqm-db sqlite my_tsqm_table
 
 Run the generated SQL on the database you want TSQM to work with.
 
-## 3. TSQM engine Configuration
+## 3. Configuring TSQM engine
 
 ```php
 $dsn = "<PDO dsn of database where you created a table>";
 $username = "<your username>";
 $password = "<your password>";
 $pdo = new PDO($dsn, $username, $password);
+
 $tsqm = new Tsqm\Tsqm($pdo);
 ...
 ```
@@ -51,7 +52,7 @@ $tsqm = new Tsqm\Tsqm($pdo);
 
 ## 4. Creating a task
 
-To create tasks, you need to create a new Task object and set the necessary fields:
+To create tasks, you need to create a new `Task` object and set the necessary fields:
 
 ```php
 $task = (new Tsqm\Task())
@@ -66,8 +67,8 @@ $task = (new Tsqm\Task())
 The argument for `setCallable` could be:
 
 - A callable object of a class with the `__invoke` method (recommended).
-- Names of global functions.
-- Names of static methods along with their classes.
+- Name of static method along with its class name e.g. `MyClass::myMethod`
+- Name of global functions e.g. `MyGlobalFunction` (highly not recommended). 
 
 :warning: If you use callable objects, you need to set a DI container for the TSQM engine that implements `Tsqm\Container\ContainerInterface`. The callable object must be accessible in the container by its class name.
 
