@@ -8,6 +8,7 @@ use PDO;
 use Tsqm\Errors\RepositoryError;
 use Tsqm\Helpers\PdoHelper;
 use Tsqm\Helpers\SerializationHelper;
+use Tsqm\Helpers\UuidHelper;
 use Tsqm\Task;
 
 class TaskRepository
@@ -106,7 +107,9 @@ class TaskRepository
             if (!$res) {
                 throw new Exception(PdoHelper::formatErrorInfo($this->pdo->errorInfo()));
             }
-            $res->execute(['id' => $id]);
+            $res->execute([
+                'id' => UuidHelper::uuid2bin($id)
+            ]);
             $row = $res->fetch(PDO::FETCH_ASSOC);
             if (!$row) {
                 return null;
@@ -162,7 +165,9 @@ class TaskRepository
             if (!$res) {
                 throw new Exception(PdoHelper::formatErrorInfo($this->pdo->errorInfo()));
             }
-            $res->execute(['parent_id' => $parentId]);
+            $res->execute([
+                'parent_id' => UuidHelper::uuid2bin($parentId)
+            ]);
 
             while ($row = $res->fetch(PDO::FETCH_ASSOC)) {
                 $tasks[] = $this->createTaskFromRow($row);
@@ -181,7 +186,9 @@ class TaskRepository
             if (!$res) {
                 throw new Exception(PdoHelper::formatErrorInfo($this->pdo->errorInfo()));
             }
-            $res->execute(['root_id' => $id]);
+            $res->execute([
+                'root_id' => UuidHelper::uuid2bin($id)
+            ]);
         } catch (Exception $e) {
             throw new RepositoryError("Failed to delete task: " . $e->getMessage(), 0, $e);
         }
@@ -194,13 +201,16 @@ class TaskRepository
     {
         $task = new Task();
         if (isset($row['id'])) {
-            $task->setId($row['id']);
+            $id = UuidHelper::bin2uuid($row['id']);
+            $task->setId($id);
         }
         if (isset($row['parent_id'])) {
-            $task->setParentId($row['parent_id']);
+            $parentId = UuidHelper::bin2uuid($row['parent_id']);
+            $task->setParentId($parentId);
         }
         if (isset($row['root_id'])) {
-            $task->setRootId($row['root_id']);
+            $rootId = UuidHelper::bin2uuid($row['root_id']);
+            $task->setRootId($rootId);
         }
         if (isset($row['created_at'])) {
             $task->setCreatedAt(new DateTime($row['created_at']));
@@ -252,6 +262,15 @@ class TaskRepository
      */
     private function serializeRow(array $row): array
     {
+        if (isset($row['id'])) {
+            $row['id'] = UuidHelper::uuid2bin($row['id']);
+        }
+        if (isset($row['parent_id'])) {
+            $row['parent_id'] = UuidHelper::uuid2bin($row['parent_id']);
+        }
+        if (isset($row['root_id'])) {
+            $row['root_id'] = UuidHelper::uuid2bin($row['root_id']);
+        }
         if (isset($row['args'])) {
             $row['args'] = SerializationHelper::serialize($row['args']);
         }
