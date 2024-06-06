@@ -8,7 +8,7 @@ $table = isset($argv[2]) ? trim($argv[2]) : "tsqm_tasks";
 
 if ($vendor === MYSQL_VENDOR) {
     $sql = trim("
-CREATE TABLE `$table` (
+CREATE TABLE IF NOT EXISTS `$table` (
     `nid` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     `id` BINARY(16) NOT NULL,
     `parent_id` BINARY(16),
@@ -32,7 +32,7 @@ CREATE TABLE `$table` (
     ");
 } elseif ($vendor === SQLITE_VENDOR) {
     $sql = trim("
-CREATE TABLE `$table` (
+CREATE TABLE IF NOT EXISTS `$table` (
     `nid` INTEGER PRIMARY KEY AUTOINCREMENT,
     `id` BINARY(16) NOT NULL,
     `parent_id` BINARY(16),
