@@ -55,13 +55,13 @@ To create tasks, you need to create a new Task object and set the necessary fiel
 
 ```php
 $task = (new Tsqm\Task())
-	->setCallable("greet")
-	->setArgs("John Doe")
-	->setRetryPolicy(
-		(new Tsqm\RetryPolicyI())
-			->setMaxRetries(10)
-			->setMinInterval(1000)
-	)
+  ->setCallable("greet")
+  ->setArgs("John Doe")
+  ->setRetryPolicy(
+    (new Tsqm\RetryPolicyI())
+      ->setMaxRetries(10)
+      ->setMinInterval(1000)
+  )
 ```
 The argument for `setCallable` could be:
 
@@ -74,13 +74,13 @@ The argument for `setCallable` could be:
 
 ```php
 class MyContainer implements Tsqm\Container\ContainerInterface {
-	...
+  ...
 }
 
 $tsqm = new Tsqm\Tsqm(
-	$pdo,
-	(new Tsqm\Options())
-		->setContainer(new MyContainer())
+  $pdo,
+  (new Tsqm\Options())
+    ->setContainer(new MyContainer())
 );
 ...
 ```
@@ -96,11 +96,11 @@ The execution result will be available in the `$task` object:
 ```php
 echo "Task id: ".$task->getId();
 if ($task->isFinished()) {
-		if (!$task->hasError()) {
-			$result = $task->getResult();
-		} else {
-			$error = $task->getError();
-		}	
+    if (!$task->hasError()) {
+      $result = $task->getResult();
+    } else {
+      $error = $task->getError();
+    }	
 }
 ```
 
@@ -116,7 +116,7 @@ Tasks that need to be retried can be obtained through the `getScheduledTasks` me
 ```php
 $tasks = $tsqm->getScheduledTasks();
 foreach ($tasks as $task) {
-	$task = $tsqm->runTask($task);
+  $task = $tsqm->runTask($task);
 }
 
 ```
@@ -127,8 +127,8 @@ Or retrieve a task by its ID if you are using queues:
 $taskId = "<scheduled task id from queue>";
 $task = $tsqm->getTask($taskId);
 if ($task) {
-	$task = $tsqm->runTask($task);
-	...
+  $task = $tsqm->runTask($task);
+  ...
 }
 ```
 
@@ -141,15 +141,15 @@ To integrate queues in TSQM, you need to implement the `Tsqm\Queue\QueueInterfac
 
 ```php
 class MyQueue implements Tsqm\Queue\QueueInterface {
-	public function enqueue(string $taskId, DateTime $scheduledFor): void {
-		... put taskId to your favorite message broker like RabbitMQ, Apache Kafka etc.
-	}
+  public function enqueue(string $taskId, DateTime $scheduledFor): void {
+    ... put taskId to your favorite message broker like RabbitMQ, Apache Kafka etc.
+  }
 }
 
 $tsqm = new Tsqm\Tsqm(
-	$pdo,
-	(new Tsqm\Options())
-		->setQueue(new MyQueue())
+  $pdo,
+  (new Tsqm\Options())
+    ->setQueue(new MyQueue())
 );
 
 ```
@@ -158,11 +158,11 @@ Then, in a separate daemon script, retrieve messages from your queue and execute
 
 ```php
 while (true) {
-	....
-	$task = $tsqm->getTask($taskId);
-	if ($task) {
-		$tsqm->runTask($task);	
-	}
+  ....
+  $task = $tsqm->getTask($taskId);
+  if ($task) {
+    $tsqm->runTask($task);	
+  }
 }
 
 ```
@@ -176,44 +176,44 @@ In addition to simple tasks, TSQM supports transactions; you can implement a tas
 ```php
 class Greet
 {
-	...
-	public function __invoke(string $name): Generator
-	{
-		$valid = yield (new Task())
-			->setCallable($this->validateName)
-			->setArgs($name);
-		if (!$valid) {
-			return false;
-		}
+  ...
+  public function __invoke(string $name): Generator
+  {
+    $valid = yield (new Task())
+      ->setCallable($this->validateName)
+      ->setArgs($name);
+    if (!$valid) {
+      return false;
+    }
 
-		$greeting = yield (new Task())
-			->setCallable($this->createGreeting)
-			->setArgs($name);
+    $greeting = yield (new Task())
+      ->setCallable($this->createGreeting)
+      ->setArgs($name);
 
-		try {
-			$greeting = yield (new Task())
-				->setCallable($this->purchase)
-				->setArgs($greeting)
-				->setIsSecret(true)
-				->setRetryPolicy(
-					(new RetryPolicy())
-						->setMaxRetries(3)
-						->setMinInterval(5000)
-			);
-		} catch (Exception $e) {
-			yield (new Task())
-				->setCallable($this->revertGreeting)
-				->setArgs($greeting);
-			return false;
-		}
+    try {
+      $greeting = yield (new Task())
+        ->setCallable($this->purchase)
+        ->setArgs($greeting)
+        ->setIsSecret(true)
+        ->setRetryPolicy(
+          (new RetryPolicy())
+            ->setMaxRetries(3)
+            ->setMinInterval(5000)
+      );
+    } catch (Exception $e) {
+      yield (new Task())
+        ->setCallable($this->revertGreeting)
+        ->setArgs($greeting);
+      return false;
+    }
 
-		return $greeting;
-	}
+    return $greeting;
+  }
 }
 ...
 $task = (new Task())
-	->setCallable(new Greet(...))
-	->setArgs("John Doe");
+  ->setCallable(new Greet(...))
+  ->setArgs("John Doe");
 
 $task = $tsqm->runTask($task);
 ```
@@ -228,22 +228,19 @@ TSQM logs every step of task and transaction execution. To access these logs, yo
  
  ```php
 class MyLogger implements Tsqm\Logger\LoggerInterface {
-		...
-		public function log($level, string $message, array $context = []): void {
-			// Your log implementation here
-		}
+    ...
+    public function log($level, string $message, array $context = []): void {
+      // Your log implementation here
+    }
 }
 
 $tsqm = new Tsqm\Tsqm(
-	$pdo,
-	(new Tsqm\Options())
-		->setLogger(new MyLogger())
+  $pdo,
+  (new Tsqm\Options())
+    ->setLogger(new MyLogger())
 );
 
 ```
-
-
-# Limitations and warnings
 
 # Limitations and Warnings
 
