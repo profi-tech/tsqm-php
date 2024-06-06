@@ -2,7 +2,6 @@
 
 namespace Examples;
 
-use Psr\Container\ContainerInterface;
 use DI\ContainerBuilder;
 use Examples\Commands\HelloWorldCommand;
 use Examples\Commands\HelloWorldSimpleCommand;
@@ -12,18 +11,18 @@ use Examples\Commands\RunTaskCommand;
 use Examples\Commands\RunScheduledCommand;
 use Monolog;
 use PDO;
+use Psr\Container\ContainerInterface;
 use Symfony\Component\Console\Application;
 use Tsqm\Logger\LoggerInterface;
 use Tsqm\Options;
 use Tsqm\Tsqm;
 
-class Container
+class PsrContainer
 {
-    public static function create(): ContainerInterface
+    public static function build(): ContainerInterface
     {
         return (new ContainerBuilder())
             ->addDefinitions([
-
 
                 Application::class => static function (ContainerInterface $c): Application {
                     $app = new Application();
@@ -47,11 +46,11 @@ class Container
                     return $pdo;
                 },
 
-                Tsqm::class => static function (ContainerInterface $c) {
+                Tsqm::class => function (ContainerInterface $c) {
                     return new Tsqm(
                         $c->get(PDO::class),
                         (new Options())
-                            ->setContainer($c)
+                            ->setContainer(new TsqmContainer($c))
                             ->setLogger($c->get(LoggerInterface::class))
                     );
                 },
@@ -63,6 +62,8 @@ class Container
                     $logger->pushHandler($handler);
                     return new Logger($logger);
                 },
+
+                'rawGreet' => fn () => fn (string $name) => "Hello, $name!",
 
             ])
             ->useAutowiring(true)

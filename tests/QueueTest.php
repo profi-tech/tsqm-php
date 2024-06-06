@@ -3,6 +3,7 @@
 namespace Tests;
 
 use DateTime;
+use Examples\TsqmContainer;
 use Tsqm\Tsqm;
 use Tsqm\Queue\QueueInterface;
 use Tsqm\Task;
@@ -27,7 +28,7 @@ class QueueTest extends TestCase
             $this->pdo,
             (new Options())
                 ->setQueue($this->queue)
-                ->setContainer($this->container)
+                ->setContainer(new TsqmContainer($this->psrContainer))
         );
     }
 

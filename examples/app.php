@@ -10,7 +10,7 @@ require __DIR__ . './../vendor/autoload.php';
 $dotenv = Dotenv::createImmutable(__DIR__ . "/../");
 $dotenv->load();
 
-$container = Container::create();
+$container = PsrContainer::build();
 
 /** @var Application */
 $app = $container->get(Application::class);

@@ -2,11 +2,8 @@
 
 namespace Tests;
 
-use DI\ContainerBuilder;
 use Examples\Greeter\RawGreet;
-use Tsqm\Options;
 use Tsqm\Task;
-use Tsqm\Tsqm;
 
 function rawGreet(string $name): string
 {
@@ -15,23 +12,8 @@ function rawGreet(string $name): string
 
 class TaskCallableTest extends TestCase
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->tsqm = (new Tsqm($this->pdo));
-    }
-
     public function testContainerCallable(): void
     {
-        $container = (new ContainerBuilder())
-            ->addDefinitions([
-                'rawGreet' => fn() => fn (string $name) => "Hello, $name!",
-            ])
-            ->useAutowiring(false)
-            ->build();
-
-        $this->tsqm = (new Tsqm($this->pdo, (new Options())->setContainer($container)));
-
         $task = (new Task())
             ->setName('rawGreet')
             ->setArgs('John Doe');
