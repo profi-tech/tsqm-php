@@ -86,7 +86,7 @@ class SchedulerTest extends TestCase
         $task2 = $this->tsqm->runTask($task);
         $task3 = $this->tsqm->runTask($task);
 
-        $scheduledTasks = $this->tsqm->getScheduledTasks($scheduledFor, 10);
+        $scheduledTasks = $this->tsqm->getScheduledTasks(10, $scheduledFor);
         $this->assertCount(3, $scheduledTasks);
         $this->assertEquals([$task1, $task2, $task3], $scheduledTasks);
     }
@@ -102,7 +102,7 @@ class SchedulerTest extends TestCase
         $this->tsqm->runTask($task);
         $this->tsqm->runTask($task);
 
-        $scheduledTasks = $this->tsqm->getScheduledTasks((new DateTime())->modify("-10 second"), 10);
+        $scheduledTasks = $this->tsqm->getScheduledTasks(10, (new DateTime())->modify("-10 second"));
         $this->assertCount(0, $scheduledTasks);
     }
 
@@ -117,7 +117,7 @@ class SchedulerTest extends TestCase
         $task1 = $this->tsqm->runTask($task);
         $task2 = $this->tsqm->runTask($task);
 
-        $scheduledTasks = $this->tsqm->getScheduledTasks($scheduledFor, 2);
+        $scheduledTasks = $this->tsqm->getScheduledTasks(2, $scheduledFor);
         $this->assertCount(2, $scheduledTasks);
         $this->assertEquals([$task1, $task2], $scheduledTasks);
     }
