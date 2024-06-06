@@ -231,10 +231,6 @@ class Task implements JsonSerializable
 
     public function setError(?Throwable $error): self
     {
-        if (!is_null($error)) {
-            $className = get_class($error);
-            $error = new $className($error->getMessage(), $error->getCode());
-        }
         $this->error = $error;
         return $this;
     }
@@ -260,6 +256,12 @@ class Task implements JsonSerializable
         return $this->retryPolicy;
     }
 
+    public function setRetried(int $retried): self
+    {
+        $this->retried = $retried;
+        return $this;
+    }
+
     public function incRetried(): self
     {
         $this->retried++;
@@ -269,58 +271,6 @@ class Task implements JsonSerializable
     public function getRetried(): int
     {
         return $this->retried;
-    }
-
-    /**
-     * @param array<string, mixed> $data
-     */
-    public static function fromArray(array $data): self
-    {
-        $task = new self();
-        if (isset($data['id'])) {
-            $task->setId($data['id']);
-        }
-        if (isset($data['parent_id'])) {
-            $task->setParentId($data['parent_id']);
-        }
-        if (isset($data['root_id'])) {
-            $task->setRootId($data['root_id']);
-        }
-        if (isset($data['created_at'])) {
-            $task->setCreatedAt(new DateTime($data['created_at']));
-        }
-        if (isset($data['scheduled_for'])) {
-            $task->setScheduledFor(new DateTime($data['scheduled_for']));
-        }
-        if (isset($data['started_at'])) {
-            $task->setStartedAt(new DateTime($data['started_at']));
-        }
-        if (isset($data['finished_at'])) {
-            $task->setFinishedAt(new DateTime($data['finished_at']));
-        }
-        if (isset($data['name'])) {
-            $task->setName($data['name']);
-        }
-        if (isset($data['is_secret'])) {
-            $task->setIsSecret((bool)$data['is_secret']);
-        }
-        if (isset($data['args'])) {
-            $task->setArgs(...SerializationHelper::unserialize($data['args']));
-        }
-        if (isset($data['result'])) {
-            $task->setResult(SerializationHelper::unserialize($data['result']));
-        }
-        if (isset($data['error'])) {
-            $task->setError(SerializationHelper::unserialize($data['error']));
-        }
-        if (isset($data['retry_policy'])) {
-            $task->setRetryPolicy(RetryPolicy::fromArray(json_decode($data['retry_policy'], true)));
-        }
-        if (isset($data['retried'])) {
-            $task->retried = $data['retried'];
-        }
-
-        return $task;
     }
 
     /**
@@ -344,8 +294,6 @@ class Task implements JsonSerializable
                 'class' => get_class($this->error),
                 'message' => $this->error->getMessage(),
                 'code' => $this->error->getCode(),
-                'file' => $this->error->getFile(),
-                'line' => $this->error->getLine(),
             ] : null,
             'retry_policy' => $this->retryPolicy,
             'retried' => $this->retried,

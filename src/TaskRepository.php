@@ -38,7 +38,7 @@ class TaskRepository
             if (!$res) {
                 throw new Exception(PdoHelper::formatErrorInfo($this->pdo->errorInfo()));
             }
-            $res->execute([
+            $row = $this->serializeRow([
                 'id' => $task->getId(),
                 'parent_id' => $task->getParentId(),
                 'root_id' => $task->getRootId(),
@@ -46,13 +46,10 @@ class TaskRepository
                 'scheduled_for' => $task->getScheduledFor()->format(self::MICROSECONDS_TS),
                 'name' => $task->getName(),
                 'is_secret' => (int)$task->getIsSecret(),
-                'args' => $task->getArgs()
-                    ? SerializationHelper::serialize($task->getArgs())
-                    : null,
-                'retry_policy' => $task->getRetryPolicy()
-                    ? json_encode($task->getRetryPolicy())
-                    : null,
+                'args' => $task->getArgs(),
+                'retry_policy' => $task->getRetryPolicy(),
             ]);
+            $res->execute($row);
             return $task;
         } catch (Exception $e) {
             throw new RepositoryError("Failed to create task: " . $e->getMessage(), 0, $e);
@@ -80,7 +77,7 @@ class TaskRepository
                 throw new Exception(PdoHelper::formatErrorInfo($this->pdo->errorInfo()));
             }
 
-            $res->execute([
+            $row = $this->serializeRow([
                 'id' => $task->getId(),
                 'started_at' => $task->getStartedAt()
                     ? $task->getStartedAt()->format(self::MICROSECONDS_TS)
@@ -91,14 +88,12 @@ class TaskRepository
                 'finished_at' => $task->getFinishedAt()
                     ? $task->getFinishedAt()->format(self::MICROSECONDS_TS)
                     : null,
-                'result' => !is_null($task->getResult())
-                    ? SerializationHelper::serialize($task->getResult())
-                    : null,
-                'error' => $task->getError()
-                    ? SerializationHelper::serialize($task->getError())
-                    : null,
+                'result' => $task->getResult(),
+                'error' => $task->getError(),
                 'retried' => $task->getRetried(),
             ]);
+
+            $res->execute($row);
         } catch (Exception $e) {
             throw new RepositoryError("Failed to update task: " . $e->getMessage(), 0, $e);
         }
@@ -116,7 +111,7 @@ class TaskRepository
             if (!$row) {
                 return null;
             }
-            return Task::fromArray($row);
+            return $this->createTaskFromRow($row);
         } catch (Exception $e) {
             throw new RepositoryError("Failed to get task: " . $e->getMessage(), 0, $e);
         }
@@ -147,7 +142,7 @@ class TaskRepository
 
             $tasks = [];
             while ($row = $res->fetch(PDO::FETCH_ASSOC)) {
-                $tasks[] = Task::fromArray($row);
+                $tasks[] = $this->createTaskFromRow($row);
             }
 
             return $tasks;
@@ -170,7 +165,7 @@ class TaskRepository
             $res->execute(['parent_id' => $parentId]);
 
             while ($row = $res->fetch(PDO::FETCH_ASSOC)) {
-                $tasks[] = Task::fromArray($row);
+                $tasks[] = $this->createTaskFromRow($row);
             }
 
             return $tasks;
@@ -190,5 +185,89 @@ class TaskRepository
         } catch (Exception $e) {
             throw new RepositoryError("Failed to delete task: " . $e->getMessage(), 0, $e);
         }
+    }
+
+    /**
+     * @param array<string, mixed> $row
+     */
+    private function createTaskFromRow(array $row): Task
+    {
+        $task = new Task();
+        if (isset($row['id'])) {
+            $task->setId($row['id']);
+        }
+        if (isset($row['parent_id'])) {
+            $task->setParentId($row['parent_id']);
+        }
+        if (isset($row['root_id'])) {
+            $task->setRootId($row['root_id']);
+        }
+        if (isset($row['created_at'])) {
+            $task->setCreatedAt(new DateTime($row['created_at']));
+        }
+        if (isset($row['scheduled_for'])) {
+            $task->setScheduledFor(new DateTime($row['scheduled_for']));
+        }
+        if (isset($row['started_at'])) {
+            $task->setStartedAt(new DateTime($row['started_at']));
+        }
+        if (isset($row['finished_at'])) {
+            $task->setFinishedAt(new DateTime($row['finished_at']));
+        }
+        if (isset($row['name'])) {
+            $task->setName($row['name']);
+        }
+        if (isset($row['is_secret'])) {
+            $task->setIsSecret((bool)$row['is_secret']);
+        }
+        if (isset($row['args'])) {
+            $task->setArgs(...SerializationHelper::unserialize($row['args']));
+        }
+        if (isset($row['result'])) {
+            $task->setResult(SerializationHelper::unserialize($row['result']));
+        }
+        if (isset($row['error'])) {
+            $error = json_decode($row['error'], true);
+            $task->setError(
+                new $error['class']($error['message'], $error['code'])
+            );
+        }
+        if (isset($row['retry_policy'])) {
+            $data = json_decode($row['retry_policy'], true);
+            $retryPolicy = (new RetryPolicy())
+                ->setMaxRetries($data['maxRetries'])
+                ->setMinInterval($data['minInterval']);
+            $task->setRetryPolicy($retryPolicy);
+        }
+        if (isset($row['retried'])) {
+            $task->setRetried($row['retried']);
+        }
+
+        return $task;
+    }
+
+    /**
+     * @param array<string, mixed> $row
+     * @return array<string, string|int|bool|null>
+     */
+    private function serializeRow(array $row): array
+    {
+        if (isset($row['args'])) {
+            $row['args'] = SerializationHelper::serialize($row['args']);
+        }
+        if (isset($row['result'])) {
+            $row['result'] = SerializationHelper::serialize($row['result']);
+        }
+        if (isset($row['error'])) {
+            $row['error'] = json_encode([
+                'class' => get_class($row['error']),
+                'message' => $row['error']->getMessage(),
+                'code' => $row['error']->getCode(),
+            ]);
+        }
+        if (isset($row['retry_policy'])) {
+            $row['retry_policy'] = json_encode($row['retry_policy']);
+        }
+        return $row;
     }
 }

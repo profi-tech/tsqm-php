@@ -21,7 +21,7 @@ CREATE TABLE `$table` (
     `is_secret` BOOLEAN NOT NULL DEFAULT false,
     `args` BLOB,
     `result` BLOB,
-    `error` BLOB,
+    `error` JSON,
     `retry_policy` JSON,
     `retried` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
     UNIQUE KEY (`id`),
@@ -45,7 +45,7 @@ CREATE TABLE `$table` (
     `name` VARCHAR(255) NOT NULL,
     `args` BLOB,
     `result` BLOB,
-    `error` BLOB,
+    `error` JSON,
     `retry_policy` JSON,
     `retried` SMALLINT NOT NULL DEFAULT 0,
     UNIQUE (`id`)
