@@ -22,7 +22,7 @@ use Examples\Helpers\DbHelper;
 use Examples\PsrContainer;
 use PDO;
 use Psr\Container\ContainerInterface;
-use Ramsey\Uuid\Uuid;
+use Tsqm\Helpers\UuidHelper;
 use Tsqm\Options;
 use Tsqm\Tsqm;
 
@@ -97,7 +97,7 @@ class TestCase extends \PHPUnit\Framework\TestCase
 
     public function assertUuid(string $uuid): bool
     {
-        $isValid = (bool)preg_match('/' . Uuid::VALID_PATTERN . '/D', $uuid);
+        $isValid = (bool)preg_match('/' . UuidHelper::VALID_PATTERN . '/D', $uuid);
         if (!$isValid) {
             $this->fail("Failed asserting that '$uuid' is a valid UUID");
         }

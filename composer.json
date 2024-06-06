@@ -22,8 +22,7 @@
     "require": {
         "php": ">=7.4",
         "ext-pdo": "*",
-        "ext-json": "*",
-        "ramsey/uuid": "^3.9"
+        "ext-json": "*"
     },
     "require-dev": {
         "monolog/monolog": "^2.9",
