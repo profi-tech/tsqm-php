@@ -12,6 +12,9 @@ use Tsqm\Task;
 
 class TaskRepository
 {
+    public const MYSQL_VENDOR = 'mysql';
+    public const SQLITE_VENDOR = 'sqlite';
+
     private const MICROSECONDS_TS = 'Y-m-d H:i:s.u';
 
     private PDO $pdo;
@@ -52,17 +55,18 @@ class TaskRepository
             ]);
             return $task;
         } catch (Exception $e) {
-            throw new RepositoryError("Failed to create run: " . $e->getMessage(), 0, $e);
+            throw new RepositoryError("Failed to create task: " . $e->getMessage(), 0, $e);
         }
     }
 
     public function updateTask(Task $task): void
     {
-        if (!$task->getId()) {
-            throw new RepositoryError("Task id is required for update");
-        }
+        try {
+            if (!$task->getId()) {
+                throw new RepositoryError("Task id is required for update");
+            }
 
-        $res = $this->pdo->prepare("
+            $res = $this->pdo->prepare("
             UPDATE $this->table SET 
                 scheduled_for=:scheduled_for,
                 started_at=:started_at,
@@ -72,43 +76,50 @@ class TaskRepository
                 retried=:retried
             WHERE id = :id 
         ");
-        if (!$res) {
-            throw new Exception(PdoHelper::formatErrorInfo($this->pdo->errorInfo()));
-        }
+            if (!$res) {
+                throw new Exception(PdoHelper::formatErrorInfo($this->pdo->errorInfo()));
+            }
 
-        $res->execute([
-            'id' => $task->getId(),
-            'started_at' => $task->getStartedAt()
-                ? $task->getStartedAt()->format(self::MICROSECONDS_TS)
-                : null,
-            'scheduled_for' => $task->getScheduledFor()
-                ? $task->getScheduledFor()->format(self::MICROSECONDS_TS)
-                : null,
-            'finished_at' => $task->getFinishedAt()
-                ? $task->getFinishedAt()->format(self::MICROSECONDS_TS)
-                : null,
-            'result' => !is_null($task->getResult())
-                ? SerializationHelper::serialize($task->getResult())
-                : null,
-            'error' => $task->getError()
-                ? SerializationHelper::serialize($task->getError())
-                : null,
-            'retried' => $task->getRetried(),
-        ]);
+            $res->execute([
+                'id' => $task->getId(),
+                'started_at' => $task->getStartedAt()
+                    ? $task->getStartedAt()->format(self::MICROSECONDS_TS)
+                    : null,
+                'scheduled_for' => $task->getScheduledFor()
+                    ? $task->getScheduledFor()->format(self::MICROSECONDS_TS)
+                    : null,
+                'finished_at' => $task->getFinishedAt()
+                    ? $task->getFinishedAt()->format(self::MICROSECONDS_TS)
+                    : null,
+                'result' => !is_null($task->getResult())
+                    ? SerializationHelper::serialize($task->getResult())
+                    : null,
+                'error' => $task->getError()
+                    ? SerializationHelper::serialize($task->getError())
+                    : null,
+                'retried' => $task->getRetried(),
+            ]);
+        } catch (Exception $e) {
+            throw new RepositoryError("Failed to update task: " . $e->getMessage(), 0, $e);
+        }
     }
 
     public function getTask(string $id): ?Task
     {
-        $res = $this->pdo->prepare("SELECT * FROM $this->table WHERE id=:id");
-        if (!$res) {
-            throw new Exception(PdoHelper::formatErrorInfo($this->pdo->errorInfo()));
+        try {
+            $res = $this->pdo->prepare("SELECT * FROM $this->table WHERE id=:id");
+            if (!$res) {
+                throw new Exception(PdoHelper::formatErrorInfo($this->pdo->errorInfo()));
+            }
+            $res->execute(['id' => $id]);
+            $row = $res->fetch(PDO::FETCH_ASSOC);
+            if (!$row) {
+                return null;
+            }
+            return Task::fromArray($row);
+        } catch (Exception $e) {
+            throw new RepositoryError("Failed to get task: " . $e->getMessage(), 0, $e);
         }
-        $res->execute(['id' => $id]);
-        $row = $res->fetch(PDO::FETCH_ASSOC);
-        if (!$row) {
-            return null;
-        }
-        return Task::fromArray($row);
     }
 
     /**
@@ -150,26 +161,93 @@ class TaskRepository
      */
     public function getTasksByParentId(string $parentId): array
     {
-        $tasks = [];
-        $res = $this->pdo->prepare("SELECT * FROM $this->table WHERE parent_id = :parent_id ORDER BY nid");
-        if (!$res) {
-            throw new Exception(PdoHelper::formatErrorInfo($this->pdo->errorInfo()));
-        }
-        $res->execute(['parent_id' => $parentId]);
+        try {
+            $tasks = [];
+            $res = $this->pdo->prepare("SELECT * FROM $this->table WHERE parent_id = :parent_id ORDER BY nid");
+            if (!$res) {
+                throw new Exception(PdoHelper::formatErrorInfo($this->pdo->errorInfo()));
+            }
+            $res->execute(['parent_id' => $parentId]);
 
-        while ($row = $res->fetch(PDO::FETCH_ASSOC)) {
-            $tasks[] = Task::fromArray($row);
-        }
+            while ($row = $res->fetch(PDO::FETCH_ASSOC)) {
+                $tasks[] = Task::fromArray($row);
+            }
 
-        return $tasks;
+            return $tasks;
+        } catch (Exception $e) {
+            throw new RepositoryError("Failed to get tasks by parent id: " . $e->getMessage(), 0, $e);
+        }
     }
 
     public function deleteTask(string $id): void
     {
-        $res = $this->pdo->prepare("DELETE FROM $this->table WHERE root_id=:root_id");
-        if (!$res) {
-            throw new Exception(PdoHelper::formatErrorInfo($this->pdo->errorInfo()));
+        try {
+            $res = $this->pdo->prepare("DELETE FROM $this->table WHERE root_id=:root_id");
+            if (!$res) {
+                throw new Exception(PdoHelper::formatErrorInfo($this->pdo->errorInfo()));
+            }
+            $res->execute(['root_id' => $id]);
+        } catch (Exception $e) {
+            throw new RepositoryError("Failed to delete task: " . $e->getMessage(), 0, $e);
         }
-        $res->execute(['root_id' => $id]);
+    }
+
+    public static function getCreateTableSql(string $table, string $vendor): string
+    {
+        if ($vendor === self::MYSQL_VENDOR) {
+            return trim("
+CREATE TABLE `$table` (
+    `nid` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `id` VARCHAR(36) NOT NULL,
+    `parent_id` VARCHAR(36),
+    `root_id` VARCHAR(36) NOT NULL,
+    `created_at` TIMESTAMP(6) NOT NULL,
+    `scheduled_for` TIMESTAMP(6) NOT NULL,
+    `started_at` TIMESTAMP(6),
+    `finished_at` TIMESTAMP(6),
+    `name` VARCHAR(255) NOT NULL,
+    `is_secret` BOOLEAN NOT NULL DEFAULT false,
+    `args` BLOB,
+    `result` BLOB,
+    `error` BLOB,
+    `retry_policy` JSON,
+    `retried` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+    UNIQUE KEY (`id`),
+    KEY `idx_parent_id` (`parent_id`),
+    KEY `idx_root_id` (`root_id`),
+    KEY `idx_scheduled_for` (`scheduled_for`)
+);            
+            ");
+        } elseif ($vendor === self::SQLITE_VENDOR) {
+            return trim("
+CREATE TABLE `$table` (
+    `nid` INTEGER PRIMARY KEY AUTOINCREMENT,
+    `id` VARCHAR(36) NOT NULL,
+    `parent_id` VARCHAR(36),
+    `root_id` VARCHAR(36) NOT NULL,
+    `created_at` TIMESTAMP(6) NOT NULL,
+    `scheduled_for` TIMESTAMP(6) NOT NULL,
+    `started_at` TIMESTAMP(6),
+    `finished_at` TIMESTAMP(6),
+    `is_secret` BOOLEAN NOT NULL DEFAULT false,
+    `name` VARCHAR(255) NOT NULL,
+    `args` BLOB,
+    `result` BLOB,
+    `error` BLOB,
+    `retry_policy` JSON,
+    `retried` SMALLINT NOT NULL DEFAULT 0,
+    UNIQUE (`id`)
+);
+
+CREATE INDEX `{$table}_idx_parent_id` ON `{$table}` (`parent_id`);
+
+CREATE INDEX `{$table}_idx_root_id` ON `{$table}` (`root_id`);
+
+CREATE INDEX `{$table}_idx_scheduled_for` ON `{$table}` (`scheduled_for`);
+
+            ");
+        } else {
+            throw new RepositoryError("Unsupported vendor: $vendor");
+        }
     }
 }

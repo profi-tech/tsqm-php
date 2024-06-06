@@ -2,8 +2,8 @@
 
 namespace Examples\Helpers;
 
-use Exception;
 use PDO;
+use Tsqm\TaskRepository;
 
 class DbHelper
 {
@@ -17,17 +17,7 @@ class DbHelper
     public function resetDb(string $table = "tsqm_tasks"): void
     {
         $driver = $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
-        switch ($driver) {
-            case 'mysql':
-                $sql = file_get_contents(__DIR__ . "/../../db/mysql_init.sql");
-                break;
-            case 'sqlite':
-                $sql = file_get_contents(__DIR__ . "/../../db/sqlite_init.sql");
-                break;
-            default:
-                throw new Exception("Unsupported database driver: $driver");
-        }
-        $sql = str_replace("tsqm_tasks", "$table", $sql);
+        $sql = TaskRepository::getCreateTableSql($table, $driver);
 
         $this->pdo->prepare("DROP TABLE IF EXISTS `$table`")->execute();
 
