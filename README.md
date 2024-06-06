@@ -243,17 +243,17 @@ $tsqm = new Tsqm\Tsqm(
 
 ```
 
-# Limitations and Warnings
+# Limitations and warnings
 
 - TSQM is generally not a Workflow Engine but a library for reliably executing PHP code with external calls. However, you can try to use the library as a workflow engine, provided that all task code is stored and executed within the same codebase.
 
-- Task data is deleted from the database after execution, as the persistent storage is used only to ensure transactionality.
+- Task data is deleted from the database after execution, as the persistent storage is used only to ensure transactional consistency.
 
-- For errors, only the error class, message, and code are serialized into the database.
+- For errors, only the class, message, and code are stored.
 
-- TSQM is lightweight but has not been tested under heavy loads.
+- TSQM is lightweight and fast but has not been tested under heavy loads.
 
-- TSQM uses its own interfaces for container, queue, logger, etc., to avoid dependencies on external libraries, which have mostly moved to PHP 8. TSQM needs to support both PHP 7.4 and 8.
+- TSQM uses its own interfaces for container, queue, logger, etc., to avoid dependencies on external libraries, which have mostly moved to PHP 8. TSQM needs to support all PHP versions starting from 7.4.
 
 
 
