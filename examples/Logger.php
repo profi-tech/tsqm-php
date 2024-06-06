@@ -1,11 +1,12 @@
 <?php
+
 namespace Examples;
 
 use Psr\Log\LoggerInterface as PsrLoggerInterface;
 use Tsqm\Logger\LoggerInterface;
 
-class Logger implements LoggerInterface {
-
+class Logger implements LoggerInterface
+{
     private PsrLoggerInterface $logger;
 
     public function __construct(PsrLoggerInterface $logger)
@@ -14,10 +15,11 @@ class Logger implements LoggerInterface {
     }
 
     /**
-     * @param mixed $level 
-     * @param mixed[] $context 
+     * @param mixed $level
+     * @param mixed[] $context
      */
-    public function log($level, string $message, array $context = []): void {
+    public function log($level, string $message, array $context = []): void
+    {
         $this->logger->log($level, $message, $context);
     }
 }

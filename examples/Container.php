@@ -24,7 +24,7 @@ class Container
         return (new ContainerBuilder())
             ->addDefinitions([
 
-                
+
                 Application::class => static function (ContainerInterface $c): Application {
                     $app = new Application();
                     $app->add($c->get(ResetDbCommand::class));
