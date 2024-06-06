@@ -1,6 +1,6 @@
 <?php
 
-namespace Tsqm\Tasks;
+namespace Tsqm;
 
 use DateTime;
 use JsonSerializable;

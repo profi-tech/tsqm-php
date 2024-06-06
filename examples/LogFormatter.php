@@ -3,10 +3,8 @@
 namespace Examples;
 
 use Monolog\Formatter\NormalizerFormatter;
-use Monolog\Logger;
-use Tsqm\Tasks\Task;
 
-class LoggerFormatter extends NormalizerFormatter
+class LogFormatter extends NormalizerFormatter
 {
     public const ECS_VERSION = '8.11';
 

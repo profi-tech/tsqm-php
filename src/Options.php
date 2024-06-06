@@ -2,9 +2,10 @@
 
 namespace Tsqm;
 
-use Psr\Container\ContainerInterface;
-use Psr\Log\LoggerInterface;
-use Psr\Log\NullLogger;
+use Tsqm\Container\ContainerInterface;
+use Tsqm\Container\NullContainer;
+use Tsqm\Logger\LoggerInterface;
+use Tsqm\Logger\NullLogger;
 use Tsqm\Queue\QueueInterface;
 
 class Options
@@ -33,7 +34,11 @@ class Options
 
     public function getContainer(): ?ContainerInterface
     {
-        return $this->container;
+        if (!is_null($this->container)) {
+            return $this->container;
+        } else {
+            return new NullContainer();
+        }
     }
 
     public function setQueue(QueueInterface $queue): self

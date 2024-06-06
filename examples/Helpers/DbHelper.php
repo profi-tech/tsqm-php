@@ -17,21 +17,17 @@ class DbHelper
     public function resetDb(string $table = "tsqm_tasks"): void
     {
         $driver = $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
-        switch ($driver) {
-            case 'mysql':
-                $sql = file_get_contents(__DIR__ . "/../../db/mysql_init.sql");
-                break;
-            case 'sqlite':
-                $sql = file_get_contents(__DIR__ . "/../../db/sqlite_init.sql");
-                break;
-            default:
-                throw new Exception("Unsupported database driver: $driver");
+        $code = 0;
+        $output = array();
+        exec(__DIR__ . "/../../bin/tsqm-db $driver $table", $output, $code);
+        $output = implode("\n", $output);
+        if ($code !== 0) {
+            throw new Exception("Failed to reset database: $output");
         }
-        $sql = str_replace("tsqm_tasks", "$table", $sql);
 
         $this->pdo->prepare("DROP TABLE IF EXISTS `$table`")->execute();
 
-        $queries = explode(";", $sql);
+        $queries = explode(";", $output);
         foreach ($queries as $query) {
             $query = trim($query);
             if ($query) {

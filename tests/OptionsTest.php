@@ -2,9 +2,10 @@
 
 namespace Tests;
 
+use Examples\TsqmContainer;
 use Tsqm\Options;
-use Tsqm\Tasks\RetryPolicy;
-use Tsqm\Tasks\Task;
+use Tsqm\RetryPolicy;
+use Tsqm\Task;
 use Tsqm\Tsqm;
 
 class OptionsTest extends TestCase
@@ -18,8 +19,18 @@ class OptionsTest extends TestCase
 
     public function testTableOption(): void
     {
-        $tsqm1 = new Tsqm($this->pdo, (new Options())->setTable('test_table1')->setContainer($this->container));
-        $tsqm2 = new Tsqm($this->pdo, (new Options())->setTable('test_table2')->setContainer($this->container));
+        $tsqm1 = new Tsqm(
+            $this->pdo,
+            (new Options())
+                ->setTable('test_table1')
+                ->setContainer(new TsqmContainer($this->psrContainer))
+        );
+        $tsqm2 = new Tsqm(
+            $this->pdo,
+            (new Options())
+                ->setTable('test_table2')
+                ->setContainer(new TsqmContainer($this->psrContainer))
+        );
 
         $task1 = $tsqm1->runTask(
             (new Task())->setCallable($this->simpleGreetWithFail)->setArgs('John Doe1')->setRetryPolicy(

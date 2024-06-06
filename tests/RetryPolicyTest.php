@@ -3,7 +3,7 @@
 namespace Tests;
 
 use DateTime;
-use Tsqm\Tasks\RetryPolicy;
+use Tsqm\RetryPolicy;
 
 class RetryPolicyTest extends TestCase
 {

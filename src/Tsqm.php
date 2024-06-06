@@ -5,10 +5,8 @@ namespace Tsqm;
 use DateTime;
 use Exception;
 use Generator;
-use Monolog\Logger;
 use PDO;
-use Psr\Container\ContainerInterface;
-use Psr\Log\LoggerInterface;
+use Tsqm\Container\ContainerInterface;
 use Tsqm\Errors\DuplicatedTask;
 use Tsqm\Errors\InvalidGeneratorItem;
 use Tsqm\Errors\DeterminismViolation;
@@ -18,16 +16,16 @@ use Tsqm\Errors\ToManyTasks;
 use Tsqm\Errors\TsqmError;
 use Tsqm\Helpers\PdoHelper;
 use Tsqm\Helpers\UuidHelper;
+use Tsqm\Logger\LoggerInterface;
+use Tsqm\Logger\LogLevel;
 use Tsqm\Queue\QueueInterface;
-use Tsqm\Tasks\TaskRepository;
-use Tsqm\Tasks\Task;
 
 class Tsqm
 {
     private const GENERATOR_LIMIT = 1000;
 
     private TaskRepository $repository;
-    private ?ContainerInterface $container;
+    private ContainerInterface $container;
     private QueueInterface $queue;
     private LoggerInterface $logger;
 
@@ -45,19 +43,16 @@ class Tsqm
     {
         $task = clone $task; // Make task immutable
 
-        $this->log(Logger::INFO, "Start task", ['task' => $task]);
+        $this->log(LogLevel::INFO, "Start task", ['task' => $task]);
 
         if ($task->isFinished()) {
-            $this->log(Logger::INFO, "Task already finished", ['task' => $task]);
+            $this->log(LogLevel::INFO, "Task already finished", ['task' => $task]);
             return $task;
         }
 
         if (is_callable($task->getName())) {
             $callable = $task->getName();
         } else {
-            if (is_null($this->container)) {
-                throw new InvalidTask("DI container not found");
-            }
             if (!$this->container->has($task->getName())) {
                 throw new InvalidTask($task->getName() . " not found in DI container");
             }
@@ -94,7 +89,7 @@ class Tsqm
 
         if ($forceAsync || $task->getScheduledFor() > new DateTime()) {
             $this->enqueue($task);
-            $this->log(Logger::INFO, "Task scheduled", ['task' => $task]);
+            $this->log(LogLevel::INFO, "Task scheduled", ['task' => $task]);
             return $task;
         }
 
@@ -105,13 +100,13 @@ class Tsqm
         }
 
         try {
-            $this->log(Logger::DEBUG, "Start callable", ['task' => $task]);
+            $this->log(LogLevel::DEBUG, "Start callable", ['task' => $task]);
             $result = call_user_func($callable, ...$task->getArgs());
 
             if ($result instanceof Generator) {
                 $startedTasks = $this->repository->getTasksByParentId($task->getId());
 
-                $this->log(Logger::DEBUG, "Start generator", ['task' => $task]);
+                $this->log(LogLevel::DEBUG, "Start generator", ['task' => $task]);
                 $generated = 0;
                 $generator = $result;
                 while (true) {
@@ -148,7 +143,7 @@ class Tsqm
                             return $task;
                         }
                     } else {
-                        $this->log(Logger::DEBUG, "Generator finished", ['task' => $task]);
+                        $this->log(LogLevel::DEBUG, "Generator finished", ['task' => $task]);
                         $result = $generator->getReturn();
                         break;
                     }
@@ -164,10 +159,10 @@ class Tsqm
             }
 
             if ($task->isRoot()) {
-                $this->log(Logger::INFO, "Root task finished, cleanup started", ['task' => $task]);
+                $this->log(LogLevel::INFO, "Root task finished, cleanup started", ['task' => $task]);
                 $this->repository->deleteTask($task->getRootId());
             } else {
-                $this->log(Logger::INFO, "Task finished", ['task' => $task]);
+                $this->log(LogLevel::INFO, "Task finished", ['task' => $task]);
                 $this->repository->updateTask($task);
             }
 
@@ -189,10 +184,10 @@ class Tsqm
             if (!is_null($retryAt)) {
                 $task->setScheduledFor($retryAt);
                 $this->enqueue($task);
-                $this->log(Logger::ERROR, "Task failed and retry scheduled", ['task' => $task]);
+                $this->log(LogLevel::ERROR, "Task failed and retry scheduled", ['task' => $task]);
             } else {
                 $task->setFinishedAt(new DateTime());
-                $this->log(Logger::ERROR, "Task failed", ['task' => $task]);
+                $this->log(LogLevel::ERROR, "Task failed", ['task' => $task]);
             }
 
             $this->repository->updateTask($task);
@@ -204,7 +199,7 @@ class Tsqm
     {
         $task = $this->repository->getTask($id);
         if (is_null($task)) {
-            $this->log(Logger::WARNING, "Task not found", ['id' => $id]);
+            $this->log(LogLevel::WARNING, "Task not found", ['id' => $id]);
         }
         return $task;
     }

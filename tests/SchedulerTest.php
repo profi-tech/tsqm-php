@@ -3,8 +3,8 @@
 namespace Tests;
 
 use DateTime;
-use Tsqm\Tasks\Task;
-use Tsqm\Tasks\RetryPolicy;
+use Tsqm\Task;
+use Tsqm\RetryPolicy;
 
 class SchedulerTest extends TestCase
 {

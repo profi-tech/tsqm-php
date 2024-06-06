@@ -7,20 +7,17 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Psr\Log\LoggerInterface;
-use Tsqm\Tasks\RetryPolicy;
-use Tsqm\Tasks\Task;
+use Tsqm\RetryPolicy;
+use Tsqm\Task;
 use Tsqm\Tsqm;
 
 class HelloWorldSimpleCommand extends Command
 {
     private Tsqm $tsqm;
-    private LoggerInterface $logger;
     private SimpleGreetWithRandomFail $simpleGreetWithRandomFail;
 
     public function __construct(
         Tsqm $tsqm,
-        LoggerInterface $logger,
         SimpleGreetWithRandomFail $simpleGreetWithRandomFail
     ) {
         parent::__construct("example:hello-world-simple");
@@ -29,7 +26,6 @@ class HelloWorldSimpleCommand extends Command
             ->addArgument("name", InputArgument::REQUIRED, "Name of the person to greet");
 
         $this->tsqm = $tsqm;
-        $this->logger = $logger;
         $this->simpleGreetWithRandomFail = $simpleGreetWithRandomFail;
     }
 
@@ -45,8 +41,6 @@ class HelloWorldSimpleCommand extends Command
             );
 
         $task = $this->tsqm->runTask($task);
-        $this->logger->debug("Final result", ['task' => $task]);
-
         return self::SUCCESS;
     }
 }

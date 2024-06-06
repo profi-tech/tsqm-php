@@ -5,8 +5,8 @@ namespace Tests;
 use DateTime;
 use Tsqm\Helpers\SerializationHelper;
 use Tsqm\Helpers\UuidHelper;
-use Tsqm\Tasks\RetryPolicy;
-use Tsqm\Tasks\Task;
+use Tsqm\RetryPolicy;
+use Tsqm\Task;
 
 class SmokeTest extends TestCase
 {
