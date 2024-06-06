@@ -88,7 +88,6 @@ class TaskGeneratorFlowTest extends TestCase
         );
 
         for ($i = 0; $i < 3; $i++) {
-            $task = $this->tsqm->getTask($task->getRootId());
             $task = $this->tsqm->runTask($task);
             $this->assertDateEquals($task->getFinishedAt(), $now);
             $this->assertNull($task->getResult());

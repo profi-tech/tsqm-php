@@ -159,7 +159,7 @@ class Tsqm
             }
 
             if ($task->isRoot()) {
-                $this->log(LogLevel::INFO, "Root task finished, cleanup started", ['task' => $task]);
+                $this->log(LogLevel::INFO, "Task finished, cleanup", ['task' => $task]);
                 $this->repository->deleteTask($task->getRootId());
             } else {
                 $this->log(LogLevel::INFO, "Task finished", ['task' => $task]);
@@ -185,12 +185,13 @@ class Tsqm
                 $task->setScheduledFor($retryAt);
                 $this->enqueue($task);
                 $this->log(LogLevel::ERROR, "Task failed and retry scheduled", ['task' => $task]);
+                $this->repository->updateTask($task);
             } else {
                 $task->setFinishedAt(new DateTime());
-                $this->log(LogLevel::ERROR, "Task failed", ['task' => $task]);
+                $this->log(LogLevel::ERROR, "Task failed, cleanup", ['task' => $task]);
+                $this->repository->deleteTask($task->getId());
             }
 
-            $this->repository->updateTask($task);
             return $task;
         }
     }
