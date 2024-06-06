@@ -2,6 +2,8 @@
 
 namespace Tsqm\Helpers;
 
+use Tsqm\Errors\UuidError;
+
 class UuidHelper
 {
     public const VALID_PATTERN = '^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$';
@@ -35,6 +37,29 @@ class UuidHelper
         );
     }
 
+    public static function uuid2bin(string $uuid): string
+    {
+        $packed =  pack('H*', str_replace('-', '', $uuid));
+        if (!$packed) {
+            throw new UuidError("Failed to pack uuid: $uuid");
+        }
+        return $packed;
+    }
+
+    public static function bin2uuid(string $bin): string
+    {
+        $unpacked = unpack('H*', $bin);
+        if (!$unpacked) {
+            throw new UuidError("Failed to unpack bin: $bin");
+        }
+        $hex = array_shift($unpacked);
+        return substr($hex, 0, 8)
+            . '-' . substr($hex, 8, 4)
+            . '-' . substr($hex, 12, 4)
+            . '-' . substr($hex, 16, 4)
+            . '-' . substr($hex, 20);
+    }
+
     /**
      * Returns a uuid fields created from `$hash` with the version field set to `$version`
      * and the variant field set for RFC 4122
@@ -43,7 +68,7 @@ class UuidHelper
      * @param int $version The UUID version to set for this hash (1, 3, 4, or 5)
      * @return array<string, string>
      */
-    protected static function uuidFromHashedName($hash, $version): array
+    private static function uuidFromHashedName($hash, $version): array
     {
         $timeHi = self::applyVersion(substr($hash, 12, 4), $version);
         $clockSeqHi = self::applyVariant(hexdec(substr($hash, 16, 2)));
@@ -65,7 +90,7 @@ class UuidHelper
      * @return int The high field of the clock sequence multiplexed with the variant
      * @link http://tools.ietf.org/html/rfc4122#section-4.1.1
      */
-    public static function applyVariant($clockSeqHi)
+    private static function applyVariant($clockSeqHi)
     {
         // Set the variant to RFC 4122
         $clockSeqHi = $clockSeqHi & 0x3f;
@@ -82,7 +107,7 @@ class UuidHelper
      * @return int The high field of the timestamp multiplexed with the version number
      * @link http://tools.ietf.org/html/rfc4122#section-4.1.3
      */
-    public static function applyVersion($timeHi, $version)
+    private static function applyVersion($timeHi, $version)
     {
         $timeHi = hexdec($timeHi) & 0x0fff;
         $timeHi |= $version << 12;

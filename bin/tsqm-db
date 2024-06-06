@@ -34,9 +34,9 @@ CREATE TABLE `$table` (
     $sql = trim("
 CREATE TABLE `$table` (
     `nid` INTEGER PRIMARY KEY AUTOINCREMENT,
-    `id` VARCHAR(36) NOT NULL,
-    `parent_id` VARCHAR(36),
-    `root_id` VARCHAR(36) NOT NULL,
+    `id` BINARY(16) NOT NULL,
+    `parent_id` BINARY(16),
+    `root_id` BINARY(16) NOT NULL,
     `created_at` TIMESTAMP(6) NOT NULL,
     `scheduled_for` TIMESTAMP(6) NOT NULL,
     `started_at` TIMESTAMP(6),
