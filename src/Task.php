@@ -231,6 +231,10 @@ class Task implements JsonSerializable
 
     public function setError(?Throwable $error): self
     {
+        if (!is_null($error)) {
+            $className = get_class($error);
+            $error = new $className($error->getMessage(), $error->getCode());
+        }
         $this->error = $error;
         return $this;
     }
