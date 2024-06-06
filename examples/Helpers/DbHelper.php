@@ -19,7 +19,7 @@ class DbHelper
         $driver = $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
         $code = 0;
         $output = array();
-        exec(__DIR__."/../../bin/tsqm-db $driver $table", $output, $code);
+        exec(__DIR__ . "/../../bin/tsqm-db $driver $table", $output, $code);
         $output = implode("\n", $output);
         if ($code !== 0) {
             throw new Exception("Failed to reset database: $output");
