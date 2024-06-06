@@ -10,9 +10,9 @@ if ($vendor === MYSQL_VENDOR) {
     $sql = trim("
 CREATE TABLE `$table` (
     `nid` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    `id` VARCHAR(36) NOT NULL,
-    `parent_id` VARCHAR(36),
-    `root_id` VARCHAR(36) NOT NULL,
+    `id` BINARY(16) NOT NULL,
+    `parent_id` BINARY(16),
+    `root_id` BINARY(16) NOT NULL,
     `created_at` TIMESTAMP(6) NOT NULL,
     `scheduled_for` TIMESTAMP(6) NOT NULL,
     `started_at` TIMESTAMP(6),
