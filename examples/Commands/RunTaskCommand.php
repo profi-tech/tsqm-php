@@ -12,9 +12,8 @@ use Tsqm\Tsqm;
 class RunTaskCommand extends Command
 {
     private Tsqm $tsqm;
-    private LoggerInterface $logger;
 
-    public function __construct(Tsqm $tsqm, LoggerInterface $logger)
+    public function __construct(Tsqm $tsqm)
     {
         parent::__construct("run:task");
         $this
@@ -22,7 +21,6 @@ class RunTaskCommand extends Command
             ->addArgument("taskId", InputArgument::REQUIRED, "Task ID");
 
         $this->tsqm = $tsqm;
-        $this->logger = $logger;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -30,12 +28,11 @@ class RunTaskCommand extends Command
         $taskId = $input->getArgument("taskId");
         $task = $this->tsqm->getTask($taskId);
         if (!$task) {
-            $this->logger->error("Task not found", ['taskId' => $taskId]);
+            $output->writeln("Task not found");
             return self::FAILURE;
         }
 
         $task = $this->tsqm->runTask($task);
-        $this->logger->debug("Final run result:", ['task' => $task]);
         return self::SUCCESS;
     }
 }

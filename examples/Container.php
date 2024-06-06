@@ -10,11 +10,10 @@ use Examples\Commands\ResetDbCommand;
 use Examples\Commands\ListScheduledCommand;
 use Examples\Commands\RunTaskCommand;
 use Examples\Commands\RunScheduledCommand;
-use Monolog\Handler\StreamHandler;
-use Monolog\Logger;
+use Monolog;
 use PDO;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Application;
+use Tsqm\Logger\LoggerInterface;
 use Tsqm\Options;
 use Tsqm\Tsqm;
 
@@ -25,6 +24,7 @@ class Container
         return (new ContainerBuilder())
             ->addDefinitions([
 
+                
                 Application::class => static function (ContainerInterface $c): Application {
                     $app = new Application();
                     $app->add($c->get(ResetDbCommand::class));
@@ -56,13 +56,14 @@ class Container
                     );
                 },
 
-                LoggerInterface::class => function () {
-                    $logger = new Logger('examples');
-                    $handler = new StreamHandler('php://stdout');
+                LoggerInterface::class => function (): LoggerInterface {
+                    $logger = new Monolog\Logger('examples');
+                    $handler = new Monolog\Handler\StreamHandler('php://stdout');
                     $handler->setFormatter(new LogFormatter());
                     $logger->pushHandler($handler);
-                    return $logger;
-                }
+                    return new Logger($logger);
+                },
+
             ])
             ->useAutowiring(true)
             ->build();

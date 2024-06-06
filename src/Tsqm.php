@@ -8,7 +8,6 @@ use Generator;
 use Monolog\Logger;
 use PDO;
 use Psr\Container\ContainerInterface;
-use Psr\Log\LoggerInterface;
 use Tsqm\Errors\DuplicatedTask;
 use Tsqm\Errors\InvalidGeneratorItem;
 use Tsqm\Errors\DeterminismViolation;
@@ -18,6 +17,7 @@ use Tsqm\Errors\ToManyTasks;
 use Tsqm\Errors\TsqmError;
 use Tsqm\Helpers\PdoHelper;
 use Tsqm\Helpers\UuidHelper;
+use Tsqm\Logger\LoggerInterface;
 use Tsqm\Queue\QueueInterface;
 
 class Tsqm

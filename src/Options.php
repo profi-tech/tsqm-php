@@ -3,8 +3,8 @@
 namespace Tsqm;
 
 use Psr\Container\ContainerInterface;
-use Psr\Log\LoggerInterface;
-use Psr\Log\NullLogger;
+use Tsqm\Logger\LoggerInterface;
+use Tsqm\Logger\NullLogger;
 use Tsqm\Queue\QueueInterface;
 
 class Options
