@@ -208,9 +208,9 @@ class Tsqm
     /**
      * @return array<Task>
      */
-    public function getScheduledTasks(DateTime $until, int $limit): array
+    public function getScheduledTasks(int $limit = 100, ?DateTime $now = null): array
     {
-        return $this->repository->getScheduledTasks($until, $limit);
+        return $this->repository->getScheduledTasks($limit, $now);
     }
 
     private function enqueue(Task $task): void

@@ -118,17 +118,17 @@ class TaskRepository
     }
 
     /**
-     * @param DateTime $until
      * @param int $limit
+     * @param DateTime $now
      * @return array<Task>
      * @throws RepositoryError
      */
-    public function getScheduledTasks(DateTime $until, int $limit): array
+    public function getScheduledTasks(int $limit, DateTime $now): array
     {
         try {
             $res = $this->pdo->prepare("
                 SELECT * FROM $this->table
-                WHERE scheduled_for <= :until AND finished_at IS NULL AND parent_id IS NULL
+                WHERE scheduled_for <= :now AND finished_at IS NULL AND parent_id IS NULL
                 ORDER BY scheduled_for ASC
                 LIMIT $limit
             ");
@@ -137,7 +137,7 @@ class TaskRepository
             }
 
             $res->execute([
-                'until' => $until->format(self::MICROSECONDS_TS),
+                'now' => $now->format(self::MICROSECONDS_TS),
             ]);
 
             $tasks = [];
