@@ -39,6 +39,7 @@ class QueueTest extends TestCase
             ->setArgs('John Doe');
 
         $this->queue->expects($this->once())->method('enqueue')->with(
+            $task->getName(),
             $this->callback(fn (string $taskId) => $this->assertUuid($taskId)),
             $this->callback(fn (DateTime $scheduledFor) => $this->assertDateEquals(new DateTime(), $scheduledFor, 50))
         );
@@ -55,6 +56,7 @@ class QueueTest extends TestCase
             ->setScheduledFor($scheduledFor);
 
         $this->queue->expects($this->once())->method('enqueue')->with(
+            $task->getName(),
             $this->callback(fn (string $taskId) => $this->assertUuid($taskId)),
             $this->callback(
                 fn (DateTime $actualScheduledFor) => $this->assertDateEquals($scheduledFor, $actualScheduledFor)
@@ -76,6 +78,7 @@ class QueueTest extends TestCase
             );
 
         $this->queue->expects($this->once())->method('enqueue')->with(
+            $task->getName(),
             $this->callback(fn (string $taskId) => $this->assertUuid($taskId)),
             $this->callback(
                 fn (DateTime $actualScheduledFor) => $this->assertDateEquals(

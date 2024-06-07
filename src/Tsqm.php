@@ -104,7 +104,7 @@ class Tsqm
             $result = call_user_func($callable, ...$task->getArgs());
 
             if ($result instanceof Generator) {
-                $startedTasks = $this->repository->getTasksByParentId($task->getId());
+                $startedChildTasks = $this->repository->getTasksByParentId($task->getId());
 
                 $this->log(LogLevel::DEBUG, "Start generator", ['task' => $task]);
                 $generated = 0;
@@ -122,13 +122,13 @@ class Tsqm
                             ->setParentId($task->getId())
                             ->setRootId($task->getRootId());
 
-                        $startedTask = current($startedTasks);
-                        if ($startedTask && $startedTask instanceof Task) {
-                            if ($startedTask->getDeterminedUuid() != $generatedTask->getDeterminedUuid()) {
+                        $startedChildTask = current($startedChildTasks);
+                        if ($startedChildTask && $startedChildTask instanceof Task) {
+                            if ($startedChildTask->getDeterminedUuid() != $generatedTask->getDeterminedUuid()) {
                                 throw new DeterminismViolation();
                             }
-                            $generatedTask = $startedTask;
-                            next($startedTasks);
+                            $generatedTask = $startedChildTask;
+                            next($startedChildTasks);
                         }
 
                         $generatedTask = $this->runTask($generatedTask);
@@ -183,9 +183,9 @@ class Tsqm
 
             if (!is_null($retryAt)) {
                 $task->setScheduledFor($retryAt);
-                $this->enqueue($task);
                 $this->log(LogLevel::ERROR, "Task failed and retry scheduled", ['task' => $task]);
                 $this->repository->updateTask($task);
+                $this->enqueue($task);
             } else {
                 $task->setFinishedAt(new DateTime());
                 $this->log(LogLevel::ERROR, "Task failed, cleanup", ['task' => $task]);
@@ -216,7 +216,7 @@ class Tsqm
     private function enqueue(Task $task): void
     {
         try {
-            $this->queue->enqueue($task->getId(), $task->getScheduledFor());
+            $this->queue->enqueue($task->getName(), $task->getId(), $task->getScheduledFor());
         } catch (Exception $e) {
             throw new EnqueueFailed("Failed to enqueue task", 0, $e);
         }

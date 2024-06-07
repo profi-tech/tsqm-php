@@ -142,7 +142,7 @@ To integrate queues in TSQM, you need to implement the `Tsqm\Queue\QueueInterfac
 
 ```php
 class MyQueue implements Tsqm\Queue\QueueInterface {
-  public function enqueue(string $taskId, DateTime $scheduledFor): void {
+  public function enqueue(string $taskName, string $taskId, DateTime $scheduledFor): void {
     ... put taskId to your favorite message broker like RabbitMQ, Apache Kafka etc.
   }
 }
