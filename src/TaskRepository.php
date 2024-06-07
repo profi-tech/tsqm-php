@@ -244,7 +244,7 @@ class TaskRepository
         }
         if (isset($row['retry_policy'])) {
             $retryPolicy = SerializationHelper::unserialize($row['retry_policy']);
-            $task->setRetryPolicy($retryPolicy);
+            $task->setRetryPolicy(RetryPolicy::fromArray($retryPolicy));
         }
         if (isset($row['retried'])) {
             $task->setRetried($row['retried']);
@@ -282,7 +282,12 @@ class TaskRepository
             ]);
         }
         if (isset($row['retry_policy'])) {
-            $row['retry_policy'] = SerializationHelper::serialize($row['retry_policy']);
+            if (!($row['retry_policy'] instanceof RetryPolicy)) {
+                throw new RepositoryError("Invalid retry policy");
+            }
+            $row['retry_policy'] = SerializationHelper::serialize(
+                $row['retry_policy']->toArray()
+            );
         }
         return $row;
     }

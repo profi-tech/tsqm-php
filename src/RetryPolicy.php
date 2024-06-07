@@ -50,23 +50,27 @@ class RetryPolicy implements JsonSerializable
     }
 
     /**
-     * @return array<string, int>
+     * @param array<string, mixed> $data
+     * @return RetryPolicy
      */
-    public function __serialize(): array
+    public static function fromArray(array $data)
     {
-        return [
-            'maxRetries' => $this->getMaxRetries(),
-            'minInterval' => $this->getMinInterval(),
-        ];
+        $policy = new RetryPolicy();
+        if (isset($data['maxRetries'])) {
+            $policy->setMaxRetries($data['maxRetries']);
+        }
+        if (isset($data['minInterval'])) {
+            $policy->setMinInterval($data['minInterval']);
+        }
+        return $policy;
     }
 
     /**
-     * @param array<string, int> $data
+     * @return array<string, mixed>
      */
-    public function __unserialize(array $data): void
+    public function toArray(): array
     {
-        $this->maxRetries = $data['maxRetries'];
-        $this->minInterval = $data['minInterval'];
+        return $this->jsonSerialize();
     }
 
     /**
