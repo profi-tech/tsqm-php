@@ -216,7 +216,7 @@ class Tsqm
     private function enqueue(Task $task): void
     {
         try {
-            $this->queue->enqueue($task->getId(), $task->getScheduledFor());
+            $this->queue->enqueue($task->getName(), $task->getId(), $task->getScheduledFor());
         } catch (Exception $e) {
             throw new EnqueueFailed("Failed to enqueue task", 0, $e);
         }
