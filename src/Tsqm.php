@@ -104,7 +104,7 @@ class Tsqm
             $result = call_user_func($callable, ...$task->getArgs());
 
             if ($result instanceof Generator) {
-                $startedTasks = $this->repository->getTasksByParentId($task->getId());
+                $startedChildTasks = $this->repository->getTasksByParentId($task->getId());
 
                 $this->log(LogLevel::DEBUG, "Start generator", ['task' => $task]);
                 $generated = 0;
@@ -122,13 +122,13 @@ class Tsqm
                             ->setParentId($task->getId())
                             ->setRootId($task->getRootId());
 
-                        $startedTask = current($startedTasks);
-                        if ($startedTask && $startedTask instanceof Task) {
-                            if ($startedTask->getDeterminedUuid() != $generatedTask->getDeterminedUuid()) {
+                        $startedChildTask = current($startedChildTasks);
+                        if ($startedChildTask && $startedChildTask instanceof Task) {
+                            if ($startedChildTask->getDeterminedUuid() != $generatedTask->getDeterminedUuid()) {
                                 throw new DeterminismViolation();
                             }
-                            $generatedTask = $startedTask;
-                            next($startedTasks);
+                            $generatedTask = $startedChildTask;
+                            next($startedChildTasks);
                         }
 
                         $generatedTask = $this->runTask($generatedTask);
