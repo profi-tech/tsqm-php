@@ -237,16 +237,13 @@ class TaskRepository
             $task->setResult(SerializationHelper::unserialize($row['result']));
         }
         if (isset($row['error'])) {
-            $error = json_decode($row['error'], true);
+            $error = SerializationHelper::unserialize($row['error']);
             $task->setError(
                 new $error['class']($error['message'], $error['code'])
             );
         }
         if (isset($row['retry_policy'])) {
-            $data = json_decode($row['retry_policy'], true);
-            $retryPolicy = (new RetryPolicy())
-                ->setMaxRetries($data['maxRetries'])
-                ->setMinInterval($data['minInterval']);
+            $retryPolicy = SerializationHelper::unserialize($row['retry_policy']);
             $task->setRetryPolicy($retryPolicy);
         }
         if (isset($row['retried'])) {
@@ -278,14 +275,14 @@ class TaskRepository
             $row['result'] = SerializationHelper::serialize($row['result']);
         }
         if (isset($row['error'])) {
-            $row['error'] = json_encode([
+            $row['error'] = SerializationHelper::serialize([
                 'class' => get_class($row['error']),
                 'message' => $row['error']->getMessage(),
                 'code' => $row['error']->getCode(),
             ]);
         }
         if (isset($row['retry_policy'])) {
-            $row['retry_policy'] = json_encode($row['retry_policy']);
+            $row['retry_policy'] = SerializationHelper::serialize($row['retry_policy']);
         }
         return $row;
     }

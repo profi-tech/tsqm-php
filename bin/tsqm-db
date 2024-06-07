@@ -21,8 +21,8 @@ CREATE TABLE IF NOT EXISTS `$table` (
     `is_secret` BOOLEAN NOT NULL DEFAULT false,
     `args` BLOB,
     `result` BLOB,
-    `error` JSON,
-    `retry_policy` JSON,
+    `error` BLOB,
+    `retry_policy` BLOB,
     `retried` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
     UNIQUE KEY (`id`),
     KEY `idx_parent_id` (`parent_id`),
@@ -45,8 +45,8 @@ CREATE TABLE IF NOT EXISTS `$table` (
     `name` VARCHAR(255) NOT NULL,
     `args` BLOB,
     `result` BLOB,
-    `error` JSON,
-    `retry_policy` JSON,
+    `error` BLOB,
+    `retry_policy` BLOB,
     `retried` SMALLINT NOT NULL DEFAULT 0,
     UNIQUE (`id`)
 );
