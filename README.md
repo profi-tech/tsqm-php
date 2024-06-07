@@ -7,7 +7,7 @@ TSQM is a low-level PHP library for transactional and reliable execution of code
 ## How low is "low-level"?
 
 One of the main requirements for the library was its ability to integrate into any PHP codebase starting from version 7.4. TSQM provides basic classes and methods that can be embedded into almost any project or framework. The main classes are:
-- **Task**: A class-wrapper for PHP code, allowing the specification of retry policies and other execution parameters.
+- **Task**: A class-wrapper for PHP code, allowing to specify retry policies, arguments and other execution options.
 - **TSQM Engine**: Schedules, executes, retries, and handles errors for tasks.
 
 :warning: **Attention!** TSQM does not work out of the box; it requires a process of integration and configuration.
