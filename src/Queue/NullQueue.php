@@ -10,4 +10,9 @@ class NullQueue implements QueueInterface
     {
         // Do nothing
     }
+
+    public function listen(string $taskName, callable $callback): void
+    {
+        // Do nothing
+    }
 }

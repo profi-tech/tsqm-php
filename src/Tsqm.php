@@ -12,6 +12,8 @@ use Tsqm\Errors\InvalidGeneratorItem;
 use Tsqm\Errors\DeterminismViolation;
 use Tsqm\Errors\EnqueueFailed;
 use Tsqm\Errors\InvalidTask;
+use Tsqm\Errors\RepositoryError;
+use Tsqm\Errors\SerializationError;
 use Tsqm\Errors\ToManyTasks;
 use Tsqm\Errors\TsqmError;
 use Tsqm\Helpers\PdoHelper;
@@ -210,7 +212,62 @@ class Tsqm
      */
     public function getScheduledTasks(int $limit = 100, ?DateTime $now = null): array
     {
+        if (is_null($now)) {
+            $now = new DateTime();
+        }
         return $this->repository->getScheduledTasks($limit, $now);
+    }
+
+    /**
+     * @param int $limit
+     * @param int $delay — delay for the scheduled tasks in seconds,
+     *            if delay > 0 then scheduled tasks will be checked at now - $delay seconds.
+     * @param int $emptySleep — sleep time in seconds if no tasks found
+     * @return void
+     */
+    public function pollScheduledTasks(int $limit = 100, int $delay = 0, int $emptySleep = 10): void
+    {
+        $this->log(LogLevel::INFO, "Start polling tasks");
+        $isListening = true;
+        $signalHandler = function ($signal) use (&$isListening) {
+            $this->log(LogLevel::NOTICE, "Signal $signal received, stop polling tasks");
+            $isListening = false;
+        };
+        pcntl_async_signals(true);
+        pcntl_signal(SIGTERM, $signalHandler);
+        pcntl_signal(SIGINT, $signalHandler);
+        pcntl_signal(SIGHUP, $signalHandler);
+        pcntl_signal(SIGQUIT, $signalHandler);
+
+        while ($isListening) {
+            $tasks = $this->getScheduledTasks($limit, (new DateTime())->modify("-$delay seconds"));
+            if (count($tasks) > 0) {
+                foreach ($tasks as $task) {
+                    $this->runTask($task);
+                }
+            } else {
+                sleep($emptySleep);
+            }
+        }
+        $this->log(LogLevel::INFO, "Stop polling tasks");
+    }
+
+    /**
+     * Listen for the queued tasks, tsqm queue option should be set and implemented
+     * @param string $taskName
+     * @return void
+     * @throws TsqmError
+     */
+    public function listenQueuedTasks(string $taskName)
+    {
+        $this->log(LogLevel::INFO, "Start listening queue for $taskName");
+        $this->queue->listen($taskName, function ($taskId) {
+            $task = $this->getTask($taskId);
+            if ($task) {
+                $this->runTask($task);
+            }
+        });
+        $this->log(LogLevel::INFO, "Stop listening queue for $taskName");
     }
 
     private function enqueue(Task $task): void
