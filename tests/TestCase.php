@@ -14,6 +14,7 @@ use Examples\Greeter\GreetWithDeterministicNameFailure;
 use Examples\Greeter\GreetWithDuplicatedTask;
 use Examples\Greeter\GreetWithFail;
 use Examples\Greeter\GreetNested;
+use Examples\Greeter\GreetWithPurchaseFailAndRetryInterval;
 use Examples\Greeter\SimpleGreet;
 use Examples\Greeter\SimpleGreetWith3Fails;
 use Examples\Greeter\SimpleGreetWithFail;
@@ -44,6 +45,7 @@ class TestCase extends \PHPUnit\Framework\TestCase
     protected GreetWith3PurchaseFailsAnd3Retries $greetWith3PurchaseFailsAnd3Retries;
     protected GreetWith3PurchaseFailsAnd2Retries $greetWith3PurchaseFailsAnd2Retries;
     protected GreetWith3PurchaseFailsAndRevert $greetWith3PurchaseFailsAndRevert;
+    protected GreetWithPurchaseFailAndRetryInterval $greetWithPurchaseFailAndRetryInterval;
     protected GreetWithDuplicatedTask $greetWithDuplicatedTask;
     protected GreetWithDeterministicArgsFailure $greetWithDeterministicArgsFailure;
     protected GreetWithDeterministicNameFailure $greetWithDeterministicNameFailure;
@@ -77,9 +79,18 @@ class TestCase extends \PHPUnit\Framework\TestCase
         $this->greet = $this->psrContainer->get(Greet::class);
         $this->greetWithFail = $this->psrContainer->get(GreetWithFail::class);
         $this->greetWith3Fails = $this->psrContainer->get(GreetWith3Fails::class);
-        $this->greetWith3PurchaseFailsAnd3Retries = $this->psrContainer->get(GreetWith3PurchaseFailsAnd3Retries::class);
-        $this->greetWith3PurchaseFailsAnd2Retries = $this->psrContainer->get(GreetWith3PurchaseFailsAnd2Retries::class);
-        $this->greetWith3PurchaseFailsAndRevert = $this->psrContainer->get(GreetWith3PurchaseFailsAndRevert::class);
+        $this->greetWith3PurchaseFailsAnd3Retries = $this->psrContainer->get(
+            GreetWith3PurchaseFailsAnd3Retries::class
+        );
+        $this->greetWith3PurchaseFailsAnd2Retries = $this->psrContainer->get(
+            GreetWith3PurchaseFailsAnd2Retries::class
+        );
+        $this->greetWith3PurchaseFailsAndRevert = $this->psrContainer->get(
+            GreetWith3PurchaseFailsAndRevert::class
+        );
+        $this->greetWithPurchaseFailAndRetryInterval = $this->psrContainer->get(
+            GreetWithPurchaseFailAndRetryInterval::class
+        );
         $this->greetWithDuplicatedTask = $this->psrContainer->get(GreetWithDuplicatedTask::class);
         $this->greetWithDeterministicArgsFailure = $this->psrContainer->get(GreetWithDeterministicArgsFailure::class);
         $this->greetWithDeterministicNameFailure = $this->psrContainer->get(GreetWithDeterministicNameFailure::class);

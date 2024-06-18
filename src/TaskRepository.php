@@ -129,10 +129,28 @@ class TaskRepository
     public function getScheduledTasks(int $limit, DateTime $now): array
     {
         try {
+            // MySQL strict mode fix
+            if ($this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME) === self::MYSQL_VENDOR) {
+                $this->pdo->exec("SET SESSION sql_mode = ''");
+            }
+
+            // We get unfinished roots and filter out children scheduled for future
             $res = $this->pdo->prepare("
-                SELECT * FROM $this->table
-                WHERE scheduled_for <= :now AND finished_at IS NULL AND parent_id IS NULL
-                ORDER BY scheduled_for ASC
+                SELECT
+                    root.*, MAX(child.scheduled_for) max_scheduled_for
+                FROM $this->table root
+                LEFT JOIN $this->table child
+                    ON child.root_id = root.root_id
+                   AND child.finished_at IS NULL
+                WHERE root.scheduled_for <= :now
+                  AND root.finished_at IS NULL
+                  AND root.parent_id IS NULL
+                GROUP BY
+                    root.nid
+                HAVING
+                    max_scheduled_for <= :now
+                ORDER BY
+                    root.nid
                 LIMIT $limit
             ");
             if (!$res) {

@@ -205,7 +205,6 @@ class TaskGeneratorFlowTest extends TestCase
             ->setCallable($this->greetWithDuplicatedTask)
             ->setArgs('John Doe');
         $this->expectException(DuplicatedTask::class);
-        $this->expectExceptionMessage("Task already started");
         $this->tsqm->runTask($task);
     }
 

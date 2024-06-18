@@ -22,7 +22,8 @@
     "require": {
         "php": ">=7.4",
         "ext-pdo": "*",
-        "ext-json": "*"
+        "ext-json": "*",
+        "ext-pcntl": "*"
     },
     "require-dev": {
         "monolog/monolog": "^2.9",
@@ -46,7 +47,7 @@
         "hello-world": "php examples/app.php example:hello-world",
         "hello-world-simple": "php examples/app.php example:hello-world-simple",
         "list-scheduled": "php examples/app.php list:scheduled",
-        "run-scheduled": "php examples/app.php run:scheduled",
+        "poll-scheduled": "php examples/app.php poll:scheduled",
         "run-task": "php examples/app.php run:task"
     }
 }
