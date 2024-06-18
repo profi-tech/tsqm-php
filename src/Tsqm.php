@@ -7,6 +7,7 @@ use Exception;
 use Generator;
 use PDO;
 use Tsqm\Container\ContainerInterface;
+use Tsqm\Container\NullContainer;
 use Tsqm\Errors\DuplicatedTask;
 use Tsqm\Errors\InvalidGeneratorItem;
 use Tsqm\Errors\DeterminismViolation;
@@ -55,6 +56,9 @@ class Tsqm
         if (is_callable($task->getName())) {
             $callable = $task->getName();
         } else {
+            if ($this->container instanceof NullContainer) {
+                throw new InvalidTask("Container is not set");
+            }
             if (!$this->container->has($task->getName())) {
                 throw new InvalidTask($task->getName() . " not found in DI container");
             }
@@ -249,6 +253,7 @@ class Tsqm
                 sleep($emptySleep);
             }
         }
+
         $this->log(LogLevel::INFO, "Stop polling tasks");
     }
 
