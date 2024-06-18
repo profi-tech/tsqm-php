@@ -112,38 +112,37 @@ A task does not complete if:
 - An error occurred and the task has a retry policy set.
 - The task has a future execution time set via the `setScheduleTime` option.
 
-Tasks that need to be retried can be obtained through the `getScheduledTasks` method:
+
+Tasks that need to be retried can be run through the `pollScheduledTasks` method:
 
 ```php
-$tasks = $tsqm->getScheduledTasks();
-foreach ($tasks as $task) {
-  $task = $tsqm->runTask($task);
-}
+$tsqm->pollScheduledTasks(
+  100, // Number of tasks to poll
+  30 // Time in seconds to "step back" from the current time
+  10 // Time in seconds to wait before polling again if no tasks are available
+);
 
 ```
-
-Or retrieve a task by its ID if you are using queues:
-
-```php
-$taskId = "<scheduled task id from queue>";
-$task = $tsqm->getTask($taskId);
-if ($task) {
-  $task = $tsqm->runTask($task);
-  ...
-}
-```
+Although, `pollScheduledTasks` method could perform scheduled runs, for production it should be used as a fallback to the main queue-based approach:
 
 ## 7. Queues
-
-Unfinished tasks can be polled using `getScheduledTasks` and executed in a separate script, but it is better to use queues.
 
 To integrate queues in TSQM, you need to implement the `Tsqm\Queue\QueueInterface` and add the implementing class during the TSQM engine initialization:
 
 
 ```php
 class MyQueue implements Tsqm\Queue\QueueInterface {
+
   public function enqueue(string $taskName, string $taskId, DateTime $scheduledFor): void {
-    ... put taskId to your favorite message broker like RabbitMQ, Apache Kafka etc.
+    ... put $taskId to your favorite message broker like RabbitMQ, Apache Kafka etc.
+  }
+
+  /**
+   * @param callable(string $taskId): ?Task $callback
+   */
+  public function listen(string $taskName, callable $callback): void {
+    ... listen your favorite message broker like RabbitMQ, Apache Kafka etc
+    ... recieve $taskId and call $callback with it
   }
 }
 
@@ -155,20 +154,14 @@ $tsqm = new Tsqm\Tsqm(
 
 ```
 
-Then, in a separate daemon script, retrieve messages from your queue and execute them:
+The TSQM engine will automatically call the `enqueue` method of your class if the task needs to be executed later.
+
+To recieve and handle the tasks call the `listenQueuedTasks` method in a separate script:
 
 ```php
-while (true) {
-  ....
-  $task = $tsqm->getTask($taskId);
-  if ($task) {
-    $tsqm->runTask($task);	
-  }
-}
-
+$tsqm->listenQueuedTasks($taskName);
 ```
 
-The TSQM engine will automatically call the `enqueue` method of your class if the task needs to be executed later.
 
 ## 8. Transactions
 
