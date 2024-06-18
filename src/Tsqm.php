@@ -261,12 +261,15 @@ class Tsqm
     public function listenQueuedTasks(string $taskName)
     {
         $this->log(LogLevel::INFO, "Start listening queue for $taskName");
-        $this->queue->listen($taskName, function ($taskId) {
+
+        $callback = function (string $taskId): ?Task {
             $task = $this->getTask($taskId);
             if ($task) {
-                $this->runTask($task);
+                return $this->runTask($task);
             }
-        });
+            return null;
+        };
+        $this->queue->listen($taskName, $callback);
         $this->log(LogLevel::INFO, "Stop listening queue for $taskName");
     }
 
