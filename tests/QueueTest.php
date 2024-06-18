@@ -3,6 +3,7 @@
 namespace Tests;
 
 use DateTime;
+use Examples\Greeter\SimpleGreet;
 use Examples\TsqmContainer;
 use Tsqm\Tsqm;
 use Tsqm\Queue\QueueInterface;
@@ -89,5 +90,49 @@ class QueueTest extends TestCase
         );
 
         $task = $this->tsqm->runTask($task);
+    }
+
+    public function testEnqueueAndListen(): void
+    {
+        $queue = [];
+        $now = new DateTime();
+
+        $task = (new Task())
+            ->setCallable($this->simpleGreet)
+            ->setArgs('John Doe')
+            ->setScheduledFor($now);
+
+        $this->queue->expects($this->once())->method('enqueue')
+            ->withAnyParameters()
+            ->willReturnCallback(
+                function (string $taskName, string $taskId, DateTime $scheduledFor) use (&$queue, $now) {
+                    $this->assertDateEquals($now, $scheduledFor, 50);
+                    if (!isset($queue[$taskName])) {
+                        $queue[$taskName] = [];
+                    }
+                    array_push($queue[$taskName], $taskId);
+                }
+            );
+
+        $task = $this->tsqm->runTask($task, true);
+        $this->assertNull($task->getStartedAt());
+        $this->assertNull($task->getResult());
+
+        $this->queue->expects($this->once())->method('listen')
+            ->withAnyParameters()
+            ->willReturnCallback(
+                function (string $taskName, callable $callback) use (&$queue) {
+                    if (isset($queue[$taskName])) {
+                        $taskId = array_pop($queue[$taskName]);
+                        $task = $callback($taskId);
+                        $this->assertNotNull($task->getStartedAt());
+                        $this->assertNotNull($task->getResult());
+                    }
+                }
+            );
+
+        $this->tsqm->listenQueuedTasks($task->getName());
+        $this->assertNotNull($queue[$task->getName()]);
+        $this->assertEmpty($queue[$task->getName()]);
     }
 }

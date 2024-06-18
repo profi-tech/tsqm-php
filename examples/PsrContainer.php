@@ -8,7 +8,7 @@ use Examples\Commands\HelloWorldSimpleCommand;
 use Examples\Commands\ResetDbCommand;
 use Examples\Commands\ListScheduledCommand;
 use Examples\Commands\RunTaskCommand;
-use Examples\Commands\RunScheduledCommand;
+use Examples\Commands\PollScheduledCommand;
 use Monolog;
 use PDO;
 use Psr\Container\ContainerInterface;
@@ -29,7 +29,7 @@ class PsrContainer
                     $app->add($c->get(ResetDbCommand::class));
                     $app->add($c->get(RunTaskCommand::class));
                     $app->add($c->get(ListScheduledCommand::class));
-                    $app->add($c->get(RunScheduledCommand::class));
+                    $app->add($c->get(PollScheduledCommand::class));
                     $app->add($c->get(HelloWorldCommand::class));
                     $app->add($c->get(HelloWorldSimpleCommand::class));
                     return $app;

@@ -121,4 +121,17 @@ class SchedulerTest extends TestCase
         $this->assertCount(2, $scheduledTasks);
         $this->assertEquals([$task1, $task2], $scheduledTasks);
     }
+
+    public function testListScheduledTasksWithScheduledChildren(): void
+    {
+
+        $task = (new Task())
+            ->setCallable($this->greetWithPurchaseFailAndRetryInterval)
+            ->setArgs('John Doe');
+
+        $this->tsqm->runTask($task);
+        $tasks = $this->tsqm->getScheduledTasks();
+        // Tasks must be empty becasue inner failed purchase was scheduled for the future interval
+        $this->assertCount(0, $tasks);
+    }
 }

@@ -7,6 +7,7 @@ use Exception;
 use Generator;
 use PDO;
 use Tsqm\Container\ContainerInterface;
+use Tsqm\Container\NullContainer;
 use Tsqm\Errors\DuplicatedTask;
 use Tsqm\Errors\InvalidGeneratorItem;
 use Tsqm\Errors\DeterminismViolation;
@@ -43,16 +44,23 @@ class Tsqm
     {
         $task = clone $task; // Make task immutable
 
-        $this->log(LogLevel::INFO, "Start task", ['task' => $task]);
+        if ($task->isNullCreatedAt()) {
+            $this->log(LogLevel::INFO, "Start new task", ['task' => $task]);
+        } else {
+            $this->log(LogLevel::INFO, "Start task {$task->getId()}", ['task' => $task]);
+        }
 
         if ($task->isFinished()) {
-            $this->log(LogLevel::INFO, "Task already finished", ['task' => $task]);
+            $this->log(LogLevel::INFO, "Task {$task->getId()} already finished", ['task' => $task]);
             return $task;
         }
 
         if (is_callable($task->getName())) {
             $callable = $task->getName();
         } else {
+            if ($this->container instanceof NullContainer) {
+                throw new InvalidTask("Container is not set");
+            }
             if (!$this->container->has($task->getName())) {
                 throw new InvalidTask($task->getName() . " not found in DI container");
             }
@@ -78,9 +86,10 @@ class Tsqm
 
             try {
                 $task = $this->repository->createTask($task);
+                $this->log(LogLevel::INFO, "Task {$task->getId()} created", ['task' => $task]);
             } catch (Exception $e) {
                 if (PdoHelper::isIntegrityConstraintViolation($e)) {
-                    throw new DuplicatedTask("Task already started", 0, $e);
+                    throw new DuplicatedTask("Task {$task->getId()} already started", 0, $e);
                 } else {
                     throw $e;
                 }
@@ -89,7 +98,7 @@ class Tsqm
 
         if ($forceAsync || $task->getScheduledFor() > new DateTime()) {
             $this->enqueue($task);
-            $this->log(LogLevel::INFO, "Task scheduled", ['task' => $task]);
+            $this->log(LogLevel::INFO, "Task {$task->getId()} scheduled", ['task' => $task]);
             return $task;
         }
 
@@ -100,23 +109,25 @@ class Tsqm
         }
 
         try {
-            $this->log(LogLevel::DEBUG, "Start callable", ['task' => $task]);
+            $this->log(LogLevel::DEBUG, "Start task {$task->getId()} callable", ['task' => $task]);
             $result = call_user_func($callable, ...$task->getArgs());
 
             if ($result instanceof Generator) {
                 $startedChildTasks = $this->repository->getTasksByParentId($task->getId());
 
-                $this->log(LogLevel::DEBUG, "Start generator", ['task' => $task]);
+                $this->log(LogLevel::DEBUG, "Start task {$task->getId()} generator", ['task' => $task]);
                 $generated = 0;
                 $generator = $result;
                 while (true) {
                     if ($generated++ >= self::GENERATOR_LIMIT) {
-                        throw new ToManyTasks("To many tasks in generator: $generated");
+                        throw new ToManyTasks("To many tasks in task {$task->getId()} generator: $generated");
                     }
                     if ($generator->valid()) {
                         $generatedTask = $generator->current();
                         if (!$generatedTask instanceof Task) {
-                            throw new InvalidGeneratorItem("Generator item is not a task instance");
+                            throw new InvalidGeneratorItem(
+                                "Generator item in task {$task->getId()} generator is not a task instance"
+                            );
                         }
                         $generatedTask
                             ->setParentId($task->getId())
@@ -143,7 +154,7 @@ class Tsqm
                             return $task;
                         }
                     } else {
-                        $this->log(LogLevel::DEBUG, "Generator finished", ['task' => $task]);
+                        $this->log(LogLevel::DEBUG, "Task {$task->getId()} generator finished", ['task' => $task]);
                         $result = $generator->getReturn();
                         break;
                     }
@@ -159,10 +170,10 @@ class Tsqm
             }
 
             if ($task->isRoot()) {
-                $this->log(LogLevel::INFO, "Task finished, cleanup", ['task' => $task]);
+                $this->log(LogLevel::INFO, "Task {$task->getId()} finished, cleanup", ['task' => $task]);
                 $this->repository->deleteTask($task->getRootId());
             } else {
-                $this->log(LogLevel::INFO, "Task finished", ['task' => $task]);
+                $this->log(LogLevel::INFO, "Task {$task->getId()} finished", ['task' => $task]);
                 $this->repository->updateTask($task);
             }
 
@@ -183,12 +194,12 @@ class Tsqm
 
             if (!is_null($retryAt)) {
                 $task->setScheduledFor($retryAt);
-                $this->log(LogLevel::ERROR, "Task failed and retry scheduled", ['task' => $task]);
+                $this->log(LogLevel::ERROR, "Task {$task->getId()} failed and retry scheduled", ['task' => $task]);
                 $this->repository->updateTask($task);
                 $this->enqueue($task);
             } else {
                 $task->setFinishedAt(new DateTime());
-                $this->log(LogLevel::ERROR, "Task failed, cleanup", ['task' => $task]);
+                $this->log(LogLevel::ERROR, "Task {$task->getId()} failed, cleanup", ['task' => $task]);
                 $this->repository->deleteTask($task->getId());
             }
 
@@ -210,7 +221,67 @@ class Tsqm
      */
     public function getScheduledTasks(int $limit = 100, ?DateTime $now = null): array
     {
+        if (is_null($now)) {
+            $now = new DateTime();
+        }
         return $this->repository->getScheduledTasks($limit, $now);
+    }
+
+    /**
+     * @param int $limit
+     * @param int $delay — delay for the scheduled tasks in seconds,
+     *            if delay > 0 then scheduled tasks will be checked at now - $delay seconds.
+     * @param int $emptySleep — sleep time in seconds if no tasks found
+     * @return void
+     */
+    public function pollScheduledTasks(int $limit = 100, int $delay = 0, int $emptySleep = 10): void
+    {
+        $this->log(LogLevel::INFO, "Start polling tasks");
+        $isListening = true;
+        $signalHandler = function ($signal) use (&$isListening) {
+            $this->log(LogLevel::NOTICE, "Signal $signal received, stop polling tasks");
+            $isListening = false;
+        };
+        pcntl_async_signals(true);
+        pcntl_signal(SIGTERM, $signalHandler);
+        pcntl_signal(SIGINT, $signalHandler);
+        pcntl_signal(SIGHUP, $signalHandler);
+        pcntl_signal(SIGQUIT, $signalHandler);
+
+        while ($isListening) {
+            $now = (new DateTime())->modify("-$delay seconds");
+            $tasks = $this->getScheduledTasks($limit, $now);
+            if (count($tasks) > 0) {
+                foreach ($tasks as $task) {
+                    $this->runTask($task);
+                }
+            } else {
+                sleep($emptySleep);
+            }
+        }
+
+        $this->log(LogLevel::INFO, "Stop polling tasks");
+    }
+
+    /**
+     * Listen for the queued tasks, tsqm queue option should be set and implemented
+     * @param string $taskName
+     * @return void
+     * @throws TsqmError
+     */
+    public function listenQueuedTasks(string $taskName)
+    {
+        $this->log(LogLevel::INFO, "Start listening queue for $taskName");
+
+        $callback = function (string $taskId): ?Task {
+            $task = $this->getTask($taskId);
+            if ($task) {
+                return $this->runTask($task);
+            }
+            return null;
+        };
+        $this->queue->listen($taskName, $callback);
+        $this->log(LogLevel::INFO, "Stop listening queue for $taskName");
     }
 
     private function enqueue(Task $task): void
