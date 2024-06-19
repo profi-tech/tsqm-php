@@ -11,6 +11,7 @@ use Tsqm\Helpers\UuidHelper;
 
 class Task implements JsonSerializable
 {
+    private int $nid = 0;
     private ?string $id = null;
     private ?string $parent_id = null;
     private ?string $root_id = null;
@@ -43,6 +44,12 @@ class Task implements JsonSerializable
         } else {
             throw new InvalidTask("Callable must be an object with __invoke method, named function or static method");
         }
+        return $this;
+    }
+
+    public function setNid(int $nid): self
+    {
+        $this->nid = $nid;
         return $this;
     }
 
@@ -279,6 +286,7 @@ class Task implements JsonSerializable
     public function jsonSerialize()
     {
         return [
+            'nid' => $this->nid,
             'id' => $this->id,
             'parent_id' => $this->parent_id,
             'root_id' => $this->root_id,

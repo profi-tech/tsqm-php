@@ -88,7 +88,10 @@ class SchedulerTest extends TestCase
 
         $scheduledTasks = $this->tsqm->getScheduledTasks(10, $scheduledFor);
         $this->assertCount(3, $scheduledTasks);
-        $this->assertEquals([$task1, $task2, $task3], $scheduledTasks);
+        $this->assertEquals(
+            [$task1->getId(), $task2->getId(), $task3->getId()],
+            array_map(fn(Task $task) => $task->getId(), $scheduledTasks)
+        );
     }
 
     public function testListScheduledTasksUntil(): void
@@ -119,12 +122,14 @@ class SchedulerTest extends TestCase
 
         $scheduledTasks = $this->tsqm->getScheduledTasks(2, $scheduledFor);
         $this->assertCount(2, $scheduledTasks);
-        $this->assertEquals([$task1, $task2], $scheduledTasks);
+        $this->assertEquals(
+            [$task1->getId(), $task2->getId()],
+            array_map(fn(Task $task) => $task->getId(), $scheduledTasks)
+        );
     }
 
     public function testListScheduledTasksWithScheduledChildren(): void
     {
-
         $task = (new Task())
             ->setCallable($this->greetWithPurchaseFailAndRetryInterval)
             ->setArgs('John Doe');

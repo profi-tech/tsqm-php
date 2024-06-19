@@ -51,7 +51,8 @@ class TaskRepository
                 'retry_policy' => $task->getRetryPolicy(),
             ]);
             $res->execute($row);
-            return $task;
+            $nid = $this->pdo->lastInsertId();
+            return $task->setNid((int)$nid);
         } catch (Exception $e) {
             throw new RepositoryError("Failed to create task: " . $e->getMessage(), 0, $e);
         }
@@ -218,6 +219,9 @@ class TaskRepository
     private function createTaskFromRow(array $row): Task
     {
         $task = new Task();
+        if (isset($row['nid'])) {
+            $task->setNid((int)$row['nid']);
+        }
         if (isset($row['id'])) {
             $id = UuidHelper::bin2uuid($row['id']);
             $task->setId($id);
