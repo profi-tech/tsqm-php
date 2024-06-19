@@ -42,7 +42,11 @@ class QueueTest extends TestCase
         $this->queue->expects($this->once())->method('enqueue')->with(
             $task->getName(),
             $this->callback(fn (string $taskId) => $this->assertUuid($taskId)),
-            $this->callback(fn (DateTime $scheduledFor) => $this->assertDateEquals(new DateTime(), $scheduledFor, 50))
+            $this->callback(fn (DateTime $scheduledFor) => $this->assertDateEquals(
+                (new DateTime())->modify('+1 second'),
+                $scheduledFor,
+                50
+            ))
         );
 
         $task = $this->tsqm->runTask($task, true);
@@ -60,7 +64,10 @@ class QueueTest extends TestCase
             $task->getName(),
             $this->callback(fn (string $taskId) => $this->assertUuid($taskId)),
             $this->callback(
-                fn (DateTime $actualScheduledFor) => $this->assertDateEquals($scheduledFor, $actualScheduledFor)
+                fn (DateTime $actualScheduledFor) => $this->assertDateEquals(
+                    $scheduledFor->modify('+1 second'),
+                    $actualScheduledFor
+                )
             )
         );
 
@@ -75,7 +82,7 @@ class QueueTest extends TestCase
             ->setRetryPolicy(
                 (new RetryPolicy())
                     ->setMaxRetries(1)
-                    ->setMinInterval(10000)
+                    ->setMinInterval(10000) // 10 seconds
             );
 
         $this->queue->expects($this->once())->method('enqueue')->with(
@@ -83,7 +90,7 @@ class QueueTest extends TestCase
             $this->callback(fn (string $taskId) => $this->assertUuid($taskId)),
             $this->callback(
                 fn (DateTime $actualScheduledFor) => $this->assertDateEquals(
-                    (new DateTime())->modify('+10 seconds'),
+                    (new DateTime())->modify('+11 seconds'), // 10 seconds + leap second
                     $actualScheduledFor
                 )
             )
@@ -106,7 +113,7 @@ class QueueTest extends TestCase
             ->withAnyParameters()
             ->willReturnCallback(
                 function (string $taskName, string $taskId, DateTime $scheduledFor) use (&$queue, $now) {
-                    $this->assertDateEquals($now, $scheduledFor, 50);
+                    $this->assertDateEquals($now->modify("+1 second"), $scheduledFor, 50);
                     if (!isset($queue[$taskName])) {
                         $queue[$taskName] = [];
                     }
