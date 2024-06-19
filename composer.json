@@ -42,6 +42,7 @@
         "coverage": "XDEBUG_MODE=coverage ./vendor/bin/phpunit tests --coverage-text --coverage-filter ./src",
         "lint": "./vendor/bin/phpcs --standard=PSR12 ./src ./tests ./examples",
         "lint-fix": "./vendor/bin/phpcbf --standard=PSR12 ./src ./tests ./examples",
+        "hooks": "ln -fs ../../scripts/hooks/pre-commit .git/hooks/pre-commit",
         "analyse": "./vendor/bin/phpstan analyse --level=6 ./src ./tests ./examples",
         "reset-db": "php examples/app.php reset:db",
         "hello-world": "php examples/app.php example:hello-world",

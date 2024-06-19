@@ -25,6 +25,10 @@ class Tsqm
 {
     private const GENERATOR_LIMIT = 1000;
 
+    // Interval in seconds used for enuqueing tasks, because some message brokers could operate
+    // at seconds resolution
+    private const LEAP_INTERVAL = 1;
+
     private TaskRepository $repository;
     private ContainerInterface $container;
     private QueueInterface $queue;
@@ -287,7 +291,20 @@ class Tsqm
     private function enqueue(Task $task): void
     {
         try {
-            $this->queue->enqueue($task->getName(), $task->getId(), $task->getScheduledFor());
+            if ($task->isNullScheduledFor()) {
+                throw new EnqueueFailed("Task scheduled for is not set");
+            }
+
+            // Some queue implementations could operate at seconds resolution, but scheduledFor stored in microseconds.
+            // So we need to add some leap-interval to prevent tasks to be delivered earlier than scheduledFor
+            $scheduledFor = (clone $task->getScheduledFor())
+                ->modify("+" . self::LEAP_INTERVAL . " seconds");
+
+            $this->queue->enqueue(
+                $task->getName(),
+                $task->getId(),
+                $scheduledFor,
+            );
         } catch (Exception $e) {
             throw new EnqueueFailed("Failed to enqueue task", 0, $e);
         }
