@@ -298,7 +298,7 @@ class Tsqm
             // Some queue implementations could operate at seconds resolution, but scheduledFor stored in microseconds.
             // So we need to add some leap-interval to prevent tasks to be delivered earlier than scheduledFor
             $scheduledFor = (clone $task->getScheduledFor())
-                ->modify("+".self::LEAP_INTERVAL." seconds");
+                ->modify("+" . self::LEAP_INTERVAL . " seconds");
 
             $this->queue->enqueue(
                 $task->getName(),
