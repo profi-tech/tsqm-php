@@ -22,6 +22,7 @@ class Task implements JsonSerializable
     private ?string $name = null;
     /** @var array<mixed> */
     private array $args = [];
+    private ?int $traceIdIndex = null; // trace id argument index in args
     private bool $isSecret = false;
     /** @var mixed */
     private $result = null;
@@ -217,6 +218,17 @@ class Task implements JsonSerializable
     public function getArgs(): array
     {
         return $this->args;
+    }
+
+    public function setTraceIdIndex(int $traceIdIndex): self
+    {
+        $this->traceIdIndex = $traceIdIndex;
+        return $this;
+    }
+
+    public function getTraceIdIndex(): ?int
+    {
+        return $this->traceIdIndex;
     }
 
     /**

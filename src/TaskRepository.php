@@ -32,9 +32,31 @@ class TaskRepository
         try {
             $res = $this->pdo->prepare("
                 INSERT INTO $this->table 
-                    (id, parent_id, root_id, created_at, scheduled_for, name, is_secret, args, retry_policy)
+                    (
+                        id,
+                        parent_id,
+                        root_id,
+                        created_at,
+                        scheduled_for,
+                        name,
+                        is_secret,
+                        args,
+                        retry_policy,
+                        trace_id_index
+                    )
                 VALUES 
-                    (:id, :parent_id, :root_id, :created_at, :scheduled_for, :name, :is_secret, :args, :retry_policy)
+                    (
+                        :id,
+                        :parent_id,
+                        :root_id,
+                        :created_at,
+                        :scheduled_for,
+                        :name,
+                        :is_secret,
+                        :args,
+                        :retry_policy,
+                        :trace_id_index
+                    )
             ");
             if (!$res) {
                 throw new Exception(PdoHelper::formatErrorInfo($this->pdo->errorInfo()));
@@ -49,6 +71,7 @@ class TaskRepository
                 'is_secret' => (int)$task->getIsSecret(),
                 'args' => $task->getArgs(),
                 'retry_policy' => $task->getRetryPolicy(),
+                'trace_id_index' => $task->getTraceIdIndex(),
             ]);
             $res->execute($row);
             $nid = $this->pdo->lastInsertId();
@@ -270,6 +293,9 @@ class TaskRepository
         }
         if (isset($row['retried'])) {
             $task->setRetried($row['retried']);
+        }
+        if (isset($row['trace_id_index'])) {
+            $task->setTraceIdIndex($row['trace_id_index']);
         }
 
         return $task;

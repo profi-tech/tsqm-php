@@ -3,7 +3,6 @@
 namespace Tests;
 
 use DateTime;
-use Examples\Greeter\SimpleGreet;
 use Examples\TsqmContainer;
 use Tsqm\Tsqm;
 use Tsqm\Queue\QueueInterface;
