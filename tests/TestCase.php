@@ -18,6 +18,7 @@ use Examples\Greeter\GreetWithPurchaseFailAndRetryInterval;
 use Examples\Greeter\SimpleGreet;
 use Examples\Greeter\SimpleGreetWith3Fails;
 use Examples\Greeter\SimpleGreetWithFail;
+use Examples\Greeter\SimpleGreetWithTraceId;
 use Examples\Greeter\SimpleGreetWithTsqmFail;
 use Examples\Helpers\DbHelper;
 use Examples\PsrContainer;
@@ -39,6 +40,7 @@ class TestCase extends \PHPUnit\Framework\TestCase
     protected SimpleGreetWithFail $simpleGreetWithFail;
     protected SimpleGreetWith3Fails $simpleGreetWith3Fails;
     protected SimpleGreetWithTsqmFail $simpleGreetWithTsqmFail;
+    protected SimpleGreetWithTraceId $simpleGreetWithTraceId;
     protected Greet $greet;
     protected GreetWithFail $greetWithFail;
     protected GreetWith3Fails $greetWith3Fails;
@@ -75,6 +77,7 @@ class TestCase extends \PHPUnit\Framework\TestCase
         $this->simpleGreetWithFail = $this->psrContainer->get(SimpleGreetWithFail::class);
         $this->simpleGreetWith3Fails = $this->psrContainer->get(SimpleGreetWith3Fails::class);
         $this->simpleGreetWithTsqmFail = $this->psrContainer->get(SimpleGreetWithTsqmFail::class);
+        $this->simpleGreetWithTraceId = $this->psrContainer->get(SimpleGreetWithTraceId::class);
 
         $this->greet = $this->psrContainer->get(Greet::class);
         $this->greetWithFail = $this->psrContainer->get(GreetWithFail::class);

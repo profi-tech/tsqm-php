@@ -32,9 +32,31 @@ class TaskRepository
         try {
             $res = $this->pdo->prepare("
                 INSERT INTO $this->table 
-                    (id, parent_id, root_id, created_at, scheduled_for, name, is_secret, args, retry_policy)
+                    (
+                        id,
+                        parent_id,
+                        root_id,
+                        created_at,
+                        scheduled_for,
+                        name,
+                        is_secret,
+                        args,
+                        args_trace_index,
+                        retry_policy
+                    )
                 VALUES 
-                    (:id, :parent_id, :root_id, :created_at, :scheduled_for, :name, :is_secret, :args, :retry_policy)
+                    (
+                        :id,
+                        :parent_id,
+                        :root_id,
+                        :created_at,
+                        :scheduled_for,
+                        :name,
+                        :is_secret,
+                        :args,
+                        :args_trace_index,
+                        :retry_policy
+                    )
             ");
             if (!$res) {
                 throw new Exception(PdoHelper::formatErrorInfo($this->pdo->errorInfo()));
@@ -48,6 +70,7 @@ class TaskRepository
                 'name' => $task->getName(),
                 'is_secret' => (int)$task->getIsSecret(),
                 'args' => $task->getArgs(),
+                'args_trace_index' => $task->getArgsTraceIndex(),
                 'retry_policy' => $task->getRetryPolicy(),
             ]);
             $res->execute($row);
@@ -254,6 +277,9 @@ class TaskRepository
         }
         if (isset($row['args'])) {
             $task->setArgs(...SerializationHelper::unserialize($row['args']));
+        }
+        if (isset($row['args_trace_index'])) {
+            $task->setArgsTraceIndex($row['args_trace_index']);
         }
         if (isset($row['result'])) {
             $task->setResult(SerializationHelper::unserialize($row['result']));

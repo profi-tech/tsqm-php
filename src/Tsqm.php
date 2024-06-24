@@ -318,7 +318,15 @@ class Tsqm
     {
         try {
             if (isset($context['task']) && $context['task'] instanceof Task) {
-                $context['task'] = $context['task']->jsonSerialize();
+                /** @var Task $task */
+                $task = $context['task'];
+                $context['task'] = $task->jsonSerialize();
+
+                $traceIndex = $task->getArgsTraceIndex();
+                $args = $task->getArgs();
+                if ($traceIndex !== null && array_key_exists($traceIndex, $args)) {
+                    $context['trace'] = $args[$traceIndex];
+                }
             }
             $this->logger->log($level, $message, $context);
         } catch (Exception $e) {
