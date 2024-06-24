@@ -67,6 +67,7 @@ class TaskLoggerTest extends TestCase
                 $this->assertArrayHasKey('trace', $context);
                 $this->assertIsArray($context['trace']);
                 $this->assertEquals($context['trace'], $trace);
+                $this->assertEquals($context['task']['args_trace_index'], 1);
                 return true;
             })
         );
