@@ -41,7 +41,6 @@ class TaskRepository
                         name,
                         is_secret,
                         args,
-                        args_trace_index,
                         retry_policy
                     )
                 VALUES 
@@ -54,7 +53,6 @@ class TaskRepository
                         :name,
                         :is_secret,
                         :args,
-                        :args_trace_index,
                         :retry_policy
                     )
             ");
@@ -70,7 +68,6 @@ class TaskRepository
                 'name' => $task->getName(),
                 'is_secret' => (int)$task->getIsSecret(),
                 'args' => $task->getArgs(),
-                'args_trace_index' => $task->getArgsTraceIndex(),
                 'retry_policy' => $task->getRetryPolicy(),
             ]);
             $res->execute($row);
@@ -277,9 +274,6 @@ class TaskRepository
         }
         if (isset($row['args'])) {
             $task->setArgs(...SerializationHelper::unserialize($row['args']));
-        }
-        if (isset($row['args_trace_index'])) {
-            $task->setArgsTraceIndex($row['args_trace_index']);
         }
         if (isset($row['result'])) {
             $task->setResult(SerializationHelper::unserialize($row['result']));

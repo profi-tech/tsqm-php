@@ -35,7 +35,6 @@ class SmokeTest extends TestCase
         $this->assertEquals(0, $task->getRetried());
         $this->assertFalse($task->hasError());
         $this->assertNull($task->getError());
-        $this->assertNull($task->getArgsTraceIndex());
 
         $this->assertEquals(
             UuidHelper::named(implode('::', [
