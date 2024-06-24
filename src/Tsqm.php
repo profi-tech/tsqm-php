@@ -133,9 +133,14 @@ class Tsqm
                                 "Generator item in task {$task->getId()} generator is not a task instance"
                             );
                         }
+
                         $generatedTask
                             ->setParentId($task->getId())
                             ->setRootId($task->getRootId());
+
+                        if ($generatedTask->isNullTrace() && !$task->isNullTrace()) {
+                            $generatedTask->setTrace($task->getTrace());
+                        }
 
                         $startedChildTask = current($startedChildTasks);
                         if ($startedChildTask && $startedChildTask instanceof Task) {

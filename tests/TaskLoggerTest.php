@@ -51,4 +51,50 @@ class TaskLoggerTest extends TestCase
 
         $this->tsqm->runTask($task);
     }
+
+    public function testLogContextWithTrace(): void
+    {
+        $trace = ['id' => UuidHelper::random()];
+        $task = (new Task())
+            ->setCallable($this->simpleGreet)
+            ->setArgs('John Doe')
+            ->setTrace($trace);
+
+        $this->logger->expects($this->atLeast(1))->method('log')->with(
+            $this->anything(),
+            $this->anything(),
+            $this->callback(function (array $context) use ($trace) {
+                $this->assertArrayHasKey('trace', $context['task']);
+                $this->assertIsArray($context['task']['trace']);
+                $this->assertEquals($context['task']['trace'], $trace);
+                return true;
+            })
+        );
+
+        $task = $this->tsqm->runTask($task);
+        $this->assertEquals($trace, $task->getTrace());
+    }
+
+    public function testGeneratorLogContextWithTrace(): void
+    {
+        $trace = ['id' => UuidHelper::random()];
+        $task = (new Task())
+            ->setCallable($this->greet)
+            ->setArgs('John Doe')
+            ->setTrace($trace);
+
+        $this->logger->expects($this->atLeast(1))->method('log')->with(
+            $this->anything(),
+            $this->anything(),
+            $this->callback(function (array $context) use ($trace) {
+                $this->assertArrayHasKey('trace', $context['task']);
+                $this->assertIsArray($context['task']['trace']);
+                $this->assertEquals($context['task']['trace'], $trace);
+                return true;
+            })
+        );
+
+        $task = $this->tsqm->runTask($task);
+        $this->assertEquals($trace, $task->getTrace());
+    }
 }
