@@ -13,7 +13,10 @@ class SimpleGreetWithTraceId
         $this->sendGreeting = $sendGreeting;
     }
 
-    public function __invoke(string $name, string $traceId): Greeting
+    /**
+     * @param array<mixed> $trace
+     */
+    public function __invoke(string $name, array $trace): Greeting
     {
         $greeting = $this->createGreeting->__invoke($name);
         return $this->sendGreeting->__invoke($greeting);

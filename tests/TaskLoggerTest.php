@@ -54,20 +54,19 @@ class TaskLoggerTest extends TestCase
 
     public function testLogContextWithTraceId(): void
     {
-
-        $traceId = UuidHelper::random();
+        $trace = ['id' => UuidHelper::random()];
         $task = (new Task())
             ->setCallable($this->simpleGreetWithTraceId)
-            ->setArgs('John Doe', $traceId)
-            ->setTraceIdIndex(1);
+            ->setArgs('John Doe', $trace)
+            ->setArgsTraceIndex(1);
 
         $this->logger->expects($this->atLeast(1))->method('log')->with(
             $this->anything(),
             $this->anything(),
-            $this->callback(function (array $context) use ($traceId) {
+            $this->callback(function (array $context) use ($trace) {
                 $this->assertArrayHasKey('trace', $context);
                 $this->assertIsArray($context['trace']);
-                $this->assertEquals($context['trace']['id'], $traceId);
+                $this->assertEquals($context['trace'], $trace);
                 return true;
             })
         );

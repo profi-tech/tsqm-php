@@ -322,10 +322,10 @@ class Tsqm
                 $task = $context['task'];
                 $context['task'] = $task->jsonSerialize();
 
-                $traceId = $task->getTraceIdIndex();
+                $traceIndex = $task->getArgsTraceIndex();
                 $args = $task->getArgs();
-                if ($traceId !== null && array_key_exists($traceId, $args)) {
-                    $context['trace']['id'] = $args[$traceId];
+                if ($traceIndex !== null && array_key_exists($traceIndex, $args)) {
+                    $context['trace'] = $args[$traceIndex];
                 }
             }
             $this->logger->log($level, $message, $context);

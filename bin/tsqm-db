@@ -20,11 +20,11 @@ CREATE TABLE IF NOT EXISTS `$table` (
     `name` VARCHAR(255) NOT NULL,
     `is_secret` BOOLEAN NOT NULL DEFAULT false,
     `args` BLOB,
+    `args_trace_index` TINYINT UNSIGNED,
     `result` BLOB,
     `error` BLOB,
     `retry_policy` BLOB,
     `retried` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
-    `trace_id_index` TINYINT UNSIGNED,
     UNIQUE KEY (`id`),
     KEY `idx_parent_id` (`parent_id`),
     KEY `idx_root_id` (`root_id`),
@@ -45,11 +45,11 @@ CREATE TABLE IF NOT EXISTS `$table` (
     `is_secret` BOOLEAN NOT NULL DEFAULT false,
     `name` VARCHAR(255) NOT NULL,
     `args` BLOB,
+    `args_trace_index` TINYINT UNSIGNED,
     `result` BLOB,
     `error` BLOB,
     `retry_policy` BLOB,
     `retried` SMALLINT NOT NULL DEFAULT 0,
-    `trace_id_index` TINYINT UNSIGNED,
     UNIQUE (`id`)
 );
 
