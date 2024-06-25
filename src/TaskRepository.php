@@ -41,7 +41,8 @@ class TaskRepository
                         name,
                         is_secret,
                         args,
-                        retry_policy
+                        retry_policy,
+                        trace
                     )
                 VALUES 
                     (
@@ -53,7 +54,8 @@ class TaskRepository
                         :name,
                         :is_secret,
                         :args,
-                        :retry_policy
+                        :retry_policy,
+                        :trace
                     )
             ");
             if (!$res) {
@@ -69,6 +71,7 @@ class TaskRepository
                 'is_secret' => (int)$task->getIsSecret(),
                 'args' => $task->getArgs(),
                 'retry_policy' => $task->getRetryPolicy(),
+                'trace' => $task->getTrace(),
             ]);
             $res->execute($row);
             $nid = $this->pdo->lastInsertId();
@@ -291,6 +294,9 @@ class TaskRepository
         if (isset($row['retried'])) {
             $task->setRetried($row['retried']);
         }
+        if (isset($row['trace'])) {
+            $task->setTrace(SerializationHelper::unserialize($row['trace']));
+        }
 
         return $task;
     }
@@ -331,6 +337,10 @@ class TaskRepository
                 $row['retry_policy']->toArray()
             );
         }
+        if (isset($row['trace'])) {
+            $row['trace'] = SerializationHelper::serialize($row['trace']);
+        }
+
         return $row;
     }
 }

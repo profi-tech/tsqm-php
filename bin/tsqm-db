@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS `$table` (
     `error` BLOB,
     `retry_policy` BLOB,
     `retried` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+    `trace` BLOB,
     UNIQUE KEY (`id`),
     KEY `idx_parent_id` (`parent_id`),
     KEY `idx_root_id` (`root_id`),
@@ -48,6 +49,7 @@ CREATE TABLE IF NOT EXISTS `$table` (
     `error` BLOB,
     `retry_policy` BLOB,
     `retried` SMALLINT NOT NULL DEFAULT 0,
+    `trace` BLOB,
     UNIQUE (`id`)
 );
 

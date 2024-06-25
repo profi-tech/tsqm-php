@@ -28,6 +28,8 @@ class Task implements JsonSerializable
     private ?Throwable $error = null;
     private ?RetryPolicy $retryPolicy = null;
     private int $retried = 0;
+    /** @var mixed */
+    private $trace = null;
 
     /**
      * @return Task
@@ -281,6 +283,28 @@ class Task implements JsonSerializable
     }
 
     /**
+     * @param mixed $trace
+     */
+    public function setTrace($trace): self
+    {
+        $this->trace = $trace;
+        return $this;
+    }
+
+    /**
+     * @return mixed|null
+     */
+    public function getTrace()
+    {
+        return $this->trace;
+    }
+
+    public function isNullTrace(): bool
+    {
+        return is_null($this->trace);
+    }
+
+    /**
      * @return mixed
      */
     public function jsonSerialize()
@@ -305,6 +329,7 @@ class Task implements JsonSerializable
             ] : null,
             'retry_policy' => $this->retryPolicy,
             'retried' => $this->retried,
+            'trace' => $this->trace,
         ];
     }
 
