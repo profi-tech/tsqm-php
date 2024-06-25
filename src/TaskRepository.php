@@ -297,6 +297,7 @@ class TaskRepository
         if (isset($row['trace'])) {
             $task->setTrace(SerializationHelper::unserialize($row['trace']));
         }
+
         return $task;
     }
 
