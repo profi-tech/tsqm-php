@@ -28,8 +28,8 @@ class Task implements JsonSerializable
     private ?Throwable $error = null;
     private ?RetryPolicy $retryPolicy = null;
     private int $retried = 0;
-    /** @var array<mixed> */
-    private ?array $trace = null;
+    /** @var mixed */
+    private $trace = null;
 
     /**
      * @return Task
@@ -283,18 +283,18 @@ class Task implements JsonSerializable
     }
 
     /**
-     * @param array<mixed> $trace
+     * @param mixed $trace
      */
-    public function setTrace(array $trace): self
+    public function setTrace($trace): self
     {
         $this->trace = $trace;
         return $this;
     }
 
     /**
-     * @return array<mixed>|null
+     * @return mixed|null
      */
-    public function getTrace(): ?array
+    public function getTrace()
     {
         return $this->trace;
     }
