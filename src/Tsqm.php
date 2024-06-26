@@ -36,6 +36,8 @@ class Tsqm
 
     private Options $options;
 
+    private string $defaultLogLevel = LogLevel::DEBUG;
+
     public function __construct(PDO $pdo, ?Options $options = null)
     {
         $this->options = $options ?? new Options();
@@ -51,13 +53,13 @@ class Tsqm
         $task = clone $task; // Make task immutable
 
         if ($task->isNullCreatedAt()) {
-            $this->log(LogLevel::INFO, "Start new task", ['task' => $task]);
+            $this->log($this->defaultLogLevel, "Start new task", ['task' => $task]);
         } else {
-            $this->log(LogLevel::INFO, "Start task {$task->getId()}", ['task' => $task]);
+            $this->log($this->defaultLogLevel, "Start task {$task->getId()}", ['task' => $task]);
         }
 
         if ($task->isFinished()) {
-            $this->log(LogLevel::INFO, "Task {$task->getId()} already finished", ['task' => $task]);
+            $this->log($this->defaultLogLevel, "Task {$task->getId()} already finished", ['task' => $task]);
             return $task;
         }
 
@@ -92,7 +94,7 @@ class Tsqm
 
             try {
                 $task = $this->repository->createTask($task);
-                $this->log(LogLevel::INFO, "Task {$task->getId()} created", ['task' => $task]);
+                $this->log($this->defaultLogLevel, "Task {$task->getId()} created", ['task' => $task]);
             } catch (Exception $e) {
                 if (PdoHelper::isIntegrityConstraintViolation($e)) {
                     throw new DuplicatedTask("Task {$task->getId()} already started", 0, $e);
@@ -105,7 +107,7 @@ class Tsqm
         if (!$this->options->isSyncRunsForced()) {
             if ($async || $task->getScheduledFor() > new DateTime()) {
                 $this->enqueue($task);
-                $this->log(LogLevel::INFO, "Task {$task->getId()} scheduled", ['task' => $task]);
+                $this->log($this->defaultLogLevel, "Task {$task->getId()} scheduled", ['task' => $task]);
                 return $task;
             }
         }
@@ -117,13 +119,13 @@ class Tsqm
         }
 
         try {
-            $this->log(LogLevel::DEBUG, "Start task {$task->getId()} callable", ['task' => $task]);
+            $this->log($this->defaultLogLevel, "Start task {$task->getId()} callable", ['task' => $task]);
             $result = call_user_func($callable, ...$task->getArgs());
 
             if ($result instanceof Generator) {
                 $startedChildTasks = $this->repository->getTasksByParentId($task->getId());
 
-                $this->log(LogLevel::DEBUG, "Start task {$task->getId()} generator", ['task' => $task]);
+                $this->log($this->defaultLogLevel, "Start task {$task->getId()} generator", ['task' => $task]);
                 $generated = 0;
                 $generator = $result;
                 while (true) {
@@ -167,7 +169,11 @@ class Tsqm
                             return $task;
                         }
                     } else {
-                        $this->log(LogLevel::DEBUG, "Task {$task->getId()} generator finished", ['task' => $task]);
+                        $this->log(
+                            $this->defaultLogLevel,
+                            "Task {$task->getId()} generator finished",
+                            ['task' => $task]
+                        );
                         $result = $generator->getReturn();
                         break;
                     }
@@ -183,10 +189,10 @@ class Tsqm
             }
 
             if ($task->isRoot()) {
-                $this->log(LogLevel::INFO, "Task {$task->getId()} finished, cleanup", ['task' => $task]);
+                $this->log($this->defaultLogLevel, "Task {$task->getId()} finished, cleanup", ['task' => $task]);
                 $this->repository->deleteTask($task->getRootId());
             } else {
-                $this->log(LogLevel::INFO, "Task {$task->getId()} finished", ['task' => $task]);
+                $this->log($this->defaultLogLevel, "Task {$task->getId()} finished", ['task' => $task]);
                 $this->repository->updateTask($task);
             }
 
@@ -249,7 +255,7 @@ class Tsqm
      */
     public function pollScheduledTasks(int $limit = 100, int $delay = 0, int $emptySleep = 10): void
     {
-        $this->log(LogLevel::INFO, "Start polling tasks");
+        $this->log($this->defaultLogLevel, "Start polling tasks");
         $isListening = true;
         $signalHandler = function ($signal) use (&$isListening) {
             $this->log(LogLevel::NOTICE, "Signal $signal received, stop polling tasks");
@@ -273,7 +279,7 @@ class Tsqm
             }
         }
 
-        $this->log(LogLevel::INFO, "Stop polling tasks");
+        $this->log($this->defaultLogLevel, "Stop polling tasks");
     }
 
     /**
@@ -284,7 +290,7 @@ class Tsqm
      */
     public function listenQueuedTasks(string $taskName)
     {
-        $this->log(LogLevel::INFO, "Start listening queue for $taskName");
+        $this->log($this->defaultLogLevel, "Start listening queue for $taskName");
 
         $callback = function (string $taskId): ?Task {
             $task = $this->getTask($taskId);
@@ -294,7 +300,7 @@ class Tsqm
             return null;
         };
         $this->queue->listen($taskName, $callback);
-        $this->log(LogLevel::INFO, "Stop listening queue for $taskName");
+        $this->log($this->defaultLogLevel, "Stop listening queue for $taskName");
     }
 
     private function enqueue(Task $task): void
