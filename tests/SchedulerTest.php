@@ -40,7 +40,7 @@ class SchedulerTest extends TestCase
             $this->pdo,
             (new Options())
                 ->setContainer(new TsqmContainer($this->psrContainer))
-                ->setForceSync(true)
+                ->setForceSyncRuns(true)
         );
 
         $task = (new Task())
@@ -60,7 +60,7 @@ class SchedulerTest extends TestCase
             $this->pdo,
             (new Options())
                 ->setContainer(new TsqmContainer($this->psrContainer))
-                ->setForceSync(true)
+                ->setForceSyncRuns(true)
         );
 
         $task = (new Task())

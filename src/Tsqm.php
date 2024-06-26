@@ -102,7 +102,7 @@ class Tsqm
             }
         }
 
-        if (!$this->options->isSyncForced()) {
+        if (!$this->options->isSyncRunsForced()) {
             if ($async || $task->getScheduledFor() > new DateTime()) {
                 $this->enqueue($task);
                 $this->log(LogLevel::INFO, "Task {$task->getId()} scheduled", ['task' => $task]);

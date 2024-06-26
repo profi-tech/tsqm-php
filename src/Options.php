@@ -14,7 +14,7 @@ class Options
     private ?ContainerInterface $container = null;
     private ?QueueInterface $queue = null;
     private ?LoggerInterface $logger = null;
-    private bool $forceSync = false;
+    private bool $forceSyncRuns = false;
 
     public function setTable(string $table): self
     {
@@ -73,18 +73,18 @@ class Options
     }
 
     /**
-     * @param bool $forceSync — if true all tasks will be executed at the run time and syncronously,
+     * @param bool $forceSyncRuns — if true all tasks will be executed at the run time and syncronously,
      *                          it could be is useful for unit-testing
      * @return Options
      */
-    public function setForceSync(bool $forceSync): self
+    public function setForceSyncRuns(bool $forceSyncRuns): self
     {
-        $this->forceSync = $forceSync;
+        $this->forceSyncRuns = $forceSyncRuns;
         return $this;
     }
 
-    public function isSyncForced(): bool
+    public function isSyncRunsForced(): bool
     {
-        return $this->forceSync;
+        return $this->forceSyncRuns;
     }
 }
