@@ -34,17 +34,19 @@ class Tsqm
     private QueueInterface $queue;
     private LoggerInterface $logger;
 
+    private Options $options;
+
     public function __construct(PDO $pdo, ?Options $options = null)
     {
-        $options = $options ?? new Options();
+        $this->options = $options ?? new Options();
 
-        $this->container = $options->getContainer();
-        $this->repository = new TaskRepository($pdo, $options->getTable());
-        $this->logger = $options->getLogger();
-        $this->queue = $options->getQueue();
+        $this->container = $this->options->getContainer();
+        $this->repository = new TaskRepository($pdo, $this->options->getTable());
+        $this->logger = $this->options->getLogger();
+        $this->queue = $this->options->getQueue();
     }
 
-    public function runTask(Task $task, bool $forceAsync = false): Task
+    public function runTask(Task $task, bool $async = false): Task
     {
         $task = clone $task; // Make task immutable
 
@@ -100,10 +102,12 @@ class Tsqm
             }
         }
 
-        if ($forceAsync || $task->getScheduledFor() > new DateTime()) {
-            $this->enqueue($task);
-            $this->log(LogLevel::INFO, "Task {$task->getId()} scheduled", ['task' => $task]);
-            return $task;
+        if (!$this->options->isSyncForced()) {
+            if ($async || $task->getScheduledFor() > new DateTime()) {
+                $this->enqueue($task);
+                $this->log(LogLevel::INFO, "Task {$task->getId()} scheduled", ['task' => $task]);
+                return $task;
+            }
         }
 
         $startedBefore = !is_null($task->getStartedAt());
