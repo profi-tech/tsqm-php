@@ -3,8 +3,11 @@
 namespace Tests;
 
 use DateTime;
+use Examples\TsqmContainer;
+use Tsqm\Options;
 use Tsqm\Task;
 use Tsqm\RetryPolicy;
+use Tsqm\Tsqm;
 
 class SchedulerTest extends TestCase
 {
@@ -28,6 +31,45 @@ class SchedulerTest extends TestCase
         $task = $this->tsqm->runTask($task, true);
         $this->assertDateEquals($task->getScheduledFor(), new DateTime(), 50);
         $this->assertFalse($task->isFinished());
+    }
+
+    public function testForcedSyncRunsWithAsync(): void
+    {
+        $tsqm = new Tsqm(
+            $this->pdo,
+            (new Options())
+                ->setContainer(new TsqmContainer($this->psrContainer))
+                ->setForceSyncRuns(true)
+        );
+
+        $task = (new Task())
+            ->setCallable($this->simpleGreet)
+            ->setArgs('John Doe');
+
+        $task = $tsqm->runTask($task, true);
+        $this->assertDateEquals($task->getStartedAt(), new DateTime(), 50);
+        $this->assertNotNull($task->getResult());
+        $this->assertTrue($task->isFinished());
+    }
+
+    public function testForcedSyncRunsWithScheduledFor(): void
+    {
+        $tsqm = new Tsqm(
+            $this->pdo,
+            (new Options())
+                ->setContainer(new TsqmContainer($this->psrContainer))
+                ->setForceSyncRuns(true)
+        );
+
+        $task = (new Task())
+            ->setCallable($this->simpleGreet)
+            ->setArgs('John Doe')
+            ->setScheduledFor((new DateTime())->modify('+1 day'));
+
+        $task = $tsqm->runTask($task);
+        $this->assertDateEquals($task->getStartedAt(), new DateTime(), 50);
+        $this->assertNotNull($task->getResult());
+        $this->assertTrue($task->isFinished());
     }
 
     public function testScheduledFor(): void
