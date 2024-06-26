@@ -33,9 +33,8 @@ class SchedulerTest extends TestCase
         $this->assertFalse($task->isFinished());
     }
 
-    public function testForceSyncForceAsync(): void
+    public function testForcedSyncRunsWithAsync(): void
     {
-
         $tsqm = new Tsqm(
             $this->pdo,
             (new Options())
@@ -53,9 +52,8 @@ class SchedulerTest extends TestCase
         $this->assertTrue($task->isFinished());
     }
 
-    public function testForceSyncScheduledFor(): void
+    public function testForcedSyncRunsWithScheduledFor(): void
     {
-
         $tsqm = new Tsqm(
             $this->pdo,
             (new Options())
