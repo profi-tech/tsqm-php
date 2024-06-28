@@ -22,7 +22,10 @@ class TaskFlowTest extends TestCase
         $now = new DateTime();
 
         $this->assertDateEquals($task->getFinishedAt(), $now);
-        $this->assertEquals((new Greeting("Hello, John Doe!"))->setSent(true), $task->getResult());
+
+        $this->assertEquals("Hello, John Doe!", $task->getResult()->getText());
+        $this->assertDateEquals($task->getResult()->getCreatedAt(), $now);
+        $this->assertTrue($task->getResult()->getSent());
         $this->assertNull($task->getError());
     }
 
@@ -51,14 +54,20 @@ class TaskFlowTest extends TestCase
         $task = $this->tsqm->runTask($task);
 
         $this->assertDateEquals($task->getFinishedAt(), $now);
-        $this->assertEquals((new Greeting("Hello, John Doe!"))->setSent(true), $task->getResult());
+
+        $this->assertEquals("Hello, John Doe!", $task->getResult()->getText());
+        $this->assertTrue($task->getResult()->getSent());
+
         $this->assertNull($task->getError());
         $this->assertEquals(0, $task->getRetried());
 
         for ($i = 0; $i < 3; $i++) {
             $task = $this->tsqm->runTask($task);
             $this->assertDateEquals($task->getFinishedAt(), $now);
-            $this->assertEquals((new Greeting("Hello, John Doe!"))->setSent(true), $task->getResult());
+
+            $this->assertEquals("Hello, John Doe!", $task->getResult()->getText());
+            $this->assertTrue($task->getResult()->getSent());
+
             $this->assertNull($task->getError());
             $this->assertEquals(0, $task->getRetried());
         }
@@ -232,7 +241,10 @@ class TaskFlowTest extends TestCase
         $task = $this->tsqm->runTask($task);
         $this->assertNull($task->getError());
         $this->assertNotNull($task->getFinishedAt());
-        $this->assertEquals((new Greeting("Hello, John Doe!"))->setSent(true), $task->getResult());
+
+        $this->assertEquals("Hello, John Doe!", $task->getResult()->getText());
+        $this->assertTrue($task->getResult()->getSent());
+
         $this->assertEquals(3, $task->getRetried());
     }
 
