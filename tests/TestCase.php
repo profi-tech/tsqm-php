@@ -14,6 +14,7 @@ use Examples\Greeter\GreetWithDeterministicNameFailure;
 use Examples\Greeter\GreetWithDuplicatedTask;
 use Examples\Greeter\GreetWithFail;
 use Examples\Greeter\GreetNested;
+use Examples\Greeter\GreetScheduled;
 use Examples\Greeter\GreetWithPurchaseFailAndRetryInterval;
 use Examples\Greeter\SimpleGreet;
 use Examples\Greeter\SimpleGreetWith3Fails;
@@ -40,6 +41,7 @@ class TestCase extends \PHPUnit\Framework\TestCase
     protected SimpleGreetWith3Fails $simpleGreetWith3Fails;
     protected SimpleGreetWithTsqmFail $simpleGreetWithTsqmFail;
     protected Greet $greet;
+    protected GreetScheduled $greetScheduled;
     protected GreetWithFail $greetWithFail;
     protected GreetWith3Fails $greetWith3Fails;
     protected GreetWith3PurchaseFailsAnd3Retries $greetWith3PurchaseFailsAnd3Retries;
@@ -77,6 +79,7 @@ class TestCase extends \PHPUnit\Framework\TestCase
         $this->simpleGreetWithTsqmFail = $this->psrContainer->get(SimpleGreetWithTsqmFail::class);
 
         $this->greet = $this->psrContainer->get(Greet::class);
+        $this->greetScheduled = $this->psrContainer->get(GreetScheduled::class);
         $this->greetWithFail = $this->psrContainer->get(GreetWithFail::class);
         $this->greetWith3Fails = $this->psrContainer->get(GreetWith3Fails::class);
         $this->greetWith3PurchaseFailsAnd3Retries = $this->psrContainer->get(

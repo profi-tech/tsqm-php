@@ -4,7 +4,6 @@ namespace Tests;
 
 use DateTime;
 use Examples\Greeter\GreeterError;
-use Examples\Greeter\Greeting;
 use Tsqm\Errors\DeterminismViolation;
 use Tsqm\Errors\DuplicatedTask;
 use Tsqm\RetryPolicy;
@@ -23,12 +22,10 @@ class TaskGeneratorFlowTest extends TestCase
         $now = new DateTime();
 
         $this->assertDateEquals($task->getFinishedAt(), $now);
-        $this->assertEquals(
-            (new Greeting("Hello, John Doe!"))
-                ->setSent(true)
-                ->setPurchased(true),
-            $task->getResult()
-        );
+        $this->assertEquals("Hello, John Doe!", $task->getResult()->getText());
+        $this->assertTrue($task->getResult()->getSent());
+        $this->assertTrue($task->getResult()->getPurchased());
+
         $this->assertNull($task->getError());
     }
 
@@ -44,12 +41,11 @@ class TaskGeneratorFlowTest extends TestCase
         for ($i = 0; $i < 3; $i++) {
             $task = $this->tsqm->runTask($task);
             $this->assertDateEquals($task->getFinishedAt(), $now);
-            $this->assertEquals(
-                (new Greeting("Hello, John Doe!"))
-                    ->setSent(true)
-                    ->setPurchased(true),
-                $task->getResult()
-            );
+
+            $this->assertEquals("Hello, John Doe!", $task->getResult()->getText());
+            $this->assertTrue($task->getResult()->getSent());
+            $this->assertTrue($task->getResult()->getPurchased());
+
             $this->assertNull($task->getError());
         }
     }
@@ -143,12 +139,10 @@ class TaskGeneratorFlowTest extends TestCase
         $task = $this->tsqm->getTask($task->getRootId());
         $task = $this->tsqm->runTask($task);
         $this->assertDateEquals($task->getFinishedAt(), new DateTime());
-        $this->assertEquals(
-            (new Greeting("Hello, John Doe!"))
-                ->setSent(true)
-                ->setPurchased(true),
-            $task->getResult()
-        );
+
+        $this->assertEquals("Hello, John Doe!", $task->getResult()->getText());
+        $this->assertTrue($task->getResult()->getSent());
+        $this->assertTrue($task->getResult()->getPurchased());
         $this->assertNull($task->getError());
     }
 
@@ -190,13 +184,14 @@ class TaskGeneratorFlowTest extends TestCase
         $task = $this->tsqm->runTask($task);
 
         $result = $task->getResult();
-        $this->assertEquals(
-            [
-                (new Greeting("Hello, John Doe!"))->setSent(false)->setPurchased(true),
-                (new Greeting("Hello, John Doe!"))->setSent(true)->setPurchased(true)
-            ],
-            $result
-        );
+
+        $this->assertEquals("Hello, John Doe!", $result[0]->getText());
+        $this->assertFalse($result[0]->getSent());
+        $this->assertTrue($result[0]->getPurchased());
+
+        $this->assertEquals("Hello, John Doe!", $result[1]->getText());
+        $this->assertTrue($result[1]->getSent());
+        $this->assertTrue($result[1]->getPurchased());
     }
 
     public function testDuplicatedTasks(): void
