@@ -170,7 +170,6 @@ class QueueTest extends TestCase
         $task = $this->tsqm->runTask($task);
     }
 
-
     public function testEnqueueAndListen(): void
     {
         $queue = [];
