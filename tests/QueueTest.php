@@ -3,6 +3,8 @@
 namespace Tests;
 
 use DateTime;
+use Examples\Greeter\GreetNestedScheduled;
+use Examples\Greeter\GreetNestedWithFail;
 use Examples\TsqmContainer;
 use Tsqm\Tsqm;
 use Tsqm\Queue\QueueInterface;
@@ -73,6 +75,76 @@ class QueueTest extends TestCase
         $task = $this->tsqm->runTask($task);
     }
 
+    public function testEnqueueForGeneratorScheduledRun(): void
+    {
+        $scheduledFor = (new DateTime())->modify('+1 day');
+        $task = (new Task())
+            ->setCallable($this->greetScheduled)
+            ->setArgs('John Doe');
+
+        $this->queue->expects($this->once())->method('enqueue')->with(
+            $task->getName(),
+            $this->callback(function (string $taskId) use ($task) {
+                $queuedTask = $this->tsqm->getTask($taskId);
+                $this->assertEquals($task->getName(), $queuedTask->getName());
+                $this->assertTrue($queuedTask->isRoot());
+                return true;
+            }),
+            $this->callback(
+                fn (DateTime $actualScheduledFor) => $this->assertDateEquals(
+                    $scheduledFor->modify('+1 second'),
+                    $actualScheduledFor
+                )
+            )
+        );
+
+        $task = $this->tsqm->runTask($task);
+    }
+
+    public function testEnqueueForNestedFailedRun(): void
+    {
+        $greetNestedWithFail = $this->psrContainer->get(GreetNestedWithFail::class);
+
+        $task = (new Task())
+            ->setCallable($greetNestedWithFail)
+            ->setArgs('John Doe');
+
+        $this->queue->expects($this->once())->method('enqueue')->with(
+            $task->getName(),
+            $this->callback(function (string $taskId) use ($task) {
+                $queuedTask = $this->tsqm->getTask($taskId);
+                $this->assertEquals($task->getName(), $queuedTask->getName());
+                $this->assertTrue($queuedTask->isRoot());
+                return true;
+            }),
+            $this->anything()
+        );
+
+        $task = $this->tsqm->runTask($task);
+    }
+
+    public function testEnqueueForNestedScheduled(): void
+    {
+        $greetNestedScheduled = $this->psrContainer->get(GreetNestedScheduled::class);
+
+        $task = (new Task())
+            ->setCallable($greetNestedScheduled)
+            ->setArgs('John Doe');
+
+        $this->queue->expects($this->once())->method('enqueue')->with(
+            $task->getName(),
+            $this->callback(function (string $taskId) use ($task) {
+                $queuedTask = $this->tsqm->getTask($taskId);
+                $this->assertEquals($task->getName(), $queuedTask->getName());
+                $this->assertTrue($queuedTask->isRoot());
+                return true;
+            }),
+            $this->anything()
+        );
+
+        $task = $this->tsqm->runTask($task);
+    }
+
     public function testEnqueueForFailedRun(): void
     {
         $task = (new Task())
@@ -97,6 +169,7 @@ class QueueTest extends TestCase
 
         $task = $this->tsqm->runTask($task);
     }
+
 
     public function testEnqueueAndListen(): void
     {

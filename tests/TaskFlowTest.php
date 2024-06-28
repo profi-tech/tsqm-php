@@ -4,7 +4,6 @@ namespace Tests;
 
 use DateTime;
 use Examples\Greeter\GreeterError;
-use Examples\Greeter\Greeting;
 use Tsqm\Errors\TsqmError;
 use Tsqm\RetryPolicy;
 use Tsqm\Task;

@@ -4,7 +4,6 @@ namespace Tests;
 
 use DateTime;
 use Examples\Greeter\GreeterError;
-use Examples\Greeter\Greeting;
 use Tsqm\Errors\DeterminismViolation;
 use Tsqm\Errors\DuplicatedTask;
 use Tsqm\RetryPolicy;

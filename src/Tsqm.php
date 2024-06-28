@@ -315,6 +315,16 @@ class Tsqm
             $scheduledFor = (clone $task->getScheduledFor())
                 ->modify("+" . self::LEAP_INTERVAL . " seconds");
 
+            // For child tasks we enqueue root tasks with the scheduledFor of child task
+            // becasue TSQM suppose to run only root tasks
+            if (!$task->isRoot()) {
+                $root = $this->repository->getTask($task->getRootId());
+                if (!$root) {
+                    throw new EnqueueFailed("Root task not found");
+                }
+                $task = $root;
+            }
+
             $this->queue->enqueue(
                 $task->getName(),
                 $task->getId(),
