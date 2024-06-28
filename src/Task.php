@@ -309,15 +309,17 @@ class Task implements JsonSerializable
      */
     public function jsonSerialize()
     {
+        $timestampFormat = "Y-m-d H:i:s.u";
+
         return [
             'nid' => $this->nid,
             'id' => $this->id,
             'parent_id' => $this->parent_id,
             'root_id' => $this->root_id,
-            'created_at' => $this->createdAt ? $this->createdAt->format(DateTime::ATOM) : null,
-            'scheduled_for' => $this->scheduledFor ? $this->scheduledFor->format(DateTime::ATOM) : null,
-            'started_at' => $this->startedAt ? $this->startedAt->format(DateTime::ATOM) : null,
-            'finished_at' => $this->finishedAt ? $this->finishedAt->format(DateTime::ATOM) : null,
+            'created_at' => $this->createdAt ? $this->createdAt->format($timestampFormat) : null,
+            'scheduled_for' => $this->scheduledFor ? $this->scheduledFor->format($timestampFormat) : null,
+            'started_at' => $this->startedAt ? $this->startedAt->format($timestampFormat) : null,
+            'finished_at' => $this->finishedAt ? $this->finishedAt->format($timestampFormat) : null,
             'name' => $this->name,
             'is_secret' => $this->isSecret,
             'args' => $this->args ? $this->hideSecret($this->args) : null,
