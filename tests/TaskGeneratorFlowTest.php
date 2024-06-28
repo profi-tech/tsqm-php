@@ -3,7 +3,15 @@
 namespace Tests;
 
 use DateTime;
+use Examples\Greeter\Greet;
 use Examples\Greeter\GreeterError;
+use Examples\Greeter\GreetNested;
+use Examples\Greeter\GreetWith3PurchaseFailsAnd2Retries;
+use Examples\Greeter\GreetWith3PurchaseFailsAnd3Retries;
+use Examples\Greeter\GreetWithDeterministicArgsFailure;
+use Examples\Greeter\GreetWithDeterministicNameFailure;
+use Examples\Greeter\GreetWithDuplicatedTask;
+use Examples\Greeter\GreetWithFail;
 use Tsqm\Errors\DeterminismViolation;
 use Tsqm\Errors\DuplicatedTask;
 use Tsqm\RetryPolicy;
@@ -13,8 +21,9 @@ class TaskGeneratorFlowTest extends TestCase
 {
     public function testGeneratorSuccess(): void
     {
+        $greet = $this->psrContainer->get(Greet::class);
         $task = (new Task())
-            ->setCallable($this->greet)
+            ->setCallable($greet)
             ->setArgs('John Doe');
 
         $task = $this->tsqm->runTask($task);
@@ -31,8 +40,9 @@ class TaskGeneratorFlowTest extends TestCase
 
     public function testGeneratorSuccessRerun(): void
     {
+        $greet = $this->psrContainer->get(Greet::class);
         $task = (new Task())
-            ->setCallable($this->greet)
+            ->setCallable($greet)
             ->setArgs('John Doe');
 
         $task = $this->tsqm->runTask($task);
@@ -52,8 +62,9 @@ class TaskGeneratorFlowTest extends TestCase
 
     public function testGeneratorFailed(): void
     {
+        $greetWithFail = $this->psrContainer->get(GreetWithFail::class);
         $task = (new Task())
-            ->setCallable($this->greetWithFail)
+            ->setCallable($greetWithFail)
             ->setArgs('John Doe');
 
         $task = $this->tsqm->runTask($task);
@@ -69,8 +80,9 @@ class TaskGeneratorFlowTest extends TestCase
 
     public function testGeneratorFailedRerun(): void
     {
+        $greetWithFail = $this->psrContainer->get(GreetWithFail::class);
         $task = (new Task())
-            ->setCallable($this->greetWithFail)
+            ->setCallable($greetWithFail)
             ->setArgs('John Doe');
 
         $task = $this->tsqm->runTask($task);
@@ -96,8 +108,9 @@ class TaskGeneratorFlowTest extends TestCase
 
     public function testGeneratorFailedAndScheduled(): void
     {
+        $greetWithFail = $this->psrContainer->get(GreetWithFail::class);
         $task = (new Task())
-            ->setCallable($this->greetWithFail)
+            ->setCallable($greetWithFail)
             ->setArgs('John Doe')
             ->setRetryPolicy((new RetryPolicy())->setMaxRetries(3)->setMinInterval(10000));
 
@@ -116,8 +129,9 @@ class TaskGeneratorFlowTest extends TestCase
 
     public function testGeneratorFailedAndSuccesfullyRetried(): void
     {
+        $greetWith3PurchaseFailsAnd3Retries = $this->psrContainer->get(GreetWith3PurchaseFailsAnd3Retries::class);
         $task = (new Task())
-            ->setCallable($this->greetWith3PurchaseFailsAnd3Retries)
+            ->setCallable($greetWith3PurchaseFailsAnd3Retries)
             ->setArgs('John Doe');
 
         // First failed run
@@ -148,8 +162,9 @@ class TaskGeneratorFlowTest extends TestCase
 
     public function testGeneratorFailedAndFailedToRetry(): void
     {
+        $greetWith3PurchaseFailsAnd2Retries = $this->psrContainer->get(GreetWith3PurchaseFailsAnd2Retries::class);
         $task = (new Task())
-            ->setCallable($this->greetWith3PurchaseFailsAnd2Retries)
+            ->setCallable($greetWith3PurchaseFailsAnd2Retries)
             ->setArgs('John Doe');
 
         // First failed run
@@ -178,8 +193,9 @@ class TaskGeneratorFlowTest extends TestCase
 
     public function testNestedGenerator(): void
     {
+        $greetNested = $this->psrContainer->get(GreetNested::class);
         $task = (new Task())
-            ->setCallable($this->greetNested)
+            ->setCallable($greetNested)
             ->setArgs('John Doe');
         $task = $this->tsqm->runTask($task);
 
@@ -196,8 +212,9 @@ class TaskGeneratorFlowTest extends TestCase
 
     public function testDuplicatedTasks(): void
     {
+        $greetWithDuplicatedTask = $this->psrContainer->get(GreetWithDuplicatedTask::class);
         $task = (new Task())
-            ->setCallable($this->greetWithDuplicatedTask)
+            ->setCallable($greetWithDuplicatedTask)
             ->setArgs('John Doe');
         $this->expectException(DuplicatedTask::class);
         $this->tsqm->runTask($task);
@@ -205,8 +222,9 @@ class TaskGeneratorFlowTest extends TestCase
 
     public function testGeneratorNameDeterminismViolation(): void
     {
+        $greetWithDeterministicNameFailure = $this->psrContainer->get(GreetWithDeterministicNameFailure::class);
         $task = (new Task())
-            ->setCallable($this->greetWithDeterministicNameFailure)
+            ->setCallable($greetWithDeterministicNameFailure)
             ->setArgs('John Doe')
             ->setRetryPolicy((new RetryPolicy())->setMaxRetries(1)->setMinInterval(0));
 
@@ -218,8 +236,9 @@ class TaskGeneratorFlowTest extends TestCase
 
     public function testGeneratorArgsDeterminismViolation(): void
     {
+        $greetWithDeterministicArgsFailure = $this->psrContainer->get(GreetWithDeterministicArgsFailure::class);
         $task = (new Task())
-            ->setCallable($this->greetWithDeterministicArgsFailure)
+            ->setCallable($greetWithDeterministicArgsFailure)
             ->setArgs('John Doe')
             ->setRetryPolicy((new RetryPolicy())->setMaxRetries(1)->setMinInterval(0));
 

@@ -2,6 +2,7 @@
 
 namespace Tests;
 
+use Examples\Greeter\SimpleGreetWithFail;
 use Examples\TsqmContainer;
 use Tsqm\Options;
 use Tsqm\RetryPolicy;
@@ -19,6 +20,8 @@ class OptionsTest extends TestCase
 
     public function testTableOption(): void
     {
+        $simpleGreetWithFail = $this->psrContainer->get(SimpleGreetWithFail::class);
+
         $tsqm1 = new Tsqm(
             $this->pdo,
             (new Options())
@@ -33,12 +36,12 @@ class OptionsTest extends TestCase
         );
 
         $task1 = $tsqm1->runTask(
-            (new Task())->setCallable($this->simpleGreetWithFail)->setArgs('John Doe1')->setRetryPolicy(
+            (new Task())->setCallable($simpleGreetWithFail)->setArgs('John Doe1')->setRetryPolicy(
                 (new RetryPolicy())->setMaxRetries(1)
             )
         );
         $task2 = $tsqm2->runTask(
-            (new Task())->setCallable($this->simpleGreetWithFail)->setArgs('John Doe1')->setRetryPolicy(
+            (new Task())->setCallable($simpleGreetWithFail)->setArgs('John Doe1')->setRetryPolicy(
                 (new RetryPolicy())->setMaxRetries(1)
             )
         );
