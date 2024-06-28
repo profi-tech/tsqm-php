@@ -2,14 +2,16 @@
 
 namespace Tests;
 
+use Examples\Greeter\SimpleGreet;
 use Tsqm\Task;
 
 class SecretTaskTest extends TestCase
 {
     public function testSecretTask(): void
     {
+        $simpleGreet = $this->psrContainer->get(SimpleGreet::class);
         $task = (new Task())
-            ->setCallable($this->simpleGreet)
+            ->setCallable($simpleGreet)
             ->setArgs('John Doe')
             ->setIsSecret(true);
 

@@ -2,6 +2,8 @@
 
 namespace Tsqm\Tests;
 
+use Examples\Greeter\Greet;
+use Examples\Greeter\SimpleGreet;
 use Examples\TsqmContainer;
 use Tests\TestCase;
 use Tsqm\Logger\LoggerInterface;
@@ -31,9 +33,10 @@ class TaskLoggerTest extends TestCase
 
     public function testLogContextWithTask(): void
     {
+        $simpleGreet = $this->psrContainer->get(SimpleGreet::class);
 
         $task = (new Task())
-            ->setCallable($this->simpleGreet)
+            ->setCallable($simpleGreet)
             ->setArgs('John Doe');
 
         $this->logger->expects($this->atLeast(1))->method('log')->with(
@@ -54,9 +57,10 @@ class TaskLoggerTest extends TestCase
 
     public function testLogContextWithTrace(): void
     {
+        $simpleGreet = $this->psrContainer->get(SimpleGreet::class);
         $trace = ['id' => UuidHelper::random()];
         $task = (new Task())
-            ->setCallable($this->simpleGreet)
+            ->setCallable($simpleGreet)
             ->setArgs('John Doe')
             ->setTrace($trace);
 
@@ -77,9 +81,11 @@ class TaskLoggerTest extends TestCase
 
     public function testGeneratorLogContextWithTrace(): void
     {
+        $greet = $this->psrContainer->get(Greet::class);
+
         $trace = ['id' => UuidHelper::random()];
         $task = (new Task())
-            ->setCallable($this->greet)
+            ->setCallable($greet)
             ->setArgs('John Doe')
             ->setTrace($trace);
 
