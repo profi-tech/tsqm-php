@@ -53,13 +53,11 @@ class Tsqm
         $task = clone $task; // Make task immutable
 
         if ($task->isNullCreatedAt()) {
-            $this->log($this->defaultLogLevel, "Start new task", ['task' => $task]);
-        } else {
-            $this->log($this->defaultLogLevel, "Start task {$task->getId()}", ['task' => $task]);
+            $this->log($this->defaultLogLevel, "Start {$task->getLogId()}", ['task' => $task]);
         }
 
         if ($task->isFinished()) {
-            $this->log($this->defaultLogLevel, "Task {$task->getId()} already finished", ['task' => $task]);
+            $this->log($this->defaultLogLevel, "Finish {$task->getLogId()} (already finished)", ['task' => $task]);
             return $task;
         }
 
@@ -93,11 +91,11 @@ class Tsqm
             }
 
             try {
+                $this->log($this->defaultLogLevel, "Create {$task->getLogId()}", ['task' => $task]);
                 $task = $this->repository->createTask($task);
-                $this->log($this->defaultLogLevel, "Task {$task->getId()} created", ['task' => $task]);
             } catch (Exception $e) {
                 if (PdoHelper::isIntegrityConstraintViolation($e)) {
-                    throw new DuplicatedTask("Task {$task->getId()} already started", 0, $e);
+                    throw new DuplicatedTask("Task {$task->getLogId()} already started", 0, $e);
                 } else {
                     throw $e;
                 }
@@ -106,8 +104,8 @@ class Tsqm
 
         if (!$this->options->isSyncRunsForced()) {
             if ($async || $task->getScheduledFor() > new DateTime()) {
+                $this->log($this->defaultLogLevel, "Schedule {$task->getLogId()}", ['task' => $task]);
                 $this->enqueue($task);
-                $this->log($this->defaultLogLevel, "Task {$task->getId()} scheduled", ['task' => $task]);
                 return $task;
             }
         }
@@ -119,24 +117,24 @@ class Tsqm
         }
 
         try {
-            $this->log($this->defaultLogLevel, "Start task {$task->getId()} callable", ['task' => $task]);
+            $this->log($this->defaultLogLevel, "Call {$task->getLogId()}", ['task' => $task]);
             $result = call_user_func($callable, ...$task->getArgs());
 
             if ($result instanceof Generator) {
                 $startedChildTasks = $this->repository->getTasksByParentId($task->getId());
 
-                $this->log($this->defaultLogLevel, "Start task {$task->getId()} generator", ['task' => $task]);
+                $this->log($this->defaultLogLevel, "Start generator {$task->getLogId()}", ['task' => $task]);
                 $generated = 0;
                 $generator = $result;
                 while (true) {
                     if ($generated++ >= self::GENERATOR_LIMIT) {
-                        throw new ToManyTasks("To many tasks in task {$task->getId()} generator: $generated");
+                        throw new ToManyTasks("To many tasks in {$task->getLogId()} generator: $generated");
                     }
                     if ($generator->valid()) {
                         $generatedTask = $generator->current();
                         if (!$generatedTask instanceof Task) {
                             throw new InvalidGeneratorItem(
-                                "Generator item in task {$task->getId()} generator is not a task instance"
+                                "Generator item in {$task->getLogId()} generator is not a task instance"
                             );
                         }
 
@@ -171,7 +169,7 @@ class Tsqm
                     } else {
                         $this->log(
                             $this->defaultLogLevel,
-                            "Task {$task->getId()} generator finished",
+                            "Finish generator {$task->getLogId()}",
                             ['task' => $task]
                         );
                         $result = $generator->getReturn();
@@ -189,10 +187,10 @@ class Tsqm
             }
 
             if ($task->isRoot()) {
-                $this->log($this->defaultLogLevel, "Task {$task->getId()} finished, cleanup", ['task' => $task]);
+                $this->log($this->defaultLogLevel, "Finish root {$task->getLogId()}", ['task' => $task]);
                 $this->repository->deleteTask($task->getRootId());
             } else {
-                $this->log($this->defaultLogLevel, "Task {$task->getId()} finished", ['task' => $task]);
+                $this->log($this->defaultLogLevel, "Finish {$task->getLogId()}", ['task' => $task]);
                 $this->repository->updateTask($task);
             }
 
@@ -213,12 +211,12 @@ class Tsqm
 
             if (!is_null($retryAt)) {
                 $task->setScheduledFor($retryAt);
-                $this->log(LogLevel::WARNING, "Task {$task->getId()} failed and retry scheduled", ['task' => $task]);
+                $this->log(LogLevel::WARNING, "Fail and retry {$task->getLogId()}", ['task' => $task]);
                 $this->repository->updateTask($task);
                 $this->enqueue($task);
             } else {
                 $task->setFinishedAt(new DateTime());
-                $this->log(LogLevel::ERROR, "Task {$task->getId()} failed, cleanup", ['task' => $task]);
+                $this->log(LogLevel::ERROR, "Fail and cleanup {$task->getLogId()}", ['task' => $task]);
                 $this->repository->deleteTask($task->getId());
             }
 
