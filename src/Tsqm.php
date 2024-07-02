@@ -213,7 +213,7 @@ class Tsqm
 
             if (!is_null($retryAt)) {
                 $task->setScheduledFor($retryAt);
-                $this->log(LogLevel::ERROR, "Task {$task->getId()} failed and retry scheduled", ['task' => $task]);
+                $this->log(LogLevel::WARNING, "Task {$task->getId()} failed and retry scheduled", ['task' => $task]);
                 $this->repository->updateTask($task);
                 $this->enqueue($task);
             } else {
