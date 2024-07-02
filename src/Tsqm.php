@@ -52,9 +52,7 @@ class Tsqm
     {
         $task = clone $task; // Make task immutable
 
-        if ($task->isNullCreatedAt()) {
-            $this->log($this->defaultLogLevel, "Start {$task->getLogId()}", ['task' => $task]);
-        }
+        $this->log($this->defaultLogLevel, "Start {$task->getLogId()}", ['task' => $task]);
 
         if ($task->isFinished()) {
             $this->log($this->defaultLogLevel, "Skip {$task->getLogId()}", ['task' => $task]);
