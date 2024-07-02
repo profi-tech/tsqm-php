@@ -128,13 +128,13 @@ class Tsqm
                 $generator = $result;
                 while (true) {
                     if ($generated++ >= self::GENERATOR_LIMIT) {
-                        throw new ToManyTasks("To many tasks in {$task->getLogId()} generator: $generated");
+                        throw new ToManyTasks("To many tasks in {$task->getId()} generator: $generated");
                     }
                     if ($generator->valid()) {
                         $generatedTask = $generator->current();
                         if (!$generatedTask instanceof Task) {
                             throw new InvalidGeneratorItem(
-                                "Generator item in {$task->getLogId()} generator is not a task instance"
+                                "Generator item in {$task->getId()} generator is not a task instance"
                             );
                         }
 
