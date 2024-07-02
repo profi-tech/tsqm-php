@@ -186,11 +186,11 @@ class Tsqm
                 $task->incRetried();
             }
 
+            $this->log($this->defaultLogLevel, "Finish {$task->getLogId()}", ['task' => $task]);
+            
             if ($task->isRoot()) {
-                $this->log($this->defaultLogLevel, "Finish root {$task->getLogId()}", ['task' => $task]);
                 $this->repository->deleteTask($task->getRootId());
             } else {
-                $this->log($this->defaultLogLevel, "Finish {$task->getLogId()}", ['task' => $task]);
                 $this->repository->updateTask($task);
             }
 
@@ -216,7 +216,7 @@ class Tsqm
                 $this->enqueue($task);
             } else {
                 $task->setFinishedAt(new DateTime());
-                $this->log(LogLevel::ERROR, "Fail and cleanup {$task->getLogId()}", ['task' => $task]);
+                $this->log(LogLevel::ERROR, "Fail {$task->getLogId()}", ['task' => $task]);
                 $this->repository->deleteTask($task->getId());
             }
 
