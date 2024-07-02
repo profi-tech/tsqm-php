@@ -48,7 +48,7 @@ class RetryPolicyTest extends TestCase
         $this->assertNull($retryAt);
     }
 
-    public function testGetRetryAtBackoff(): void
+    public function testBackoff(): void
     {
         $retryPolicy = new RetryPolicy();
         $retryPolicy->setMaxRetries(5);
@@ -71,7 +71,7 @@ class RetryPolicyTest extends TestCase
         $this->assertNull($retryAt);
     }
 
-    public function testGetRetryAtBackoffFloat(): void
+    public function testBackoffFloat(): void
     {
         $retryPolicy = new RetryPolicy();
         $retryPolicy->setMaxRetries(5);
@@ -89,6 +89,47 @@ class RetryPolicyTest extends TestCase
 
         $retryAt = $retryPolicy->getRetryAt(4);
         $this->assertDateEquals((new DateTime())->modify('+622 milliseconds'), $retryAt, 1000);
+
+        $retryAt = $retryPolicy->getRetryAt(5);
+        $this->assertNull($retryAt);
+    }
+
+    public function testJitter(): void
+    {
+        $retryPolicy = (new RetryPolicy())
+            ->setMaxRetries(5)
+            ->setMinInterval(300)
+            ->setUseJitter(true);
+
+        $retryAt = $retryPolicy->getRetryAt(0);
+        $this->assertDateEquals((new DateTime())->modify('+300 milliseconds'), $retryAt, 160);
+
+        $retryAt = $retryPolicy->getRetryAt(1);
+        $this->assertDateEquals((new DateTime())->modify('+300 milliseconds'), $retryAt, 160);
+
+        $retryAt = $retryPolicy->getRetryAt(4);
+        $this->assertDateEquals((new DateTime())->modify('+300 milliseconds'), $retryAt, 160);
+
+        $retryAt = $retryPolicy->getRetryAt(5);
+        $this->assertNull($retryAt);
+    }
+
+    public function testBackoffJitter(): void
+    {
+        $retryPolicy = (new RetryPolicy())
+            ->setMaxRetries(5)
+            ->setMinInterval(300)
+            ->setBackoffFactor(2)
+            ->setUseJitter(true);
+
+        $retryAt = $retryPolicy->getRetryAt(0);
+        $this->assertDateEquals((new DateTime())->modify('+300 milliseconds'), $retryAt, 160);
+
+        $retryAt = $retryPolicy->getRetryAt(1);
+        $this->assertDateEquals((new DateTime())->modify('+600 milliseconds'), $retryAt, 310);
+
+        $retryAt = $retryPolicy->getRetryAt(4);
+        $this->assertDateEquals((new DateTime())->modify('+4800 milliseconds'), $retryAt, 2410);
 
         $retryAt = $retryPolicy->getRetryAt(5);
         $this->assertNull($retryAt);

@@ -17,6 +17,9 @@ class RetryPolicy implements JsonSerializable
     /** @var float Exponential backoff factor */
     private float $backoffFactor = 1.0;
 
+    /** @var bool Whether to use jitter */
+    private bool $useJitter = false;
+
     public function setMaxRetries(int $maxRetries): self
     {
         $this->maxRetries = $maxRetries;
@@ -58,10 +61,25 @@ class RetryPolicy implements JsonSerializable
         return $this->backoffFactor;
     }
 
+    public function setUseJitter(bool $useJitter): self
+    {
+        $this->useJitter = $useJitter;
+        return $this;
+    }
+
+    public function getUseJitter(): bool
+    {
+        return $this->useJitter;
+    }
+
     public function getRetryAt(int $retriesSoFar): ?DateTime
     {
         if ($retriesSoFar < $this->getMaxRetries()) {
             $interval = $this->getMinInterval() * ($this->getBackoffFactor() ** $retriesSoFar);
+            if ($this->useJitter) {
+                $jitterFactor = mt_rand(500, 1500) / 1000; // Jitter from 0.5 to 1.5 times the interval
+                $interval = round($interval * $jitterFactor);
+            }
             return (new DateTime())->modify("+$interval milliseconds");
         } else {
             return null;
@@ -84,6 +102,9 @@ class RetryPolicy implements JsonSerializable
         if (isset($data['backoffFactor'])) {
             $policy->setBackoffFactor($data['backoffFactor']);
         }
+        if (isset($data['useJitter'])) {
+            $policy->setUseJitter($data['useJitter']);
+        }
         return $policy;
     }
 
@@ -104,6 +125,7 @@ class RetryPolicy implements JsonSerializable
             'maxRetries' => $this->getMaxRetries(),
             'minInterval' => $this->getMinInterval(),
             'backoffFactor' => $this->getBackoffFactor(),
+            'useJitter' => $this->getUseJitter(),
         ];
     }
 }
