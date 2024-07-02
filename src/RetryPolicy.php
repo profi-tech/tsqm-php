@@ -4,6 +4,7 @@ namespace Tsqm;
 
 use DateTime;
 use JsonSerializable;
+use Tsqm\Errors\InvalidRetryPolicy;
 
 class RetryPolicy implements JsonSerializable
 {
@@ -12,6 +13,9 @@ class RetryPolicy implements JsonSerializable
 
     /** @var int Minimum time between retries in milliseconds */
     private int $minInterval = 100;
+
+    /** @var float Exponential backoff factor */
+    private float $backoffFactor = 1.0;
 
     public function setMaxRetries(int $maxRetries): self
     {
@@ -40,10 +44,25 @@ class RetryPolicy implements JsonSerializable
         return $this->minInterval;
     }
 
+    public function setBackoffFactor(float $backoffFactor): self
+    {
+        if ($backoffFactor < 1) {
+            throw new InvalidRetryPolicy('Backoff factor must be greater than or equal to 1');
+        }
+        $this->backoffFactor = $backoffFactor;
+        return $this;
+    }
+
+    public function getBackoffFactor(): float
+    {
+        return $this->backoffFactor;
+    }
+
     public function getRetryAt(int $retriesSoFar): ?DateTime
     {
         if ($retriesSoFar < $this->getMaxRetries()) {
-            return (new DateTime())->modify('+' . $this->getMinInterval() . ' milliseconds');
+            $interval = $this->getMinInterval() * ($this->getBackoffFactor() ** $retriesSoFar);
+            return (new DateTime())->modify("+$interval milliseconds");
         } else {
             return null;
         }
@@ -61,6 +80,9 @@ class RetryPolicy implements JsonSerializable
         }
         if (isset($data['minInterval'])) {
             $policy->setMinInterval($data['minInterval']);
+        }
+        if (isset($data['backoffFactor'])) {
+            $policy->setBackoffFactor($data['backoffFactor']);
         }
         return $policy;
     }
@@ -81,6 +103,7 @@ class RetryPolicy implements JsonSerializable
         return [
             'maxRetries' => $this->getMaxRetries(),
             'minInterval' => $this->getMinInterval(),
+            'backoffFactor' => $this->getBackoffFactor(),
         ];
     }
 }
