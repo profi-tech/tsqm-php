@@ -57,7 +57,7 @@ class Tsqm
         }
 
         if ($task->isFinished()) {
-            $this->log($this->defaultLogLevel, "Finish {$task->getLogId()} (already finished)", ['task' => $task]);
+            $this->log($this->defaultLogLevel, "Skip {$task->getLogId()}", ['task' => $task]);
             return $task;
         }
 
