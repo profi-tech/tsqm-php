@@ -95,7 +95,7 @@ class Tsqm
                 $task = $this->repository->createTask($task);
             } catch (Exception $e) {
                 if (PdoHelper::isIntegrityConstraintViolation($e)) {
-                    throw new DuplicatedTask("Task {$task->getLogId()} already started", 0, $e);
+                    throw new DuplicatedTask("Task {$task->getId()} already started", 0, $e);
                 } else {
                     throw $e;
                 }
