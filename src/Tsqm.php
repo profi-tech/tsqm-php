@@ -187,7 +187,7 @@ class Tsqm
             }
 
             $this->log($this->defaultLogLevel, "Finish {$task->getLogId()}", ['task' => $task]);
-            
+
             if ($task->isRoot()) {
                 $this->repository->deleteTask($task->getRootId());
             } else {
