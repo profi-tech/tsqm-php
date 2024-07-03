@@ -57,7 +57,7 @@ class PsrContainer
 
                 LoggerInterface::class => function (): LoggerInterface {
                     $logger = new Monolog\Logger('examples');
-                    $handler = new Monolog\Handler\StreamHandler('php://stdout');
+                    $handler = new Monolog\Handler\StreamHandler('php://stdout', Monolog\Logger::INFO);
                     $handler->setFormatter(new LogFormatter());
                     $logger->pushHandler($handler);
                     return new Logger($logger);

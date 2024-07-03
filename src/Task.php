@@ -195,7 +195,7 @@ class Task implements JsonSerializable
 
     public function getLogId(): string
     {
-        return $this->name . (!is_null($this->id) ? " id={$this->id}" : "");
+        return $this->name . (!is_null($this->id) ? " {$this->id}" : "");
     }
 
     public function setIsSecret(bool $isSecret): self

@@ -49,16 +49,15 @@ class Tsqm
     public function runTask(Task $task, bool $async = false): Task
     {
         $task = clone $task; // Make task immutable
-        $isNewTask = $task->isNullCreatedAt();
 
         $this->log(
-            $isNewTask ? LogLevel::INFO : LogLevel::DEBUG,
+            !$task->isFinished() ? LogLevel::INFO : LogLevel::DEBUG,
             "Start {$task->getLogId()}",
             ['task' => $task]
         );
 
         if ($task->isFinished()) {
-            $this->log(LogLevel::DEBUG, "Skip {$task->getLogId()}", ['task' => $task]);
+            $this->log(LogLevel::DEBUG, "Finish (cache) {$task->getLogId()}", ['task' => $task]);
             return $task;
         }
 
@@ -119,7 +118,7 @@ class Tsqm
 
         try {
             $this->log(
-                $isNewTask ? LogLevel::INFO : LogLevel::DEBUG,
+                LogLevel::INFO,
                 "Call {$task->getLogId()}",
                 ['task' => $task]
             );
@@ -129,7 +128,7 @@ class Tsqm
                 $startedChildTasks = $this->repository->getTasksByParentId($task->getId());
 
                 $this->log(
-                    $isNewTask ? LogLevel::INFO : LogLevel::DEBUG,
+                    LogLevel::DEBUG,
                     "Start generator {$task->getLogId()}",
                     ['task' => $task]
                 );
@@ -178,7 +177,7 @@ class Tsqm
                         }
                     } else {
                         $this->log(
-                            LogLevel::INFO,
+                            LogLevel::DEBUG,
                             "Finish generator {$task->getLogId()}",
                             ['task' => $task]
                         );
