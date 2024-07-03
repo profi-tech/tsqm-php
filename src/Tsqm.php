@@ -57,7 +57,7 @@ class Tsqm
         );
 
         if ($task->isFinished()) {
-            $this->log(LogLevel::DEBUG, "Finish (cache) {$task->getLogId()}", ['task' => $task]);
+            $this->log(LogLevel::DEBUG, "Finish with cache {$task->getLogId()}", ['task' => $task]);
             return $task;
         }
 
