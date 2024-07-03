@@ -284,7 +284,10 @@ class TaskRepository
         if (isset($row['error'])) {
             $error = SerializationHelper::unserialize($row['error']);
             $task->setError(
-                new $error['class']($error['message'], $error['code'])
+                new $error['class'](
+                    $error['message'],
+                    intval($error['code']),
+                )
             );
         }
         if (isset($row['retry_policy'])) {
@@ -322,11 +325,11 @@ class TaskRepository
         if (isset($row['result'])) {
             $row['result'] = SerializationHelper::serialize($row['result']);
         }
-        if (isset($row['error'])) {
+        if (isset($row['error']) && $row['error'] instanceof Exception) {
             $row['error'] = SerializationHelper::serialize([
                 'class' => get_class($row['error']),
                 'message' => $row['error']->getMessage(),
-                'code' => $row['error']->getCode(),
+                'code' => intval($row['error']->getCode()),
             ]);
         }
         if (isset($row['retry_policy'])) {

@@ -3,6 +3,7 @@
 namespace Tsqm;
 
 use DateTime;
+use Exception;
 use JsonSerializable;
 use Throwable;
 use Tsqm\Errors\InvalidTask;
@@ -25,7 +26,7 @@ class Task implements JsonSerializable
     private bool $isSecret = false;
     /** @var mixed */
     private $result = null;
-    private ?Throwable $error = null;
+    private ?Exception $error = null;
     private ?RetryPolicy $retryPolicy = null;
     private int $retried = 0;
     /** @var mixed */
@@ -243,7 +244,7 @@ class Task implements JsonSerializable
         return $this->result;
     }
 
-    public function setError(?Throwable $error): self
+    public function setError(?Exception $error): self
     {
         $this->error = $error;
         return $this;
@@ -254,7 +255,7 @@ class Task implements JsonSerializable
         return !is_null($this->error);
     }
 
-    public function getError(): ?Throwable
+    public function getError(): ?Exception
     {
         return $this->error;
     }
