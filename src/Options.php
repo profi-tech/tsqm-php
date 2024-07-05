@@ -2,6 +2,7 @@
 
 namespace Tsqm;
 
+use Errors\InvalidConfig;
 use Tsqm\Container\ContainerInterface;
 use Tsqm\Container\NullContainer;
 use Tsqm\Logger\LoggerInterface;
@@ -15,6 +16,20 @@ class Options
     private ?QueueInterface $queue = null;
     private ?LoggerInterface $logger = null;
     private bool $forceSyncRuns = false;
+
+    /**
+     * Maximum number of nested tasks yielded by generator
+     * Caution with increase this value, it could lead to stack overflow!
+     *
+     * @var int
+     */
+    private int $maxNestingLevel = 10;
+
+    /**
+     * Maximum number of tasks yielded by generator
+     * @var int
+     */
+    private int $maxGeneratorTasks = 1000;
 
     public function setTable(string $table): self
     {
@@ -86,5 +101,41 @@ class Options
     public function isSyncRunsForced(): bool
     {
         return $this->forceSyncRuns;
+    }
+
+    /**
+     * Set maximum number of nested tasks yielded by generator
+     * Caution with increase this value, it could lead to stack overflow!
+     *
+     * @param int $maxNestingLevel
+     * @return Options
+     * @throws InvalidConfig
+     */
+    public function setMaxNestingLevel(int $maxNestingLevel): self
+    {
+        if ($maxNestingLevel < 1) {
+            throw new InvalidConfig("Max nested tasks should be greater than 0");
+        }
+        $this->maxNestingLevel = $maxNestingLevel;
+        return $this;
+    }
+
+    public function getMaxNestingLevel(): int
+    {
+        return $this->maxNestingLevel;
+    }
+
+    public function setMaxGeneratorTasks(int $maxGeneratorTasks): self
+    {
+        if ($maxGeneratorTasks < 1) {
+            throw new InvalidConfig("Max generator tasks should be greater than 0");
+        }
+        $this->maxGeneratorTasks = $maxGeneratorTasks;
+        return $this;
+    }
+
+    public function getMaxGeneratorTasks(): int
+    {
+        return $this->maxGeneratorTasks;
     }
 }

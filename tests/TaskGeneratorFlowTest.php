@@ -15,9 +15,11 @@ use Examples\Greeter\GreetWithDeterministicNameFailure;
 use Examples\Greeter\GreetWithDuplicatedTask;
 use Examples\Greeter\GreetWithFail;
 use Examples\Greeter\Purchase;
+use Examples\Greeter\RecursiveGreet;
 use Examples\Greeter\SendGreeting;
 use Tsqm\Errors\DeterminismViolation;
 use Tsqm\Errors\DuplicatedTask;
+use Tsqm\Errors\NestingIsToDeep;
 use Tsqm\RetryPolicy;
 use Tsqm\Task;
 
@@ -267,6 +269,17 @@ class TaskGeneratorFlowTest extends TestCase
         $task = $this->tsqm->runTask($task);
         $task = $this->tsqm->getTask($task->getRootId());
         $this->expectException(DeterminismViolation::class);
+        $this->tsqm->runTask($task);
+    }
+
+    public function testRecursiveGenerator(): void
+    {
+        $recusiveGreet = $this->psrContainer->get(RecursiveGreet::class);
+        $task = (new Task())
+            ->setCallable($recusiveGreet)
+            ->setArgs('John Doe');
+
+        $this->expectException(NestingIsToDeep::class);
         $this->tsqm->runTask($task);
     }
 }
