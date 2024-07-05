@@ -5,8 +5,9 @@ namespace Examples\Greeter;
 use Generator;
 use Tsqm\Task;
 
-class GreetScheduled
+class RecursiveGreet
 {
+    private static int $nested_levels = 0;
     private CreateGreeting $createGreeting;
     private Purchase $purchase;
     private SendGreeting $sendGreeting;
@@ -23,7 +24,10 @@ class GreetScheduled
 
     public function __invoke(string $name): Generator
     {
-        /** @var Greeting */
+        if (self::$nested_levels++ > 100) {
+            return;
+        }
+
         $greeting = yield (new Task())
             ->setCallable($this->createGreeting)
             ->setArgs($name);
@@ -31,12 +35,10 @@ class GreetScheduled
         $greeting = yield (new Task())
             ->setCallable($this->purchase)
             ->setArgs($greeting)
-            ->setScheduledFor(
-                $greeting->getCreatedAt()->modify('+1 day')
-            );
+            ->setIsSecret(true);
 
-        return yield (new Task())
-            ->setCallable($this->sendGreeting)
-            ->setArgs($greeting);
+        yield (new Task())->setCallable($this->sendGreeting)->setArgs($greeting);
+
+        yield (new Task())->setCallable($this)->setArgs($name);
     }
 }

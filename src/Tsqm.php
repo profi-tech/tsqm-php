@@ -13,7 +13,8 @@ use Tsqm\Errors\InvalidGeneratorItem;
 use Tsqm\Errors\DeterminismViolation;
 use Tsqm\Errors\EnqueueFailed;
 use Tsqm\Errors\InvalidTask;
-use Tsqm\Errors\ToManyTasks;
+use Tsqm\Errors\NestingIsToDeep;
+use Tsqm\Errors\ToManyGeneratorTasks;
 use Tsqm\Errors\TsqmError;
 use Tsqm\Helpers\PdoHelper;
 use Tsqm\Helpers\UuidHelper;
@@ -23,8 +24,6 @@ use Tsqm\Queue\QueueInterface;
 
 class Tsqm
 {
-    private const GENERATOR_LIMIT = 1000;
-
     // Interval in seconds used for enuqueing tasks, because some message brokers could operate
     // at seconds resolution
     private const LEAP_INTERVAL = 1;
@@ -48,6 +47,15 @@ class Tsqm
 
     public function runTask(Task $task, bool $async = false): Task
     {
+        return $this->runTaskInternal($task, 0, $async);
+    }
+
+    private function runTaskInternal(Task $task, int $level, bool $async = false): Task
+    {
+        if ($level > $this->options->getMaxNestingLevel()) {
+            throw new NestingIsToDeep("Nesting is to deep " . $task->getRootId());
+        }
+
         $task = clone $task; // Make task immutable
 
         $this->log(
@@ -136,8 +144,8 @@ class Tsqm
                 $generated = 0;
                 $generator = $result;
                 while (true) {
-                    if ($generated++ >= self::GENERATOR_LIMIT) {
-                        throw new ToManyTasks("To many tasks in {$task->getId()} generator: $generated");
+                    if ($generated++ >= $this->options->getMaxGeneratorTasks()) {
+                        throw new ToManyGeneratorTasks("To many tasks in {$task->getId()} generator: $generated");
                     }
                     if ($generator->valid()) {
                         $generatedTask = $generator->current();
@@ -164,7 +172,7 @@ class Tsqm
                             next($startedChildTasks);
                         }
 
-                        $generatedTask = $this->runTask($generatedTask);
+                        $generatedTask = $this->runTaskInternal($generatedTask, $level + 1);
 
                         if ($generatedTask->isFinished()) {
                             if ($generatedTask->hasError()) {

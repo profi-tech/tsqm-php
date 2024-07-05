@@ -5,7 +5,6 @@ namespace Tsqm;
 use DateTime;
 use Exception;
 use JsonSerializable;
-use Throwable;
 use Tsqm\Errors\InvalidTask;
 use Tsqm\Helpers\SerializationHelper;
 use Tsqm\Helpers\UuidHelper;

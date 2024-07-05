@@ -2,8 +2,12 @@
 
 namespace Tests;
 
+use Examples\Greeter\Greet;
+use Examples\Greeter\GreetNested;
 use Examples\Greeter\SimpleGreetWithFail;
 use Examples\TsqmContainer;
+use Tsqm\Errors\ToManyGeneratorTasks;
+use Tsqm\Errors\NestingIsToDeep;
 use Tsqm\Options;
 use Tsqm\RetryPolicy;
 use Tsqm\Task;
@@ -55,5 +59,38 @@ class OptionsTest extends TestCase
         $this->assertNotNull($check_task2);
         $check_task21 = $tsqm2->getTask($task1->getId());
         $this->assertNull($check_task21);
+    }
+
+    public function testMaxNestedLevels(): void
+    {
+        $tsqm = new Tsqm(
+            $this->pdo,
+            (new Options())
+                ->setMaxNestingLevel(1)
+                ->setContainer(new TsqmContainer($this->psrContainer))
+        );
+
+        $greet = $this->psrContainer->get(GreetNested::class);
+        $task = (new Task())->setCallable($greet)->setArgs('John Doe');
+
+        $this->expectException(NestingIsToDeep::class);
+        $tsqm->runTask($task);
+    }
+
+    public function testMaxGeneratorTasks(): void
+    {
+        $tsqm = new Tsqm(
+            $this->pdo,
+            (new Options())
+                ->setMaxGeneratorTasks(1)
+                ->setContainer(new TsqmContainer($this->psrContainer))
+        );
+
+        $greet = $this->psrContainer->get(Greet::class);
+
+        $task = (new Task())->setCallable($greet)->setArgs('John Doe');
+
+        $this->expectException(ToManyGeneratorTasks::class);
+        $tsqm->runTask($task);
     }
 }
