@@ -3,15 +3,19 @@
 namespace Tests;
 
 use DateTime;
+use Examples\Greeter\CreateGreeting;
 use Examples\Greeter\Greet;
 use Examples\Greeter\GreeterError;
 use Examples\Greeter\GreetNested;
+use Examples\Greeter\GreetScheduled;
 use Examples\Greeter\GreetWith3PurchaseFailsAnd2Retries;
 use Examples\Greeter\GreetWith3PurchaseFailsAnd3Retries;
 use Examples\Greeter\GreetWithDeterministicArgsFailure;
 use Examples\Greeter\GreetWithDeterministicNameFailure;
 use Examples\Greeter\GreetWithDuplicatedTask;
 use Examples\Greeter\GreetWithFail;
+use Examples\Greeter\Purchase;
+use Examples\Greeter\SendGreeting;
 use Tsqm\Errors\DeterminismViolation;
 use Tsqm\Errors\DuplicatedTask;
 use Tsqm\RetryPolicy;
@@ -208,6 +212,24 @@ class TaskGeneratorFlowTest extends TestCase
         $this->assertEquals("Hello, John Doe!", $result[1]->getText());
         $this->assertTrue($result[1]->getSent());
         $this->assertTrue($result[1]->getPurchased());
+    }
+
+    public function testSheduledGenerator(): void
+    {
+        $greetScheduled = new GreetScheduled(
+            $this->psrContainer->get(CreateGreeting::class),
+            $this->psrContainer->get(Purchase::class),
+            $this->psrContainer->get(SendGreeting::class),
+        );
+
+        $task = (new Task())
+            ->setCallable($greetScheduled)
+            ->setArgs('John Doe');
+
+        $task = $this->tsqm->runTask($task);
+
+        $this->assertFalse($task->isFinished());
+        $this->assertNull($task->getResult());
     }
 
     public function testDuplicatedTasks(): void
