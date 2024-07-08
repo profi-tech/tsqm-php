@@ -184,6 +184,7 @@ class Tsqm
 
             return $task;
         } catch (TsqmError $e) {
+            $this->log(LogLevel::CRITICAL, $e->getMessage(), ['exception' => $e]);
             throw $e;
         } catch (Exception $e) {
             $task->setError($e);
@@ -286,31 +287,36 @@ class Tsqm
      */
     public function pollScheduledTasks(int $limit = 100, int $delay = 0, int $emptySleep = 10): void
     {
-        $this->log(LogLevel::INFO, "Start polling tasks");
-        $isListening = true;
-        $signalHandler = function ($signal) use (&$isListening) {
-            $this->log(LogLevel::NOTICE, "Signal $signal received, stop polling tasks");
-            $isListening = false;
-        };
-        pcntl_async_signals(true);
-        pcntl_signal(SIGTERM, $signalHandler);
-        pcntl_signal(SIGINT, $signalHandler);
-        pcntl_signal(SIGHUP, $signalHandler);
-        pcntl_signal(SIGQUIT, $signalHandler);
+        try {
+            $this->log(LogLevel::INFO, "Start polling tasks");
+            $isListening = true;
+            $signalHandler = function ($signal) use (&$isListening) {
+                $this->log(LogLevel::NOTICE, "Signal $signal received, stop polling tasks");
+                $isListening = false;
+            };
+            pcntl_async_signals(true);
+            pcntl_signal(SIGTERM, $signalHandler);
+            pcntl_signal(SIGINT, $signalHandler);
+            pcntl_signal(SIGHUP, $signalHandler);
+            pcntl_signal(SIGQUIT, $signalHandler);
 
-        while ($isListening) {
-            $now = (new DateTime())->modify("-$delay seconds");
-            $tasks = $this->getScheduledTasks($limit, $now);
-            if (count($tasks) > 0) {
-                foreach ($tasks as $task) {
-                    $this->runTask($task);
+            while ($isListening) {
+                $now = (new DateTime())->modify("-$delay seconds");
+                $tasks = $this->getScheduledTasks($limit, $now);
+                if (count($tasks) > 0) {
+                    foreach ($tasks as $task) {
+                        $this->runTask($task);
+                    }
+                } else {
+                    sleep($emptySleep);
                 }
-            } else {
-                sleep($emptySleep);
             }
-        }
 
-        $this->log(LogLevel::INFO, "Stop polling tasks");
+            $this->log(LogLevel::INFO, "Stop polling tasks");
+        } catch (Exception $e) {
+            $this->log(LogLevel::CRITICAL, $e->getMessage(), ['exception' => $e]);
+            throw new TsqmError("Failed to poll tasks", 0, $e);
+        }
     }
 
     /**
@@ -321,17 +327,22 @@ class Tsqm
      */
     public function listenQueuedTasks(string $taskName)
     {
-        $this->log(LogLevel::INFO, "Start listening queue for $taskName");
+        try {
+            $this->log(LogLevel::INFO, "Start listening queue for $taskName");
 
-        $callback = function (string $taskId): ?Task {
-            $task = $this->getTask($taskId);
-            if ($task) {
-                return $this->runTask($task);
-            }
-            return null;
-        };
-        $this->queue->listen($taskName, $callback);
-        $this->log(LogLevel::INFO, "Stop listening queue for $taskName");
+            $callback = function (string $taskId): ?Task {
+                $task = $this->getTask($taskId);
+                if ($task) {
+                    return $this->runTask($task);
+                }
+                return null;
+            };
+            $this->queue->listen($taskName, $callback);
+            $this->log(LogLevel::INFO, "Stop listening queue for $taskName");
+        } catch (Exception $e) {
+            $this->log(LogLevel::CRITICAL, $e->getMessage(), ['exception' => $e]);
+            throw new TsqmError("Failed to listen queue for $taskName", 0, $e);
+        }
     }
 
     private function enqueue(Task $task): void
