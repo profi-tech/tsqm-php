@@ -3,20 +3,21 @@
 namespace Tests;
 
 use DateTime;
+use DI\Container;
 use Examples\TsqmContainer;
 use Examples\Helpers\DbHelper;
 use Examples\PsrContainer;
 use PDO;
-use Psr\Container\ContainerInterface;
 use Tsqm\Helpers\UuidHelper;
 use Tsqm\Options;
+use Tsqm\Task;
 use Tsqm\Tsqm;
 
 class TestCase extends \PHPUnit\Framework\TestCase
 {
     protected PDO $pdo;
     protected DbHelper $dbHelper;
-    protected ContainerInterface $psrContainer;
+    protected Container $psrContainer;
 
     protected Tsqm $tsqm;
 
@@ -41,13 +42,20 @@ class TestCase extends \PHPUnit\Framework\TestCase
         ));
     }
 
-    public function assertDateEquals(DateTime $expected, DateTime $actual, int $deltaMs = 10): bool
-    {
-        $isEqual = abs((int)$expected->format('Uv') - (int)$actual->format('Uv')) <= $deltaMs;
-        if (!$isEqual) {
-            $this->fail("Failed asserting that two DateTime instances are equal with $deltaMs ms delta");
-        }
-        return $isEqual;
+    public function assertDateEquals(
+        DateTime $expected,
+        DateTime $actual,
+        int $deltaMs = 10,
+        string $message = ''
+    ): bool {
+        $diff = abs((int)$expected->format('Uv') - (int)$actual->format('Uv'));
+        $this->assertLessThanOrEqual(
+            $deltaMs,
+            $diff,
+            "Failed asserting that two DateTime instances are equal with $deltaMs ms delta."
+            . ($message ? " $message" : "")
+        );
+        return $diff <= $deltaMs;
     }
 
     public function assertUuid(string $uuid): bool
@@ -57,5 +65,13 @@ class TestCase extends \PHPUnit\Framework\TestCase
             $this->fail("Failed asserting that '$uuid' is a valid UUID");
         }
         return $isValid;
+    }
+
+    public function getLastTaskByParentId(string $parentId): ?Task
+    {
+        $res = $this->pdo->prepare("SELECT id FROM tsqm_tasks WHERE parent_id = :parent_id ORDER BY nid DESC LIMIT 1");
+        $res->execute(['parent_id' => UuidHelper::uuid2bin($parentId)]);
+        $taskId = UuidHelper::bin2uuid($res->fetchColumn());
+        return $this->tsqm->getTask($taskId);
     }
 }

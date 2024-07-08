@@ -13,6 +13,7 @@ use Tsqm\Errors\InvalidGeneratorItem;
 use Tsqm\Errors\DeterminismViolation;
 use Tsqm\Errors\EnqueueFailed;
 use Tsqm\Errors\InvalidTask;
+use Tsqm\Errors\InvalidWaitInterval;
 use Tsqm\Errors\NestingIsToDeep;
 use Tsqm\Errors\ToManyGeneratorTasks;
 use Tsqm\Errors\TsqmError;
@@ -94,8 +95,21 @@ class Tsqm
             }
 
             $task->setCreatedAt(new DateTime());
+
             if ($task->isNullScheduledFor()) {
-                $task->setScheduledFor($task->getCreatedAt());
+                if (!$task->isNullWaitInterval()) {
+                    $lastFinishedAt = $this->repository->getLastFinishedAt($task->getRootId());
+                    if (is_null($lastFinishedAt)) {
+                        $lastFinishedAt = new DateTime();
+                    }
+                    $scheduledFor = $lastFinishedAt->modify($task->getWaitInterval());
+                    if ($scheduledFor === false) {
+                        throw new InvalidWaitInterval("Invalid wait interval", 1720430537);
+                    }
+                    $task->setScheduledFor($scheduledFor);
+                } else {
+                    $task->setScheduledFor($task->getCreatedAt());
+                }
             }
 
             try {

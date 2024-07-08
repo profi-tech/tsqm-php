@@ -2,6 +2,7 @@
 
 namespace Examples;
 
+use DI\Container;
 use DI\ContainerBuilder;
 use Examples\Commands\HelloWorldCommand;
 use Examples\Commands\HelloWorldSimpleCommand;
@@ -19,7 +20,7 @@ use Tsqm\Tsqm;
 
 class PsrContainer
 {
-    public static function build(): ContainerInterface
+    public static function build(): Container
     {
         return (new ContainerBuilder())
             ->addDefinitions([
