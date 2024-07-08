@@ -2,6 +2,7 @@
 
 namespace Examples\Greeter;
 
+use Exception;
 use Generator;
 use Tsqm\Task;
 
@@ -22,9 +23,12 @@ class RecursiveGreet
         $this->sendGreeting = $sendGreeting;
     }
 
-    public function __invoke(string $name): Generator
+    public function __invoke(string $name, int $limit, bool $throwError = false): Generator
     {
-        if (self::$nested_levels++ > 100) {
+        if (self::$nested_levels++ > $limit) {
+            if ($throwError) {
+                throw new Exception('Limit reached');
+            }
             return;
         }
 
@@ -39,6 +43,6 @@ class RecursiveGreet
 
         yield (new Task())->setCallable($this->sendGreeting)->setArgs($greeting);
 
-        yield (new Task())->setCallable($this)->setArgs($name);
+        yield (new Task())->setCallable($this)->setArgs($name, $limit, $throwError);
     }
 }

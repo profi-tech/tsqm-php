@@ -277,7 +277,7 @@ class TaskGeneratorFlowTest extends TestCase
         $recusiveGreet = $this->psrContainer->get(RecursiveGreet::class);
         $task = (new Task())
             ->setCallable($recusiveGreet)
-            ->setArgs('John Doe');
+            ->setArgs('John Doe', 100);
 
         $this->expectException(NestingIsToDeep::class);
         $this->tsqm->runTask($task);
