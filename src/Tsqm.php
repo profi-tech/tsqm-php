@@ -250,8 +250,9 @@ class Tsqm
         }
 
         try {
-            $this->log(LogLevel::INFO, "Create {$task->getLogId()}", ['task' => $task]);
-            return $this->repository->createTask($task);
+            $task = $this->repository->createTask($task);
+            $this->log(LogLevel::INFO, "Created {$task->getLogId()}", ['task' => $task]);
+            return $task;
         } catch (Exception $e) {
             if (PdoHelper::isIntegrityConstraintViolation($e)) {
                 throw new DuplicatedTask("Task {$task->getId()} already started", 0, $e);
@@ -384,7 +385,7 @@ class Tsqm
             }
             $this->logger->log($level, $message, $context);
         } catch (Exception $e) {
-            throw new TsqmError("Failed to log message", 0, $e);
+            trigger_error("Failed to log message: " . $e->getMessage(), E_USER_WARNING);
         }
     }
 }
