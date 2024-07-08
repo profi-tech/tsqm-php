@@ -66,7 +66,7 @@ class Tsqm
         );
 
         if ($task->isFinished()) {
-            $this->log(LogLevel::DEBUG, "Finish with cache {$task->getLogId()}", ['task' => $task]);
+            $this->log(LogLevel::DEBUG, "Finish from cache {$task->getLogId()}", ['task' => $task]);
             return $task;
         }
 
@@ -113,7 +113,7 @@ class Tsqm
 
                 $this->log(
                     LogLevel::DEBUG,
-                    "Start generator {$task->getLogId()}",
+                    "Generate {$task->getLogId()}",
                     ['task' => $task]
                 );
 
@@ -160,11 +160,6 @@ class Tsqm
                             return $task;
                         }
                     } else {
-                        $this->log(
-                            LogLevel::DEBUG,
-                            "Finish generator {$task->getLogId()}",
-                            ['task' => $task]
-                        );
                         $result = $generator->getReturn();
                         break;
                     }
@@ -251,7 +246,7 @@ class Tsqm
 
         try {
             $task = $this->repository->createTask($task);
-            $this->log(LogLevel::INFO, "Created {$task->getLogId()}", ['task' => $task]);
+            $this->log(LogLevel::INFO, "Save {$task->getLogId()}", ['task' => $task]);
             return $task;
         } catch (Exception $e) {
             if (PdoHelper::isIntegrityConstraintViolation($e)) {
