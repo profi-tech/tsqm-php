@@ -44,11 +44,11 @@
         "lint-fix": "./vendor/bin/phpcbf --standard=PSR12 ./src ./tests ./examples",
         "hooks": "ln -fs ../../scripts/hooks/pre-commit .git/hooks/pre-commit",
         "analyse": "./vendor/bin/phpstan analyse --level=6 ./src ./tests ./examples",
-        "reset-db": "php examples/app.php reset:db",
-        "hello-world": "php examples/app.php example:hello-world",
-        "hello-world-simple": "php examples/app.php example:hello-world-simple",
-        "list-scheduled": "php examples/app.php list:scheduled",
-        "poll-scheduled": "php examples/app.php poll:scheduled",
-        "run-task": "php examples/app.php run:task"
+        "example:reset-db": "php examples/app.php reset:db",
+        "example:hello-world": "php examples/app.php example:hello-world",
+        "example:hello-world-simple": "php examples/app.php example:hello-world-simple",
+        "example:list-scheduled": "php examples/app.php list:scheduled",
+        "example:poll-scheduled": "php examples/app.php poll:scheduled",
+        "example:run-task": "php examples/app.php run:task"
     }
 }

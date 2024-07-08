@@ -13,6 +13,7 @@ use Tsqm\Errors\InvalidGeneratorItem;
 use Tsqm\Errors\DeterminismViolation;
 use Tsqm\Errors\EnqueueFailed;
 use Tsqm\Errors\InvalidTask;
+use Tsqm\Errors\InvalidWaitInterval;
 use Tsqm\Errors\NestingIsToDeep;
 use Tsqm\Errors\ToManyGeneratorTasks;
 use Tsqm\Errors\TsqmError;
@@ -82,32 +83,7 @@ class Tsqm
         }
 
         if ($task->isNullCreatedAt()) {
-            if ($task->isNullRoot()) {
-                // For root tasks we generate random task id
-                $taskId = UuidHelper::random();
-                $task->setId($taskId);
-                $task->setRootId($task->getId());
-            } else {
-                // For child tasks id is derivative from the task args to garantee uniqueness among childs
-                $taskId = $task->getDeterminedUuid();
-                $task->setId($taskId);
-            }
-
-            $task->setCreatedAt(new DateTime());
-            if ($task->isNullScheduledFor()) {
-                $task->setScheduledFor($task->getCreatedAt());
-            }
-
-            try {
-                $this->log(LogLevel::INFO, "Create {$task->getLogId()}", ['task' => $task]);
-                $task = $this->repository->createTask($task);
-            } catch (Exception $e) {
-                if (PdoHelper::isIntegrityConstraintViolation($e)) {
-                    throw new DuplicatedTask("Task {$task->getId()} already started", 0, $e);
-                } else {
-                    throw $e;
-                }
-            }
+            $task = $this->createTask($task);
         }
 
         if (!$this->options->isSyncRunsForced()) {
@@ -241,6 +217,51 @@ class Tsqm
         }
     }
 
+    private function createTask(Task $task): Task
+    {
+        if ($task->isNullRoot()) {
+            // For root tasks we generate random task id
+            $taskId = UuidHelper::random();
+            $task->setId($taskId);
+            $task->setRootId($task->getId());
+        } else {
+            // For child tasks id is derivative from the task args to garantee uniqueness among childs
+            $taskId = $task->getDeterminedUuid();
+            $task->setId($taskId);
+        }
+
+        $task->setCreatedAt(new DateTime());
+
+        // Calculating scheduledFor if not set
+        if ($task->isNullScheduledFor()) {
+            if (!$task->isNullWaitInterval()) {
+                $lastFinishedAt = $this->repository->getLastFinishedAt($task->getRootId());
+                if (is_null($lastFinishedAt)) {
+                    $lastFinishedAt = new DateTime();
+                }
+                $scheduledFor = $lastFinishedAt->modify($task->getWaitInterval());
+                if ($scheduledFor === false) {
+                    throw new InvalidWaitInterval("Invalid wait interval", 1720430537);
+                }
+                $task->setScheduledFor($scheduledFor);
+            } else {
+                $task->setScheduledFor($task->getCreatedAt());
+            }
+        }
+
+        try {
+            $task = $this->repository->createTask($task);
+            $this->log(LogLevel::INFO, "Created {$task->getLogId()}", ['task' => $task]);
+            return $task;
+        } catch (Exception $e) {
+            if (PdoHelper::isIntegrityConstraintViolation($e)) {
+                throw new DuplicatedTask("Task {$task->getId()} already started", 0, $e);
+            } else {
+                throw $e;
+            }
+        }
+    }
+
     public function getTask(string $id): ?Task
     {
         $task = $this->repository->getTask($id);
@@ -364,7 +385,7 @@ class Tsqm
             }
             $this->logger->log($level, $message, $context);
         } catch (Exception $e) {
-            throw new TsqmError("Failed to log message", 0, $e);
+            trigger_error("Failed to log message: " . $e->getMessage(), E_USER_WARNING);
         }
     }
 }

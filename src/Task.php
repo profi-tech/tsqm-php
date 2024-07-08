@@ -17,6 +17,7 @@ class Task implements JsonSerializable
     private ?string $root_id = null;
     private ?DateTime $createdAt = null;
     private ?DateTime $scheduledFor = null;
+    private ?string $waitInterval = null;
     private ?DateTime $startedAt = null;
     private ?DateTime $finishedAt = null;
     private ?string $name = null;
@@ -150,6 +151,22 @@ class Task implements JsonSerializable
             throw new InvalidTask("Task scheduled for is required");
         }
         return $this->scheduledFor;
+    }
+
+    public function setWaitInterval(string $waitInterval): self
+    {
+        $this->waitInterval = $waitInterval;
+        return $this;
+    }
+
+    public function isNullWaitInterval(): bool
+    {
+        return is_null($this->waitInterval);
+    }
+
+    public function getWaitInterval(): ?string
+    {
+        return $this->waitInterval;
     }
 
     public function setStartedAt(?DateTime $startedAt): self

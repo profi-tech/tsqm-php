@@ -221,6 +221,33 @@ class TaskRepository
         }
     }
 
+    public function getLastFinishedAt(string $rootId): ?DateTime
+    {
+        try {
+            $res = $this->pdo->prepare("
+                SELECT finished_at
+                FROM $this->table
+                WHERE root_id = :root_id
+                  AND finished_at IS NOT NULL
+                ORDER BY nid DESC
+                LIMIT 1
+            ");
+            if (!$res) {
+                throw new Exception(PdoHelper::formatErrorInfo($this->pdo->errorInfo()));
+            }
+            $res->execute([
+                'root_id' => UuidHelper::uuid2bin($rootId)
+            ]);
+            $row = $res->fetch(PDO::FETCH_ASSOC);
+            if (!$row || is_null($row['finished_at'])) {
+                return null;
+            }
+            return new DateTime($row['finished_at']);
+        } catch (Exception $e) {
+            throw new RepositoryError("Failed to get last finished at: " . $e->getMessage(), 0, $e);
+        }
+    }
+
     public function deleteTask(string $id): void
     {
         try {

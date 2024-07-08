@@ -50,6 +50,9 @@ class GreetWithRandomFail
             return false;
         }
 
-        return yield (new Task())->setCallable($this->sendGreeting)->setArgs($greeting);
+        return yield (new Task())
+            ->setCallable($this->sendGreeting)
+            ->setArgs($greeting)
+            ->setWaitInterval('5 second');
     }
 }

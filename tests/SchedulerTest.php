@@ -2,12 +2,14 @@
 
 namespace Tests;
 
+use Closure;
 use DateTime;
 use Examples\Greeter\GreetWithPurchaseFailAndRetryInterval;
 use Examples\Greeter\SimpleGreet;
 use Examples\Greeter\SimpleGreetWith3Fails;
 use Examples\Greeter\SimpleGreetWithFail;
 use Examples\TsqmContainer;
+use Generator;
 use Tsqm\Options;
 use Tsqm\Task;
 use Tsqm\RetryPolicy;
@@ -144,7 +146,7 @@ class SchedulerTest extends TestCase
         $this->assertCount(3, $scheduledTasks);
         $this->assertEquals(
             [$task1->getId(), $task2->getId(), $task3->getId()],
-            array_map(fn(Task $task) => $task->getId(), $scheduledTasks)
+            array_map(fn (Task $task) => $task->getId(), $scheduledTasks)
         );
     }
 
@@ -180,7 +182,7 @@ class SchedulerTest extends TestCase
         $this->assertCount(2, $scheduledTasks);
         $this->assertEquals(
             [$task1->getId(), $task2->getId()],
-            array_map(fn(Task $task) => $task->getId(), $scheduledTasks)
+            array_map(fn (Task $task) => $task->getId(), $scheduledTasks)
         );
     }
 
@@ -197,5 +199,49 @@ class SchedulerTest extends TestCase
         $tasks = $this->tsqm->getScheduledTasks();
         // Tasks must be empty becasue inner failed purchase was scheduled for the future interval
         $this->assertCount(0, $tasks);
+    }
+
+    public function testWaitInterval(): void
+    {
+        $simpleGreet = $this->psrContainer->get(SimpleGreet::class);
+
+        $cases = [
+            '10 second' => (new DateTime())->modify('+10 second'),
+            '+10 second' => (new DateTime())->modify('+10 second'),
+            '-10 second' => (new DateTime())->modify('-10 second'),
+            '1 day' => (new DateTime())->modify('+1 day'),
+        ];
+
+        foreach ($cases as $waitInterval => $expectedScheduledFor) {
+            $task = (new Task())
+                ->setCallable($simpleGreet)
+                ->setArgs('John Doe')
+                ->setWaitInterval($waitInterval);
+
+            $task = $this->tsqm->runTask($task);
+            $this->assertDateEquals($expectedScheduledFor, $task->getScheduledFor(), 50);
+        }
+    }
+
+    public function testWaitIntervalGenerator(): void
+    {
+        $simpleGreet = $this->psrContainer->get(SimpleGreet::class);
+
+        $generator = function () use ($simpleGreet): Generator {
+            yield (new Task())->setCallable($simpleGreet)->setArgs('John Doe 1');
+            yield (new Task())->setCallable($simpleGreet)->setArgs('John Doe 2')->setWaitInterval('1 day');
+            yield (new Task())->setCallable($simpleGreet)->setArgs('John Doe 3');
+        };
+        $this->psrContainer->set(Closure::class, fn() => $generator);
+        $task = $this->tsqm->runTask(
+            (new Task())->setCallable($generator)
+        );
+
+        $this->assertFalse($task->isFinished());
+
+        $lastTask = $this->getLastTaskByParentId($task->getId());
+        $this->assertNotNull($lastTask);
+        $this->assertFalse($lastTask->isFinished());
+        $this->assertDateEquals((new DateTime())->modify('+1 day'), $lastTask->getScheduledFor(), 50);
     }
 }
