@@ -83,45 +83,7 @@ class Tsqm
         }
 
         if ($task->isNullCreatedAt()) {
-            if ($task->isNullRoot()) {
-                // For root tasks we generate random task id
-                $taskId = UuidHelper::random();
-                $task->setId($taskId);
-                $task->setRootId($task->getId());
-            } else {
-                // For child tasks id is derivative from the task args to garantee uniqueness among childs
-                $taskId = $task->getDeterminedUuid();
-                $task->setId($taskId);
-            }
-
-            $task->setCreatedAt(new DateTime());
-
-            if ($task->isNullScheduledFor()) {
-                if (!$task->isNullWaitInterval()) {
-                    $lastFinishedAt = $this->repository->getLastFinishedAt($task->getRootId());
-                    if (is_null($lastFinishedAt)) {
-                        $lastFinishedAt = new DateTime();
-                    }
-                    $scheduledFor = $lastFinishedAt->modify($task->getWaitInterval());
-                    if ($scheduledFor === false) {
-                        throw new InvalidWaitInterval("Invalid wait interval", 1720430537);
-                    }
-                    $task->setScheduledFor($scheduledFor);
-                } else {
-                    $task->setScheduledFor($task->getCreatedAt());
-                }
-            }
-
-            try {
-                $this->log(LogLevel::INFO, "Create {$task->getLogId()}", ['task' => $task]);
-                $task = $this->repository->createTask($task);
-            } catch (Exception $e) {
-                if (PdoHelper::isIntegrityConstraintViolation($e)) {
-                    throw new DuplicatedTask("Task {$task->getId()} already started", 0, $e);
-                } else {
-                    throw $e;
-                }
-            }
+            $task = $this->createTask($task);
         }
 
         if (!$this->options->isSyncRunsForced()) {
@@ -252,6 +214,50 @@ class Tsqm
             }
 
             return $task;
+        }
+    }
+
+    private function createTask(Task $task): Task
+    {
+        if ($task->isNullRoot()) {
+            // For root tasks we generate random task id
+            $taskId = UuidHelper::random();
+            $task->setId($taskId);
+            $task->setRootId($task->getId());
+        } else {
+            // For child tasks id is derivative from the task args to garantee uniqueness among childs
+            $taskId = $task->getDeterminedUuid();
+            $task->setId($taskId);
+        }
+
+        $task->setCreatedAt(new DateTime());
+
+        // Calculating scheduledFor if not set
+        if ($task->isNullScheduledFor()) {
+            if (!$task->isNullWaitInterval()) {
+                $lastFinishedAt = $this->repository->getLastFinishedAt($task->getRootId());
+                if (is_null($lastFinishedAt)) {
+                    $lastFinishedAt = new DateTime();
+                }
+                $scheduledFor = $lastFinishedAt->modify($task->getWaitInterval());
+                if ($scheduledFor === false) {
+                    throw new InvalidWaitInterval("Invalid wait interval", 1720430537);
+                }
+                $task->setScheduledFor($scheduledFor);
+            } else {
+                $task->setScheduledFor($task->getCreatedAt());
+            }
+        }
+
+        try {
+            $this->log(LogLevel::INFO, "Create {$task->getLogId()}", ['task' => $task]);
+            return $this->repository->createTask($task);
+        } catch (Exception $e) {
+            if (PdoHelper::isIntegrityConstraintViolation($e)) {
+                throw new DuplicatedTask("Task {$task->getId()} already started", 0, $e);
+            } else {
+                throw $e;
+            }
         }
     }
 
