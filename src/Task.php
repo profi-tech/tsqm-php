@@ -175,6 +175,11 @@ class Task implements JsonSerializable
         return $this;
     }
 
+    public function isStarted(): bool
+    {
+        return !is_null($this->startedAt);
+    }
+
     public function getStartedAt(): ?DateTime
     {
         return $this->startedAt;

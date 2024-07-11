@@ -94,8 +94,8 @@ class Tsqm
             }
         }
 
-        $startedBefore = !is_null($task->getStartedAt());
-        if (!$startedBefore) {
+        $isStarted = $task->isStarted();
+        if (!$isStarted) {
             $task->setStartedAt(new DateTime());
             $this->repository->updateTask($task);
         }
@@ -170,7 +170,7 @@ class Tsqm
                 ->setFinishedAt(new DateTime())
                 ->setResult($result)
                 ->setError(null);
-            if ($startedBefore) {
+            if ($isStarted) {
                 $task->incRetried();
             }
 
@@ -188,7 +188,7 @@ class Tsqm
             throw $e;
         } catch (Exception $e) {
             $task->setError($e);
-            if ($startedBefore) {
+            if ($isStarted) {
                 $task->incRetried();
             }
 
