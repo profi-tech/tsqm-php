@@ -349,7 +349,7 @@ class Tsqm
     {
         try {
             if (!$task->isScheduled()) {
-                throw new EnqueueFailed("Task scheduled for is not set");
+                throw new EnqueueFailed("Task is not sheduled");
             }
 
             // Some queue implementations could operate at seconds resolution, but scheduledFor stored in microseconds.
