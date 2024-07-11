@@ -61,7 +61,7 @@ class Tsqm
 
         $this->log(
             !$task->isFinished() ? LogLevel::INFO : LogLevel::DEBUG,
-            "Start {$task->getLogId()}",
+            (!$task->isCreated() ? "Start" : "Restart") . " {$task->getLogId()}",
             ['task' => $task]
         );
 
@@ -247,7 +247,7 @@ class Tsqm
 
         try {
             $task = $this->repository->createTask($task);
-            $this->log(LogLevel::INFO, "Save {$task->getLogId()}", ['task' => $task]);
+            $this->log(LogLevel::INFO, "Create {$task->getLogId()}", ['task' => $task]);
             return $task;
         } catch (Exception $e) {
             if (PdoHelper::isIntegrityConstraintViolation($e)) {
