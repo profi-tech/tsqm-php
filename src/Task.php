@@ -121,14 +121,14 @@ class Task implements JsonSerializable
         return $this;
     }
 
-    public function wasCreated(): bool
+    public function isCreated(): bool
     {
         return !is_null($this->createdAt);
     }
 
     public function getCreatedAt(): ?DateTime
     {
-        if (!$this->wasCreated()) {
+        if (!$this->isCreated()) {
             throw new InvalidTask("Task was not created yet");
         }
         return $this->createdAt;
