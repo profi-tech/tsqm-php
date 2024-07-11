@@ -120,16 +120,15 @@ class Task implements JsonSerializable
         $this->createdAt = $createdAt;
         return $this;
     }
-
-    public function isNullCreatedAt(): bool
-    {
-        return is_null($this->createdAt);
+    
+    public function wasCreated(): bool {
+        return !is_null($this->createdAt);
     }
 
     public function getCreatedAt(): ?DateTime
     {
-        if ($this->isNullCreatedAt()) {
-            throw new InvalidTask("Task created at is required");
+        if (!$this->wasCreated()) {
+            throw new InvalidTask("Task was not created yet");
         }
         return $this->createdAt;
     }

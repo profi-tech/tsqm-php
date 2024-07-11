@@ -82,7 +82,7 @@ class Tsqm
             $callable = $this->container->get($task->getName());
         }
 
-        if ($task->isNullCreatedAt()) {
+        if (!$task->wasCreated()) {
             $task = $this->createTask($task);
         }
 
