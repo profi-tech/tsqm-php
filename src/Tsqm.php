@@ -61,7 +61,7 @@ class Tsqm
 
         $this->log(
             !$task->isFinished() ? LogLevel::INFO : LogLevel::DEBUG,
-            "Start {$task->getLogId()}",
+            (!$task->isCreated() ? "Start" : "Restart") . " {$task->getLogId()}",
             ['task' => $task]
         );
 
@@ -82,7 +82,7 @@ class Tsqm
             $callable = $this->container->get($task->getName());
         }
 
-        if ($task->isNullCreatedAt()) {
+        if (!$task->isCreated()) {
             $task = $this->createTask($task);
         }
 
@@ -94,8 +94,8 @@ class Tsqm
             }
         }
 
-        $startedBefore = !is_null($task->getStartedAt());
-        if (!$startedBefore) {
+        $isStarted = $task->isStarted();
+        if (!$isStarted) {
             $task->setStartedAt(new DateTime());
             $this->repository->updateTask($task);
         }
@@ -170,7 +170,7 @@ class Tsqm
                 ->setFinishedAt(new DateTime())
                 ->setResult($result)
                 ->setError(null);
-            if ($startedBefore) {
+            if ($isStarted) {
                 $task->incRetried();
             }
 
@@ -188,7 +188,7 @@ class Tsqm
             throw $e;
         } catch (Exception $e) {
             $task->setError($e);
-            if ($startedBefore) {
+            if ($isStarted) {
                 $task->incRetried();
             }
 
@@ -229,7 +229,7 @@ class Tsqm
         $task->setCreatedAt(new DateTime());
 
         // Calculating scheduledFor if not set
-        if ($task->isNullScheduledFor()) {
+        if (!$task->isScheduled()) {
             if (!$task->isNullWaitInterval()) {
                 $lastFinishedAt = $this->repository->getLastFinishedAt($task->getRootId());
                 if (is_null($lastFinishedAt)) {
@@ -247,7 +247,7 @@ class Tsqm
 
         try {
             $task = $this->repository->createTask($task);
-            $this->log(LogLevel::INFO, "Save {$task->getLogId()}", ['task' => $task]);
+            $this->log(LogLevel::INFO, "Create {$task->getLogId()}", ['task' => $task]);
             return $task;
         } catch (Exception $e) {
             if (PdoHelper::isIntegrityConstraintViolation($e)) {
@@ -348,8 +348,8 @@ class Tsqm
     private function enqueue(Task $task): void
     {
         try {
-            if ($task->isNullScheduledFor()) {
-                throw new EnqueueFailed("Task scheduled for is not set");
+            if (!$task->isScheduled()) {
+                throw new EnqueueFailed("Task is not sheduled");
             }
 
             // Some queue implementations could operate at seconds resolution, but scheduledFor stored in microseconds.

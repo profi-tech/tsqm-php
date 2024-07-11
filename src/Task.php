@@ -121,15 +121,15 @@ class Task implements JsonSerializable
         return $this;
     }
 
-    public function isNullCreatedAt(): bool
+    public function isCreated(): bool
     {
-        return is_null($this->createdAt);
+        return !is_null($this->createdAt);
     }
 
     public function getCreatedAt(): ?DateTime
     {
-        if ($this->isNullCreatedAt()) {
-            throw new InvalidTask("Task created at is required");
+        if (!$this->isCreated()) {
+            throw new InvalidTask("Task was not created yet");
         }
         return $this->createdAt;
     }
@@ -140,15 +140,15 @@ class Task implements JsonSerializable
         return $this;
     }
 
-    public function isNullScheduledFor(): bool
+    public function isScheduled(): bool
     {
-        return is_null($this->scheduledFor);
+        return !is_null($this->scheduledFor);
     }
 
     public function getScheduledFor(): ?DateTime
     {
-        if ($this->isNullScheduledFor()) {
-            throw new InvalidTask("Task scheduled for is required");
+        if (!$this->isScheduled()) {
+            throw new InvalidTask("Task was not scheduled yet");
         }
         return $this->scheduledFor;
     }
@@ -173,6 +173,11 @@ class Task implements JsonSerializable
     {
         $this->startedAt = $startedAt;
         return $this;
+    }
+
+    public function isStarted(): bool
+    {
+        return !is_null($this->startedAt);
     }
 
     public function getStartedAt(): ?DateTime
