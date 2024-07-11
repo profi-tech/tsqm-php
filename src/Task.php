@@ -140,15 +140,15 @@ class Task implements JsonSerializable
         return $this;
     }
 
-    public function isNullScheduledFor(): bool
+    public function isScheduled(): bool
     {
-        return is_null($this->scheduledFor);
+        return !is_null($this->scheduledFor);
     }
 
     public function getScheduledFor(): ?DateTime
     {
-        if ($this->isNullScheduledFor()) {
-            throw new InvalidTask("Task scheduled for is required");
+        if (!$this->isScheduled()) {
+            throw new InvalidTask("Task was not scheduled yet");
         }
         return $this->scheduledFor;
     }

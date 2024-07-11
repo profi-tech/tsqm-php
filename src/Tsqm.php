@@ -229,7 +229,7 @@ class Tsqm
         $task->setCreatedAt(new DateTime());
 
         // Calculating scheduledFor if not set
-        if ($task->isNullScheduledFor()) {
+        if (!$task->isScheduled()) {
             if (!$task->isNullWaitInterval()) {
                 $lastFinishedAt = $this->repository->getLastFinishedAt($task->getRootId());
                 if (is_null($lastFinishedAt)) {
@@ -348,7 +348,7 @@ class Tsqm
     private function enqueue(Task $task): void
     {
         try {
-            if ($task->isNullScheduledFor()) {
+            if (!$task->isScheduled()) {
                 throw new EnqueueFailed("Task scheduled for is not set");
             }
 
