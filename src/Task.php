@@ -120,8 +120,9 @@ class Task implements JsonSerializable
         $this->createdAt = $createdAt;
         return $this;
     }
-    
-    public function wasCreated(): bool {
+
+    public function wasCreated(): bool
+    {
         return !is_null($this->createdAt);
     }
 
