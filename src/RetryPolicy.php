@@ -33,13 +33,23 @@ class RetryPolicy implements JsonSerializable
 
     /**
      * Set the minimum time between retries in milliseconds
-     * @param int $minInterval
+     * @param int|string $minInterval — miliseconds or a string that can be parsed by DateTime::modify
      * @return RetryPolicy
      */
-    public function setMinInterval(int $minInterval): self
+    public function setMinInterval($minInterval): self
     {
-        $this->minInterval = $minInterval;
-        return $this;
+        if (is_string($minInterval)) {
+            $ref = microtime(true);
+            $mod = (float)DateTime::createFromFormat('U.u', "$ref")->modify($minInterval)->format('U.u');
+            $this->minInterval = (int)round(($mod - $ref) * 1000);
+
+            return $this;
+        } elseif (is_int($minInterval)) {
+            $this->minInterval = $minInterval;
+            return $this;
+        } else {
+            throw new InvalidRetryPolicy('Invalid minInterval value');
+        }
     }
 
     public function getMinInterval(): int
