@@ -16,6 +16,40 @@ class RetryPolicyTest extends TestCase
         $this->assertEquals(1.0, $retryPolicy->getBackoffFactor());
     }
 
+    public function testMinInterval(): void
+    {
+        $table = [
+            1 => 1,
+            1000 => 1000,
+            -1 => -1,
+            -1000 => -1000,
+            '1 millisecond' => 1,
+            '1 second' => 1000,
+            '1 minute' => 60000,
+            '1 hour' => 3600000,
+            '1 day' => 86400000,
+            '365 day' => 31536000000,
+            '+1 millisecond' => 1,
+            '+1 second' => 1000,
+            '+1 minute' => 60000,
+            '+1 hour' => 3600000,
+            '+1 day' => 86400000,
+            '+365 day' => 31536000000,
+            '-1 millisecond' => -1,
+            '-1 second' => -1000,
+            '-1 minute' => -60000,
+            '-1 hour' => -3600000,
+            '-1 day' => -86400000,
+            '-365 day' => -31536000000,
+        ];
+
+        foreach ($table as $interval => $expected) {
+            $retryPolicy = new RetryPolicy();
+            $retryPolicy->setMinInterval($interval);
+            $this->assertEquals($expected, $retryPolicy->getMinInterval(), $interval);
+        }
+    }
+
     public function testGetRetryAt(): void
     {
         $retryPolicy = new RetryPolicy();
