@@ -23,7 +23,7 @@ use Tsqm\Logger\LoggerInterface;
 use Tsqm\Logger\LogLevel;
 use Tsqm\Queue\QueueInterface;
 
-class Tsqm
+class Tsqm implements TsqmInterface
 {
     // Interval in seconds used for enuqueing tasks, because some message brokers could operate
     // at seconds resolution
@@ -325,7 +325,7 @@ class Tsqm
      * @return void
      * @throws TsqmError
      */
-    public function listenQueuedTasks(string $taskName)
+    public function listenQueuedTasks(string $taskName): void
     {
         try {
             $this->log(LogLevel::INFO, "Start listening queue for $taskName");
