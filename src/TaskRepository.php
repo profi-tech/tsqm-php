@@ -309,13 +309,8 @@ class TaskRepository
             $task->setResult(SerializationHelper::unserialize($row['result']));
         }
         if (isset($row['error'])) {
-            $error = SerializationHelper::unserialize($row['error']);
-            $task->setError(
-                new $error['class'](
-                    $error['message'],
-                    intval($error['code']),
-                )
-            );
+            $error = SerializationHelper::unserializeError($row['error']);
+            $task->setError($error);
         }
         if (isset($row['retry_policy'])) {
             $retryPolicy = SerializationHelper::unserialize($row['retry_policy']);
@@ -353,11 +348,7 @@ class TaskRepository
             $row['result'] = SerializationHelper::serialize($row['result']);
         }
         if (isset($row['error']) && $row['error'] instanceof Exception) {
-            $row['error'] = SerializationHelper::serialize([
-                'class' => get_class($row['error']),
-                'message' => $row['error']->getMessage(),
-                'code' => intval($row['error']->getCode()),
-            ]);
+            $row['error'] = SerializationHelper::serializeError($row['error']);
         }
         if (isset($row['retry_policy'])) {
             if (!($row['retry_policy'] instanceof RetryPolicy)) {
