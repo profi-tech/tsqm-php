@@ -3,7 +3,10 @@
 namespace Tests;
 
 use DateTime;
+use Exception;
 use PDOException;
+use Tsqm\Errors\SerializationError;
+use Tsqm\Helpers\SerializationHelper;
 use Tsqm\Helpers\UuidHelper;
 use Tsqm\Task;
 use Tsqm\TaskRepository;
@@ -45,5 +48,54 @@ class SerializationTest extends TestCase
         }
 
         error_reporting($previousErrorReporting);
+    }
+
+    public function testSerializationHelperExceedsLimit(): void
+    {
+        $this->expectException(SerializationError::class);
+        $this->expectExceptionMessage("Serialized value is too large");
+
+        $largeArray = array_fill(0, 70000, 'a'); // Create an array that exceeds the 64KB limit
+        SerializationHelper::serialize($largeArray);
+    }
+
+    public function testSerializationHelperUpperBoundaryLimit(): void
+    {
+        $val = str_repeat('a', 65524); // String that is exactly at the 64KB limit in PHP serialization format
+        $serialized = SerializationHelper::serialize($val);
+        $this->assertNotEmpty($serialized);
+
+        $unserialized = SerializationHelper::unserialize($serialized);
+        $this->assertEquals($val, $unserialized);
+    }
+
+    public function testSerializationHelperExceptionWithLongStackTrace(): void
+    {
+        $recursiveFunction = function (int $depth) use (&$recursiveFunction): void {
+            if ($depth > 0) {
+                $recursiveFunction($depth - 1);
+                return;
+            }
+            throw new Exception("Test exception with long stack trace");
+        };
+
+        try {
+            $recursiveFunction(100);
+        } catch (Exception $e) {
+            $serialized = SerializationHelper::serializeError($e);
+            $unserialized = SerializationHelper::unserializeError($serialized);
+            $this->assertCount(64, $unserialized->getTrace(), "Stack trace length is not 64");
+        }
+    }
+
+    public function testSerializationHelperExceptionPreviousException(): void
+    {
+        $previousException = new Exception("Previous exception");
+        $exception = new Exception("Main exception", 0, $previousException);
+
+        $serialized = SerializationHelper::serializeError($exception);
+        $unserialized = SerializationHelper::unserializeError($serialized);
+
+        $this->assertNull($unserialized->getPrevious(), "Previous exception is not null after serialization");
     }
 }
