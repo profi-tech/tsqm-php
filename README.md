@@ -49,6 +49,22 @@ $tsqm = new Tsqm\Tsqm($pdo);
 ...
 ```
 
+You could tune TSQM engine by passing an instance of `Tsqm\Options` to the constructor:
+
+```php
+$tsqm = new Tsqm\Tsqm(
+  $pdo,
+  (new Tsqm\Options())
+    ->setTable("my_tsqm_table") // Name of the table where tasks are stored
+    ->setLogger(new MyLogger()) // PSR-3 compatible logger
+    ->setContainer(new MyContainer()) // DI container
+    ->setQueue(new MyQueue()) // Queue implementation
+    ->setForceSyncRuns(true) // Force synchronous runs for debugging and unit testing
+    ->setMaxNestingLevel(10) // Maximum number of nested transactions
+    ->setMaxGeneratorTasks(10) // Maximum number of tasks in a generator
+);
+```
+
 
 ## 4. Creating a task
 
@@ -57,12 +73,7 @@ To create tasks, you need to create a new `Task` object and set the necessary fi
 ```php
 $task = (new Tsqm\Task())
   ->setCallable("greet")
-  ->setArgs("John Doe")
-  ->setRetryPolicy(
-    (new Tsqm\RetryPolicyI())
-      ->setMaxRetries(10)
-      ->setMinInterval(1000)
-  )
+  ->setArgs("John Doe");
 ```
 The argument for `setCallable` could be:
 
@@ -72,8 +83,28 @@ The argument for `setCallable` could be:
 
 :warning: If you use callable objects, you need to set a DI container for the TSQM engine that implements `Tsqm\Container\ContainerInterface`. The callable object must be accessible in the container by its class name.
 
+Task supports the following options:
+- `setScheduledFor` — DateTime object with the scheduled execution time.
+- `setWaitInterval` — Time interval to wait before starting a task.
+- `setIsSecret` — if true, task args and results will be logged as secrets.
+- `setTrace` — trace object to trace task execution via logs.
+
+Also you could specify retry policy via `setRetryPolicy` and `RetryPolicy` object:
+- `setMaxRetries` — Maximum number of retries.
+- `setMinInterval` — Minimum interval between retries in milliseconds or a string that can be parsed by DateTime::modify().
+- `setBackoffFactor` — factor to multiply the interval between retries.
+- `setUseJitter` — if true, a random value will be added to the interval between retries.
+
+Exammple:
 
 ```php
+
+class Greeter {
+  public function __invoke(string $name): string {
+    return "Hello, $name!";
+  }
+}
+
 class MyContainer implements Tsqm\Container\ContainerInterface {
   ...
 }
@@ -83,6 +114,16 @@ $tsqm = new Tsqm\Tsqm(
   (new Tsqm\Options())
     ->setContainer(new MyContainer())
 );
+
+$task = (new Tsqm\Task())
+  ->setCallable(new Greeter())
+  ->setArgs("John Doe")
+  ->setRetryPolicy(
+    (new Tsqm\RetryPolicy())
+      ->setMaxRetries(3)
+      ->setMinInterval(5000)
+  );
+
 ...
 ```
 
@@ -111,7 +152,6 @@ A task does not complete if:
 
 - An error occurred and the task has a retry policy set.
 - The task has a future execution time set via the `setScheduleTime` option.
-
 
 Tasks that need to be retried can be run through the `pollScheduledTasks` method:
 
