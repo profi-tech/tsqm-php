@@ -332,9 +332,9 @@ class Task implements JsonSerializable
     }
 
     /**
-     * @return mixed
+     * @return array<string, mixed>
      */
-    public function jsonSerialize()
+    public function jsonSerialize(): array
     {
         $timestampFormat = "Y-m-d H:i:s.u";
 
