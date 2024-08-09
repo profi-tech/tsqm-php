@@ -127,9 +127,9 @@ class RetryPolicy implements JsonSerializable
     }
 
     /**
-     * @return mixed
+     * @return array<string, mixed>
      */
-    public function jsonSerialize()
+    public function jsonSerialize(): array
     {
         return [
             'maxRetries' => $this->getMaxRetries(),
