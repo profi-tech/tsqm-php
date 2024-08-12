@@ -40,7 +40,6 @@ class RetryPolicy implements JsonSerializable
     {
         if (is_string($minInterval)) {
             $nowMicrotime = explode(' ', microtime());
-
             $nowMicroseconds = floatval($nowMicrotime[0]) * 1000000;
             $nowSeconds = $nowMicrotime[1];
             $nowDt = DateTime::createFromFormat('U.u', "$nowSeconds.$nowMicroseconds");
