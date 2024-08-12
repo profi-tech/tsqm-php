@@ -39,9 +39,17 @@ class RetryPolicy implements JsonSerializable
     public function setMinInterval($minInterval): self
     {
         if (is_string($minInterval)) {
-            $ref = microtime(true);
-            $mod = (float)DateTime::createFromFormat('U.u', "$ref")->modify($minInterval)->format('U.u');
-            $this->minInterval = (int)round(($mod - $ref) * 1000);
+            $nowMicrotime = explode(' ', microtime());
+            $nowMicroseconds = floatval($nowMicrotime[0]) * 1000000;
+            $nowSeconds = $nowMicrotime[1];
+            $nowDt = DateTime::createFromFormat('U.u', "$nowSeconds.$nowMicroseconds");
+            if ($nowDt === false) {
+                throw new InvalidRetryPolicy("Invalid now value: $nowSeconds.$nowMicroseconds");
+            }
+
+            $now = (float)$nowDt->format('U.u');
+            $mod = (float)$nowDt->modify($minInterval)->format('U.u');
+            $this->minInterval = (int)round(($mod - $now) * 1000);
 
             return $this;
         } elseif (is_int($minInterval)) {
