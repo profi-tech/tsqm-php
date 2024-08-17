@@ -46,8 +46,8 @@ class QueueTest extends TestCase
 
         $this->queue->expects($this->once())->method('enqueue')->with(
             $task->getName(),
-            $this->callback(fn (string $taskId) => $this->assertUuid($taskId)),
-            $this->callback(fn (DateTime $scheduledFor) => $this->assertDateEquals(
+            $this->callback(fn(string $taskId) => $this->assertUuid($taskId)),
+            $this->callback(fn(DateTime $scheduledFor) => $this->assertDateEquals(
                 (new DateTime())->modify('+1 second'),
                 $scheduledFor,
                 50
@@ -68,9 +68,9 @@ class QueueTest extends TestCase
 
         $this->queue->expects($this->once())->method('enqueue')->with(
             $task->getName(),
-            $this->callback(fn (string $taskId) => $this->assertUuid($taskId)),
+            $this->callback(fn(string $taskId) => $this->assertUuid($taskId)),
             $this->callback(
-                fn (DateTime $actualScheduledFor) => $this->assertDateEquals(
+                fn(DateTime $actualScheduledFor) => $this->assertDateEquals(
                     $scheduledFor->modify('+1 second'),
                     $actualScheduledFor
                 )
@@ -98,7 +98,7 @@ class QueueTest extends TestCase
                 return true;
             }),
             $this->callback(
-                fn (DateTime $actualScheduledFor) => $this->assertDateEquals(
+                fn(DateTime $actualScheduledFor) => $this->assertDateEquals(
                     $scheduledFor->modify('+1 second'),
                     $actualScheduledFor
                 )
@@ -167,9 +167,9 @@ class QueueTest extends TestCase
 
         $this->queue->expects($this->once())->method('enqueue')->with(
             $task->getName(),
-            $this->callback(fn (string $taskId) => $this->assertUuid($taskId)),
+            $this->callback(fn(string $taskId) => $this->assertUuid($taskId)),
             $this->callback(
-                fn (DateTime $actualScheduledFor) => $this->assertDateEquals(
+                fn(DateTime $actualScheduledFor) => $this->assertDateEquals(
                     (new DateTime())->modify('+11 seconds'), // 10 seconds + leap second
                     $actualScheduledFor
                 )

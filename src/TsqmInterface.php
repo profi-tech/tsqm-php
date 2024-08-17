@@ -6,12 +6,12 @@ use DateTime;
 
 interface TsqmInterface
 {
-    public function runTask(Task $task, bool $async = false): Task;
+    public function runTask(Task $task, bool $async = false): PersistedTask;
 
-    public function getTask(string $id): ?Task;
+    public function getTask(string $id): ?PersistedTask;
 
     /**
-     * @return array<Task>
+     * @return array<PersistedTask>
      */
     public function getScheduledTasks(int $limit = 100, ?DateTime $now = null): array;
 

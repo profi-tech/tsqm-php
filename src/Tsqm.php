@@ -46,118 +46,135 @@ class Tsqm implements TsqmInterface
         $this->queue = $this->options->getQueue();
     }
 
-    public function runTask(Task $task, bool $async = false): Task
+    /**
+     * @param Task|PersistedTask $task
+     * @param bool $async — force async run
+     */
+    public function runTask($task, bool $async = false): PersistedTask
     {
-        return $this->runTaskInternal($task, 0, $async);
+        if ($task instanceof Task) {
+            $ptask = PersistedTask::fromTask($task);
+        } elseif ($task instanceof PersistedTask) {
+            $ptask = clone $task;
+        } else {
+            throw new InvalidTask("Invalid task type");
+        }
+
+        return $this->runTaskInternal($ptask, 0, $async);
     }
 
-    private function runTaskInternal(Task $task, int $level, bool $async = false): Task
+    private function runTaskInternal(PersistedTask $ptask, int $level, bool $async = false): PersistedTask
     {
         if ($level > $this->options->getMaxNestingLevel()) {
-            throw new NestingIsToDeep("Nesting is to deep " . $task->getRootId());
+            throw new NestingIsToDeep("Nesting is to deep " . $ptask->getRootId());
         }
-
-        $task = clone $task; // Make task immutable
 
         $this->log(
-            !$task->isFinished() ? LogLevel::INFO : LogLevel::DEBUG,
-            (!$task->isCreated() ? "Start" : "Restart") . " {$task->getLogId()}",
-            ['task' => $task]
+            !$ptask->isFinished() ? LogLevel::INFO : LogLevel::DEBUG,
+            (!$ptask->isCreated() ? "Start" : "Restart") . " {$ptask->getLogId()}",
+            ['task' => $ptask]
         );
 
-        if ($task->isFinished()) {
-            $this->log(LogLevel::DEBUG, "Finish from cache {$task->getLogId()}", ['task' => $task]);
-            return $task;
+        if ($ptask->isFinished()) {
+            $this->log(LogLevel::DEBUG, "Finish from cache {$ptask->getLogId()}", ['task' => $ptask]);
+            return $ptask;
         }
 
-        if (is_callable($task->getName())) {
-            $callable = $task->getName();
+        if (is_callable($ptask->getName())) {
+            $callable = $ptask->getName();
         } else {
             if ($this->container instanceof NullContainer) {
                 throw new InvalidTask("Container is not set");
             }
-            if (!$this->container->has($task->getName())) {
-                throw new InvalidTask($task->getName() . " not found in DI container");
+            if (!$this->container->has($ptask->getName())) {
+                throw new InvalidTask($ptask->getName() . " not found in DI container");
             }
-            $callable = $this->container->get($task->getName());
+            $callable = $this->container->get($ptask->getName());
         }
 
-        if (!$task->isCreated()) {
-            $task = $this->createTask($task);
+        if (!$ptask->isCreated()) {
+            $ptask = $this->createTask($ptask);
         }
 
         if (!$this->options->isSyncRunsForced()) {
-            if ($async || $task->getScheduledFor() > new DateTime()) {
-                $this->log(LogLevel::INFO, "Schedule {$task->getLogId()}", ['task' => $task]);
-                $this->enqueue($task);
-                return $task;
+            if ($async || $ptask->getScheduledFor() > new DateTime()) {
+                $this->log(LogLevel::INFO, "Schedule {$ptask->getLogId()}", ['task' => $ptask]);
+                $this->enqueue($ptask);
+                return $ptask;
             }
         }
 
-        $isStarted = $task->isStarted();
+        $isStarted = $ptask->isStarted();
         if (!$isStarted) {
-            $task->setStartedAt(new DateTime());
-            $this->repository->updateTask($task);
+            $ptask->setStartedAt(new DateTime());
+            $this->repository->updateTask($ptask);
         }
 
         try {
             $this->log(
                 LogLevel::INFO,
-                "Call {$task->getLogId()}",
-                ['task' => $task]
+                "Call {$ptask->getLogId()}",
+                ['task' => $ptask]
             );
-            $result = call_user_func($callable, ...$task->getArgs());
+            $result = call_user_func($callable, ...$ptask->getArgs());
 
             if ($result instanceof Generator) {
-                $startedChildTasks = $this->repository->getTasksByParentId($task->getId());
+                $startedChildPtasks = $this->repository->getTasksByParentId($ptask->getId());
 
                 $this->log(
                     LogLevel::DEBUG,
-                    "Generate {$task->getLogId()}",
-                    ['task' => $task]
+                    "Generate {$ptask->getLogId()}",
+                    ['task' => $ptask]
                 );
 
                 $generated = 0;
                 $generator = $result;
                 while (true) {
                     if ($generated++ >= $this->options->getMaxGeneratorTasks()) {
-                        throw new ToManyGeneratorTasks("To many tasks in {$task->getId()} generator: $generated");
+                        throw new ToManyGeneratorTasks("To many tasks in {$ptask->getId()} generator: $generated");
                     }
                     if ($generator->valid()) {
-                        $generatedTask = $generator->current();
-                        if (!$generatedTask instanceof Task) {
+                        $generatedChildTask = $generator->current();
+                        if (!$generatedChildTask instanceof Task) {
                             throw new InvalidGeneratorItem(
-                                "Generator item in {$task->getId()} generator is not a task instance"
+                                "Generator item in {$ptask->getId()} generator is not a task instance"
                             );
                         }
+                        $generatedChildPtask = PersistedTask::fromTask($generatedChildTask);
 
-                        $generatedTask
-                            ->setParentId($task->getId())
-                            ->setRootId($task->getRootId());
+                        $generatedChildPtask
+                            ->setParentId($ptask->getId())
+                            ->setRootId($ptask->getRootId());
 
-                        if ($generatedTask->isNullTrace() && !$task->isNullTrace()) {
-                            $generatedTask->setTrace($task->getTrace());
+                        // Id generated task has no trace, so we copy it from parent
+                        if (!$generatedChildPtask->hasTrace() && $ptask->hasTrace()) {
+                            $generatedChildPtask->setTrace($ptask->getTrace());
                         }
 
-                        $startedChildTask = current($startedChildTasks);
-                        if ($startedChildTask && $startedChildTask instanceof Task) {
-                            if ($startedChildTask->getDeterminedUuid() != $generatedTask->getDeterminedUuid()) {
+                        $startedChildPtask = current($startedChildPtasks);
+                        if ($startedChildPtask) {
+                            if (!$startedChildPtask instanceof PersistedTask) {
+                                throw new InvalidTask("Started child task is not a PersistedTask");
+                            }
+
+                            if ($startedChildPtask->getDeterminedUuid() != $generatedChildPtask->getDeterminedUuid()) {
                                 throw new DeterminismViolation();
                             }
-                            $generatedTask = $startedChildTask;
-                            next($startedChildTasks);
+
+                            $generatedChildPtask = $startedChildPtask;
+                            next($startedChildPtasks);
                         }
 
-                        $generatedTask = $this->runTaskInternal($generatedTask, $level + 1);
+                        $generatedChildPtask = $this->runTaskInternal($generatedChildPtask, $level + 1);
 
-                        if ($generatedTask->isFinished()) {
-                            if ($generatedTask->hasError()) {
-                                $generator->throw($generatedTask->getError());
+                        if ($generatedChildPtask->isFinished()) {
+                            if ($generatedChildPtask->hasError()) {
+                                $generator->throw($generatedChildPtask->getError());
                             } else {
-                                $generator->send($generatedTask->getResult());
+                                $generator->send($generatedChildPtask->getResult());
                             }
                         } else {
-                            return $task;
+                            return $ptask;
                         }
                     } else {
                         $result = $generator->getReturn();
@@ -166,109 +183,109 @@ class Tsqm implements TsqmInterface
                 }
             }
 
-            $task
+            $ptask
                 ->setFinishedAt(new DateTime())
                 ->setResult($result)
                 ->setError(null);
             if ($isStarted) {
-                $task->incRetried();
+                $ptask->incRetried();
             }
 
-            $this->log(LogLevel::INFO, "Finish {$task->getLogId()}", ['task' => $task]);
+            $this->log(LogLevel::INFO, "Finish {$ptask->getLogId()}", ['task' => $ptask]);
 
-            if ($task->isRoot()) {
-                $this->repository->deleteTask($task->getRootId());
+            if ($ptask->isRoot()) {
+                $this->repository->deleteTask($ptask->getRootId());
             } else {
-                $this->repository->updateTask($task);
+                $this->repository->updateTask($ptask);
             }
 
-            return $task;
+            return $ptask;
         } catch (TsqmError $e) {
             $this->log(LogLevel::CRITICAL, $e->getMessage(), ['exception' => $e]);
             throw $e;
         } catch (Exception $e) {
-            $task->setError($e);
+            $ptask->setError($e);
             if ($isStarted) {
-                $task->incRetried();
+                $ptask->incRetried();
             }
 
             $retryAt = null;
-            $retryPolicy = $task->getRetryPolicy();
+            $retryPolicy = $ptask->getRetryPolicy();
             if ($retryPolicy) {
-                $retryAt = $retryPolicy->getRetryAt($task->getRetried());
+                $retryAt = $retryPolicy->getRetryAt($ptask->getRetried());
             }
 
             if (!is_null($retryAt)) {
-                $task->setScheduledFor($retryAt);
-                $this->log(LogLevel::WARNING, "Fail and retry {$task->getLogId()}", ['task' => $task]);
-                $this->repository->updateTask($task);
-                $this->enqueue($task);
+                $ptask->setScheduledFor($retryAt);
+                $this->log(LogLevel::WARNING, "Fail and retry {$ptask->getLogId()}", ['task' => $ptask]);
+                $this->repository->updateTask($ptask);
+                $this->enqueue($ptask);
             } else {
-                $task->setFinishedAt(new DateTime());
-                $this->log(LogLevel::ERROR, "Fail {$task->getLogId()}", ['task' => $task]);
-                $this->repository->deleteTask($task->getId());
+                $ptask->setFinishedAt(new DateTime());
+                $this->log(LogLevel::ERROR, "Fail {$ptask->getLogId()}", ['task' => $ptask]);
+                $this->repository->deleteTask($ptask->getId());
             }
 
-            return $task;
+            return $ptask;
         }
     }
 
-    private function createTask(Task $task): Task
+    private function createTask(PersistedTask $ptask): PersistedTask
     {
-        if ($task->isNullRoot()) {
+        if (!$ptask->hasRoot()) {
             // For root tasks we generate random task id
             $taskId = UuidHelper::random();
-            $task->setId($taskId);
-            $task->setRootId($task->getId());
+            $ptask->setId($taskId);
+            $ptask->setRootId($ptask->getId());
         } else {
             // For child tasks id is derivative from the task args to garantee uniqueness among childs
-            $taskId = $task->getDeterminedUuid();
-            $task->setId($taskId);
+            $taskId = $ptask->getDeterminedUuid();
+            $ptask->setId($taskId);
         }
 
-        $task->setCreatedAt(new DateTime());
+        $ptask->setCreatedAt(new DateTime());
 
         // Calculating scheduledFor if not set
-        if (!$task->isScheduled()) {
-            if (!$task->isNullWaitInterval()) {
-                $lastFinishedAt = $this->repository->getLastFinishedAt($task->getRootId());
+        if (!$ptask->isScheduled()) {
+            if ($ptask->hasWaitInterval()) {
+                $lastFinishedAt = $this->repository->getLastFinishedAt($ptask->getRootId());
                 if (is_null($lastFinishedAt)) {
                     $lastFinishedAt = new DateTime();
                 }
-                $scheduledFor = $lastFinishedAt->modify($task->getWaitInterval());
+                $scheduledFor = $lastFinishedAt->modify($ptask->getWaitInterval());
                 if ($scheduledFor === false) {
                     throw new InvalidWaitInterval("Invalid wait interval", 1720430537);
                 }
-                $task->setScheduledFor($scheduledFor);
+                $ptask->setScheduledFor($scheduledFor);
             } else {
-                $task->setScheduledFor($task->getCreatedAt());
+                $ptask->setScheduledFor($ptask->getCreatedAt());
             }
         }
 
         try {
-            $task = $this->repository->createTask($task);
-            $this->log(LogLevel::INFO, "Create {$task->getLogId()}", ['task' => $task]);
-            return $task;
+            $ptask = $this->repository->createTask($ptask);
+            $this->log(LogLevel::INFO, "Create {$ptask->getLogId()}", ['task' => $ptask]);
+            return $ptask;
         } catch (Exception $e) {
             if (PdoHelper::isIntegrityConstraintViolation($e)) {
-                throw new DuplicatedTask("Task {$task->getId()} already started", 0, $e);
+                throw new DuplicatedTask("Task {$ptask->getId()} already started", 0, $e);
             } else {
                 throw $e;
             }
         }
     }
 
-    public function getTask(string $id): ?Task
+    public function getTask(string $id): ?PersistedTask
     {
-        $task = $this->repository->getTask($id);
-        if (is_null($task)) {
+        $ptask = $this->repository->getTask($id);
+        if (is_null($ptask)) {
             $this->log(LogLevel::WARNING, "Task not found", ['id' => $id]);
         }
-        return $task;
+        return $ptask;
     }
 
     /**
-     * @return array<Task>
+     * @return array<PersistedTask>
      */
     public function getScheduledTasks(int $limit = 100, ?DateTime $now = null): array
     {
@@ -330,10 +347,10 @@ class Tsqm implements TsqmInterface
         try {
             $this->log(LogLevel::INFO, "Start listening queue for $taskName");
 
-            $callback = function (string $taskId): ?Task {
-                $task = $this->getTask($taskId);
-                if ($task) {
-                    return $this->runTask($task);
+            $callback = function (string $taskId): ?PersistedTask {
+                $ptask = $this->getTask($taskId);
+                if ($ptask) {
+                    return $this->runTask($ptask);
                 }
                 return null;
             };
@@ -345,31 +362,31 @@ class Tsqm implements TsqmInterface
         }
     }
 
-    private function enqueue(Task $task): void
+    private function enqueue(PersistedTask $ptask): void
     {
         try {
-            if (!$task->isScheduled()) {
+            if (!$ptask->isScheduled()) {
                 throw new EnqueueFailed("Task is not sheduled");
             }
 
             // Some queue implementations could operate at seconds resolution, but scheduledFor stored in microseconds.
             // So we need to add some leap-interval to prevent tasks to be delivered earlier than scheduledFor
-            $scheduledFor = (clone $task->getScheduledFor())
+            $scheduledFor = (clone $ptask->getScheduledFor())
                 ->modify("+" . self::LEAP_INTERVAL . " seconds");
 
             // For child tasks we enqueue root tasks with the scheduledFor of child task
             // becasue TSQM suppose to run only root tasks
-            if (!$task->isRoot()) {
-                $root = $this->repository->getTask($task->getRootId());
+            if (!$ptask->isRoot()) {
+                $root = $this->repository->getTask($ptask->getRootId());
                 if (!$root) {
                     throw new EnqueueFailed("Root task not found");
                 }
-                $task = $root;
+                $ptask = $root;
             }
 
             $this->queue->enqueue(
-                $task->getName(),
-                $task->getId(),
+                $ptask->getName(),
+                $ptask->getId(),
                 $scheduledFor,
             );
         } catch (Exception $e) {
@@ -384,7 +401,10 @@ class Tsqm implements TsqmInterface
     private function log($level, string $message, array $context = []): void
     {
         try {
-            if (isset($context['task']) && $context['task'] instanceof Task) {
+            if (
+                isset($context['task']) &&
+                ($context['task'] instanceof Task || $context['task'] instanceof PersistedTask)
+            ) {
                 /** @var Task $task */
                 $task = $context['task'];
                 $context['task'] = $task->jsonSerialize();

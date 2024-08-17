@@ -21,6 +21,7 @@ class TaskLoggerTest extends TestCase
     public function setUp(): void
     {
         parent::setUp();
+
         $this->logger = $this->createMock(LoggerInterface::class);
 
         $this->tsqm = new Tsqm(

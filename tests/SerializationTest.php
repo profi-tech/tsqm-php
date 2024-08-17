@@ -8,6 +8,7 @@ use PDOException;
 use Tsqm\Errors\SerializationError;
 use Tsqm\Helpers\SerializationHelper;
 use Tsqm\Helpers\UuidHelper;
+use Tsqm\PersistedTask;
 use Tsqm\Task;
 use Tsqm\TaskRepository;
 
@@ -24,13 +25,13 @@ class SerializationTest extends TestCase
 
         $taskId = UuidHelper::random();
         $repository = new TaskRepository($this->pdo, "tsqm_tasks");
-        $task = (new Task())
+        $ptask = (new PersistedTask())
             ->setId($taskId)
             ->setRootId($taskId)
             ->setCreatedAt(new DateTime())
             ->setScheduledFor(new DateTime())
             ->setName("Random task name");
-        $task = $repository->createTask($task);
+        $ptask = $repository->createTask($ptask);
 
         $checks = [
             "00S02" => 0,
@@ -40,11 +41,11 @@ class SerializationTest extends TestCase
         ];
 
         foreach ($checks as $code => $expected) {
-            $task->setError(new PDOException("Random PDO error", $code));
-            $repository->updateTask($task);
-            $this->assertEquals($expected, $task->getError()->getCode(), "Failed with code '$code'");
-            $task = $repository->getTask($taskId);
-            $this->assertEquals($expected, $task->getError()->getCode(), "Failed with code '$code'");
+            $ptask->setError(new PDOException("Random PDO error", $code));
+            $repository->updateTask($ptask);
+            $this->assertEquals($expected, $ptask->getError()->getCode(), "Failed with code '$code'");
+            $ptask = $repository->getTask($taskId);
+            $this->assertEquals($expected, $ptask->getError()->getCode(), "Failed with code '$code'");
         }
 
         error_reporting($previousErrorReporting);

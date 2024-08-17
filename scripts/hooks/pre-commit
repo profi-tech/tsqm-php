@@ -2,6 +2,4 @@
 
 set -e
 
-composer lint 
-composer analyse
-composer test
+composer check
