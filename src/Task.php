@@ -13,8 +13,8 @@ class Task implements JsonSerializable
 {
     private int $nid = 0;
     private ?string $id = null;
-    private ?string $parent_id = null;
-    private ?string $root_id = null;
+    private ?string $parentId = null;
+    private ?string $rootId = null;
     private ?DateTime $createdAt = null;
     private ?DateTime $scheduledFor = null;
     private ?string $waitInterval = null;
@@ -73,8 +73,8 @@ class Task implements JsonSerializable
     public function getDeterminedUuid(): string
     {
         return UuidHelper::named(implode('::', [
-            $this->parent_id,
-            $this->root_id,
+            $this->parentId,
+            $this->rootId,
             $this->name,
             SerializationHelper::serialize($this->args),
         ]));
@@ -82,18 +82,18 @@ class Task implements JsonSerializable
 
     public function setParentId(string $parent_id): self
     {
-        $this->parent_id = $parent_id;
+        $this->parentId = $parent_id;
         return $this;
     }
 
     public function getParentId(): ?string
     {
-        return $this->parent_id;
+        return $this->parentId;
     }
 
     public function setRootId(string $root_id): self
     {
-        $this->root_id = $root_id;
+        $this->rootId = $root_id;
         return $this;
     }
 
@@ -102,12 +102,12 @@ class Task implements JsonSerializable
         if ($this->isNullRoot()) {
             throw new InvalidTask("Root ID is required");
         }
-        return $this->root_id;
+        return $this->rootId;
     }
 
     public function isNullRoot(): bool
     {
-        return is_null($this->root_id);
+        return is_null($this->rootId);
     }
 
     public function isRoot(): bool
@@ -341,8 +341,8 @@ class Task implements JsonSerializable
         return [
             'nid' => $this->nid,
             'id' => $this->id,
-            'parent_id' => $this->parent_id,
-            'root_id' => $this->root_id,
+            'parent_id' => $this->parentId,
+            'root_id' => $this->rootId,
             'created_at' => $this->createdAt ? $this->createdAt->format($timestampFormat) : null,
             'scheduled_for' => $this->scheduledFor ? $this->scheduledFor->format($timestampFormat) : null,
             'started_at' => $this->startedAt ? $this->startedAt->format($timestampFormat) : null,
