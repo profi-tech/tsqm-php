@@ -43,7 +43,7 @@
         "lint": "./vendor/bin/phpcs --standard=PSR12 ./src ./tests ./examples",
         "lint-fix": "./vendor/bin/phpcbf --standard=PSR12 ./src ./tests ./examples",
         "hooks": "ln -fs ../../scripts/hooks/pre-commit .git/hooks/pre-commit",
-        "analyse": "./vendor/bin/phpstan analyse --level=6 ./src ./tests ./examples",
+        "analyse": "./vendor/bin/phpstan analyse --level=6 --memory-limit=512M ./src ./tests ./examples",
         "example:reset-db": "php examples/app.php reset:db",
         "example:hello-world": "php examples/app.php example:hello-world",
         "example:hello-world-simple": "php examples/app.php example:hello-world-simple",

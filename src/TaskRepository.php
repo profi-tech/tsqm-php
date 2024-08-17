@@ -9,7 +9,6 @@ use Tsqm\Errors\RepositoryError;
 use Tsqm\Helpers\PdoHelper;
 use Tsqm\Helpers\SerializationHelper;
 use Tsqm\Helpers\UuidHelper;
-use Tsqm\Task;
 
 class TaskRepository
 {
@@ -27,7 +26,7 @@ class TaskRepository
         $this->table = $table;
     }
 
-    public function createTask(Task $task): Task
+    public function createTask(PersistedTask $ptask): PersistedTask
     {
         try {
             $res = $this->pdo->prepare("
@@ -62,29 +61,29 @@ class TaskRepository
                 throw new Exception(PdoHelper::formatErrorInfo($this->pdo->errorInfo()));
             }
             $row = $this->serializeRow([
-                'id' => $task->getId(),
-                'parent_id' => $task->getParentId(),
-                'root_id' => $task->getRootId(),
-                'created_at' => $task->getCreatedAt()->format(self::MICROSECONDS_TS),
-                'scheduled_for' => $task->getScheduledFor()->format(self::MICROSECONDS_TS),
-                'name' => $task->getName(),
-                'is_secret' => (int)$task->getIsSecret(),
-                'args' => $task->getArgs(),
-                'retry_policy' => $task->getRetryPolicy(),
-                'trace' => $task->getTrace(),
+                'id' => $ptask->getId(),
+                'parent_id' => $ptask->getParentId(),
+                'root_id' => $ptask->getRootId(),
+                'created_at' => $ptask->getCreatedAt()->format(self::MICROSECONDS_TS),
+                'scheduled_for' => $ptask->getScheduledFor()->format(self::MICROSECONDS_TS),
+                'name' => $ptask->getName(),
+                'is_secret' => (int)$ptask->getIsSecret(),
+                'args' => $ptask->getArgs(),
+                'retry_policy' => $ptask->getRetryPolicy(),
+                'trace' => $ptask->getTrace(),
             ]);
             $res->execute($row);
             $nid = $this->pdo->lastInsertId();
-            return $task->setNid((int)$nid);
+            return $ptask->setNid((int)$nid);
         } catch (Exception $e) {
             throw new RepositoryError("Failed to create task: " . $e->getMessage(), 0, $e);
         }
     }
 
-    public function updateTask(Task $task): void
+    public function updateTask(PersistedTask $ptask): void
     {
         try {
-            if (!$task->getId()) {
+            if (!$ptask->getId()) {
                 throw new RepositoryError("Task id is required for update");
             }
 
@@ -103,19 +102,19 @@ class TaskRepository
             }
 
             $row = $this->serializeRow([
-                'id' => $task->getId(),
-                'started_at' => $task->getStartedAt()
-                    ? $task->getStartedAt()->format(self::MICROSECONDS_TS)
+                'id' => $ptask->getId(),
+                'started_at' => $ptask->getStartedAt()
+                    ? $ptask->getStartedAt()->format(self::MICROSECONDS_TS)
                     : null,
-                'scheduled_for' => $task->getScheduledFor()
-                    ? $task->getScheduledFor()->format(self::MICROSECONDS_TS)
+                'scheduled_for' => $ptask->getScheduledFor()
+                    ? $ptask->getScheduledFor()->format(self::MICROSECONDS_TS)
                     : null,
-                'finished_at' => $task->getFinishedAt()
-                    ? $task->getFinishedAt()->format(self::MICROSECONDS_TS)
+                'finished_at' => $ptask->getFinishedAt()
+                    ? $ptask->getFinishedAt()->format(self::MICROSECONDS_TS)
                     : null,
-                'result' => $task->getResult(),
-                'error' => $task->getError(),
-                'retried' => $task->getRetried(),
+                'result' => $ptask->getResult(),
+                'error' => $ptask->getError(),
+                'retried' => $ptask->getRetried(),
             ]);
 
             $res->execute($row);
@@ -124,7 +123,7 @@ class TaskRepository
         }
     }
 
-    public function getTask(string $id): ?Task
+    public function getTask(string $id): ?PersistedTask
     {
         try {
             $res = $this->pdo->prepare("SELECT * FROM $this->table WHERE id=:id");
@@ -147,7 +146,7 @@ class TaskRepository
     /**
      * @param int $limit
      * @param DateTime $now
-     * @return array<Task>
+     * @return array<PersistedTask>
      * @throws RepositoryError
      */
     public function getScheduledTasks(int $limit, DateTime $now): array
@@ -197,7 +196,7 @@ class TaskRepository
     }
 
     /**
-     * @return array<Task>
+     * @return array<PersistedTask>
      */
     public function getTasksByParentId(string $parentId): array
     {
@@ -266,64 +265,64 @@ class TaskRepository
     /**
      * @param array<string, mixed> $row
      */
-    private function createTaskFromRow(array $row): Task
+    private function createTaskFromRow(array $row): PersistedTask
     {
-        $task = new Task();
+        $ptask = new PersistedTask();
         if (isset($row['nid'])) {
-            $task->setNid((int)$row['nid']);
+            $ptask->setNid((int)$row['nid']);
         }
         if (isset($row['id'])) {
             $id = UuidHelper::bin2uuid($row['id']);
-            $task->setId($id);
+            $ptask->setId($id);
         }
         if (isset($row['parent_id'])) {
             $parentId = UuidHelper::bin2uuid($row['parent_id']);
-            $task->setParentId($parentId);
+            $ptask->setParentId($parentId);
         }
         if (isset($row['root_id'])) {
             $rootId = UuidHelper::bin2uuid($row['root_id']);
-            $task->setRootId($rootId);
+            $ptask->setRootId($rootId);
         }
         if (isset($row['created_at'])) {
-            $task->setCreatedAt(new DateTime($row['created_at']));
+            $ptask->setCreatedAt(new DateTime($row['created_at']));
         }
         if (isset($row['scheduled_for'])) {
-            $task->setScheduledFor(new DateTime($row['scheduled_for']));
+            $ptask->setScheduledFor(new DateTime($row['scheduled_for']));
         }
         if (isset($row['started_at'])) {
-            $task->setStartedAt(new DateTime($row['started_at']));
+            $ptask->setStartedAt(new DateTime($row['started_at']));
         }
         if (isset($row['finished_at'])) {
-            $task->setFinishedAt(new DateTime($row['finished_at']));
+            $ptask->setFinishedAt(new DateTime($row['finished_at']));
         }
         if (isset($row['name'])) {
-            $task->setName($row['name']);
+            $ptask->setName($row['name']);
         }
         if (isset($row['is_secret'])) {
-            $task->setIsSecret((bool)$row['is_secret']);
+            $ptask->setIsSecret((bool)$row['is_secret']);
         }
         if (isset($row['args'])) {
-            $task->setArgs(...SerializationHelper::unserialize($row['args']));
+            $ptask->setArgs(...SerializationHelper::unserialize($row['args']));
         }
         if (isset($row['result'])) {
-            $task->setResult(SerializationHelper::unserialize($row['result']));
+            $ptask->setResult(SerializationHelper::unserialize($row['result']));
         }
         if (isset($row['error'])) {
             $error = SerializationHelper::unserializeError($row['error']);
-            $task->setError($error);
+            $ptask->setError($error);
         }
         if (isset($row['retry_policy'])) {
             $retryPolicy = SerializationHelper::unserialize($row['retry_policy']);
-            $task->setRetryPolicy(RetryPolicy::fromArray($retryPolicy));
+            $ptask->setRetryPolicy(RetryPolicy::fromArray($retryPolicy));
         }
         if (isset($row['retried'])) {
-            $task->setRetried($row['retried']);
+            $ptask->setRetried($row['retried']);
         }
         if (isset($row['trace'])) {
-            $task->setTrace(SerializationHelper::unserialize($row['trace']));
+            $ptask->setTrace(SerializationHelper::unserialize($row['trace']));
         }
 
-        return $task;
+        return $ptask;
     }
 
     /**

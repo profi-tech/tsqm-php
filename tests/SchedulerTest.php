@@ -11,6 +11,7 @@ use Examples\Greeter\SimpleGreetWithFail;
 use Examples\TsqmContainer;
 use Generator;
 use Tsqm\Options;
+use Tsqm\PersistedTask;
 use Tsqm\Task;
 use Tsqm\RetryPolicy;
 use Tsqm\Tsqm;
@@ -146,7 +147,7 @@ class SchedulerTest extends TestCase
         $this->assertCount(3, $scheduledTasks);
         $this->assertEquals(
             [$task1->getId(), $task2->getId(), $task3->getId()],
-            array_map(fn (Task $task) => $task->getId(), $scheduledTasks)
+            array_map(fn(PersistedTask $ptask) => $ptask->getId(), $scheduledTasks)
         );
     }
 
@@ -182,7 +183,7 @@ class SchedulerTest extends TestCase
         $this->assertCount(2, $scheduledTasks);
         $this->assertEquals(
             [$task1->getId(), $task2->getId()],
-            array_map(fn (Task $task) => $task->getId(), $scheduledTasks)
+            array_map(fn(PersistedTask $ptask) => $ptask->getId(), $scheduledTasks)
         );
     }
 

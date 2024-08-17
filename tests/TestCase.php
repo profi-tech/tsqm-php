@@ -10,6 +10,7 @@ use Examples\PsrContainer;
 use PDO;
 use Tsqm\Helpers\UuidHelper;
 use Tsqm\Options;
+use Tsqm\PersistedTask;
 use Tsqm\Task;
 use Tsqm\Tsqm;
 
@@ -53,7 +54,7 @@ class TestCase extends \PHPUnit\Framework\TestCase
             $deltaMs,
             $diff,
             "Failed asserting that two DateTime instances are equal with $deltaMs ms delta."
-            . ($message ? " $message" : "")
+                . ($message ? " $message" : "")
         );
         return $diff <= $deltaMs;
     }
@@ -67,7 +68,7 @@ class TestCase extends \PHPUnit\Framework\TestCase
         return $isValid;
     }
 
-    public function getLastTaskByParentId(string $parentId): ?Task
+    public function getLastTaskByParentId(string $parentId): ?PersistedTask
     {
         $res = $this->pdo->prepare("SELECT id FROM tsqm_tasks WHERE parent_id = :parent_id ORDER BY nid DESC LIMIT 1");
         $res->execute(['parent_id' => UuidHelper::uuid2bin($parentId)]);
