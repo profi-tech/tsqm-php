@@ -246,7 +246,7 @@ class Tsqm implements TsqmInterface
 
         // Calculating scheduledFor if not set
         if (!$ptask->isScheduled()) {
-            if (!$ptask->isNullWaitInterval()) {
+            if ($ptask->hasWaitInterval()) {
                 $lastFinishedAt = $this->repository->getLastFinishedAt($ptask->getRootId());
                 if (is_null($lastFinishedAt)) {
                     $lastFinishedAt = new DateTime();

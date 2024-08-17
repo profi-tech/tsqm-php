@@ -170,9 +170,9 @@ class PersistedTask implements JsonSerializable
         return $this;
     }
 
-    public function isNullWaitInterval(): bool
+    public function hasWaitInterval(): bool
     {
-        return is_null($this->waitInterval);
+        return !is_null($this->waitInterval);
     }
 
     public function getWaitInterval(): ?string
