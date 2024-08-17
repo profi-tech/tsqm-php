@@ -231,7 +231,7 @@ class Tsqm implements TsqmInterface
 
     private function createTask(PersistedTask $ptask): PersistedTask
     {
-        if ($ptask->isNullRoot()) {
+        if (!$ptask->hasRoot()) {
             // For root tasks we generate random task id
             $taskId = UuidHelper::random();
             $ptask->setId($taskId);

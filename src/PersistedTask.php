@@ -110,15 +110,15 @@ class PersistedTask implements JsonSerializable
 
     public function getRootId(): string
     {
-        if ($this->isNullRoot()) {
+        if (!$this->hasRoot()) {
             throw new InvalidTask("Root ID is required");
         }
         return $this->rootId;
     }
 
-    public function isNullRoot(): bool
+    public function hasRoot(): bool
     {
-        return is_null($this->rootId);
+        return !is_null($this->rootId);
     }
 
     public function isRoot(): bool

@@ -64,11 +64,6 @@ class Task implements JsonSerializable
         return $this;
     }
 
-    public function isNullWaitInterval(): bool
-    {
-        return is_null($this->waitInterval);
-    }
-
     public function getWaitInterval(): ?string
     {
         return $this->waitInterval;
@@ -147,11 +142,6 @@ class Task implements JsonSerializable
     public function getTrace()
     {
         return $this->trace;
-    }
-
-    public function isNullTrace(): bool
-    {
-        return is_null($this->trace);
     }
 
     /**

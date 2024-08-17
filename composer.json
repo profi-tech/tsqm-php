@@ -38,6 +38,11 @@
         "bin/tsqm-db"
     ],
     "scripts": {
+        "check": [
+            "@test",
+            "@lint",
+            "@analyse"
+        ],
         "test": "./vendor/bin/phpunit tests",
         "coverage": "XDEBUG_MODE=coverage ./vendor/bin/phpunit tests --coverage-text --coverage-filter ./src",
         "lint": "./vendor/bin/phpcs --standard=PSR12 ./src ./tests ./examples",
