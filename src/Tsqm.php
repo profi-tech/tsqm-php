@@ -146,7 +146,8 @@ class Tsqm implements TsqmInterface
                             ->setParentId($ptask->getId())
                             ->setRootId($ptask->getRootId());
 
-                        if ($generatedChildPtask->isNullTrace() && !$ptask->isNullTrace()) {
+                        // Id generated task has no trace, so we copy it from parent
+                        if (!$generatedChildPtask->hasTrace() && $ptask->hasTrace()) {
                             $generatedChildPtask->setTrace($ptask->getTrace());
                         }
 

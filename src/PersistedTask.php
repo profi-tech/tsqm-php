@@ -337,9 +337,9 @@ class PersistedTask implements JsonSerializable
         return $this->trace;
     }
 
-    public function isNullTrace(): bool
+    public function hasTrace(): bool
     {
-        return is_null($this->trace);
+        return !is_null($this->trace);
     }
 
     /**

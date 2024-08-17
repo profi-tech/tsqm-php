@@ -39,9 +39,9 @@
     ],
     "scripts": {
         "check": [
-            "@test",
             "@lint",
-            "@analyse"
+            "@analyse",
+            "@test"
         ],
         "test": "./vendor/bin/phpunit tests",
         "coverage": "XDEBUG_MODE=coverage ./vendor/bin/phpunit tests --coverage-text --coverage-filter ./src",
