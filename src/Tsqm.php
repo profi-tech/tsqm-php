@@ -154,7 +154,9 @@ class Tsqm implements TsqmInterface
                         $startedChildPtask = current($startedChildPtasks);
                         if ($startedChildPtask) {
                             if (!$startedChildPtask instanceof PersistedTask) {
-                                throw new InvalidTask("Started child task is not a PersistedTask");
+                                throw new InvalidTask(
+                                    "Started child task {$startedChildPtask->getId()} is not a PersistedTask"
+                                );
                             }
 
                             if ($startedChildPtask->getDeterminedUuid() != $generatedChildPtask->getDeterminedUuid()) {
@@ -201,7 +203,7 @@ class Tsqm implements TsqmInterface
 
             return $ptask;
         } catch (TsqmError $e) {
-            $this->log(LogLevel::CRITICAL, $e->getMessage(), ['exception' => $e]);
+            $this->log(LogLevel::CRITICAL, $e->getMessage(), ['exception' => $e, 'task' => $ptask]);
             throw $e;
         } catch (Exception $e) {
             $ptask->setError($e);
