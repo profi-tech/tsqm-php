@@ -15,7 +15,7 @@ class SecretTaskTest extends TestCase
             ->setArgs('John Doe')
             ->setIsSecret(true);
 
-        $task = $this->tsqm->runTask($task);
+        $task = $this->tsqm->run($task);
         $json = $task->jsonSerialize();
 
         $this->assertEquals("***", $json['args']);

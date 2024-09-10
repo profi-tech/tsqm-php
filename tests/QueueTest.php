@@ -54,7 +54,7 @@ class QueueTest extends TestCase
             ))
         );
 
-        $task = $this->tsqm->runTask($task, true);
+        $task = $this->tsqm->run($task, true);
     }
 
     public function testEnqueueScheduledTask(): void
@@ -77,7 +77,7 @@ class QueueTest extends TestCase
             )
         );
 
-        $task = $this->tsqm->runTask($task);
+        $task = $this->tsqm->run($task);
     }
 
     public function testEnqueueScheduledGenerator(): void
@@ -92,7 +92,7 @@ class QueueTest extends TestCase
         $this->queue->expects($this->once())->method('enqueue')->with(
             $task->getName(),
             $this->callback(function (string $taskId) use ($task) {
-                $queuedTask = $this->tsqm->getTask($taskId);
+                $queuedTask = $this->tsqm->get($taskId);
                 $this->assertEquals($task->getName(), $queuedTask->getName());
                 $this->assertTrue($queuedTask->isRoot());
                 return true;
@@ -105,7 +105,7 @@ class QueueTest extends TestCase
             )
         );
 
-        $task = $this->tsqm->runTask($task);
+        $task = $this->tsqm->run($task);
     }
 
     public function testEnqueueNestedGenerator(): void
@@ -119,7 +119,7 @@ class QueueTest extends TestCase
         $this->queue->expects($this->once())->method('enqueue')->with(
             $task->getName(),
             $this->callback(function (string $taskId) use ($task) {
-                $queuedTask = $this->tsqm->getTask($taskId);
+                $queuedTask = $this->tsqm->get($taskId);
                 $this->assertEquals($task->getName(), $queuedTask->getName());
                 $this->assertTrue($queuedTask->isRoot());
                 return true;
@@ -127,7 +127,7 @@ class QueueTest extends TestCase
             $this->anything()
         );
 
-        $task = $this->tsqm->runTask($task);
+        $task = $this->tsqm->run($task);
     }
 
     public function testEnqueueNestedScheduledGenerator(): void
@@ -141,7 +141,7 @@ class QueueTest extends TestCase
         $this->queue->expects($this->once())->method('enqueue')->with(
             $task->getName(),
             $this->callback(function (string $taskId) use ($task) {
-                $queuedTask = $this->tsqm->getTask($taskId);
+                $queuedTask = $this->tsqm->get($taskId);
                 $this->assertEquals($task->getName(), $queuedTask->getName());
                 $this->assertTrue($queuedTask->isRoot());
                 return true;
@@ -149,7 +149,7 @@ class QueueTest extends TestCase
             $this->anything()
         );
 
-        $task = $this->tsqm->runTask($task);
+        $task = $this->tsqm->run($task);
     }
 
     public function testEnqueueFailedTask(): void
@@ -176,7 +176,7 @@ class QueueTest extends TestCase
             )
         );
 
-        $task = $this->tsqm->runTask($task);
+        $task = $this->tsqm->run($task);
     }
 
     public function testEnqueueAndListen(): void
@@ -202,7 +202,7 @@ class QueueTest extends TestCase
                 }
             );
 
-        $task = $this->tsqm->runTask($task, true);
+        $task = $this->tsqm->run($task, true);
         $this->assertNull($task->getStartedAt());
         $this->assertNull($task->getResult());
 
@@ -219,7 +219,7 @@ class QueueTest extends TestCase
                 }
             );
 
-        $this->tsqm->listenQueuedTasks($task->getName());
+        $this->tsqm->listen($task->getName());
         $this->assertNotNull($queue[$task->getName()]);
         $this->assertEmpty($queue[$task->getName()]);
     }

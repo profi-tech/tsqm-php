@@ -17,7 +17,7 @@ class TaskCallableTest extends TestCase
         $task = (new Task())
             ->setName('rawGreet')
             ->setArgs('John Doe');
-        $task = $this->tsqm->runTask($task);
+        $task = $this->tsqm->run($task);
         $this->assertEquals("Hello, John Doe!", $task->getResult());
     }
 
@@ -26,7 +26,7 @@ class TaskCallableTest extends TestCase
         $task = (new Task())
             ->setCallable("Tests\\rawGreet")
             ->setArgs("John Doe");
-        $task = $this->tsqm->runTask($task);
+        $task = $this->tsqm->run($task);
         $this->assertEquals("Hello, John Doe!", $task->getResult());
     }
 
@@ -35,7 +35,7 @@ class TaskCallableTest extends TestCase
         $task = (new Task())
             ->setCallable("Examples\\Greeter\\RawGreet::greet")
             ->setArgs("John Doe");
-        $task = $this->tsqm->runTask($task);
+        $task = $this->tsqm->run($task);
         $this->assertEquals("Hello, John Doe!", $task->getResult());
     }
 
@@ -44,7 +44,7 @@ class TaskCallableTest extends TestCase
         $task = (new Task())
             ->setCallable([RawGreet::class, "greet"])
             ->setArgs("John Doe");
-        $task = $this->tsqm->runTask($task);
+        $task = $this->tsqm->run($task);
         $this->assertEquals("Hello, John Doe!", $task->getResult());
     }
 }

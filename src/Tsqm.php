@@ -50,7 +50,7 @@ class Tsqm implements TsqmInterface
      * @param Task|PersistedTask $task
      * @param bool $async — force async run
      */
-    public function runTask($task, bool $async = false): PersistedTask
+    public function run($task, bool $async = false): PersistedTask
     {
         if ($task instanceof Task) {
             $ptask = PersistedTask::fromTask($task);
@@ -275,7 +275,7 @@ class Tsqm implements TsqmInterface
         }
     }
 
-    public function getTask(string $id): ?PersistedTask
+    public function get(string $id): ?PersistedTask
     {
         $ptask = $this->repository->getTask($id);
         if (is_null($ptask)) {
@@ -287,7 +287,7 @@ class Tsqm implements TsqmInterface
     /**
      * @return array<PersistedTask>
      */
-    public function getScheduledTasks(int $limit = 100, ?DateTime $now = null): array
+    public function list(int $limit = 100, ?DateTime $now = null): array
     {
         if (is_null($now)) {
             $now = new DateTime();
@@ -302,7 +302,7 @@ class Tsqm implements TsqmInterface
      * @param int $emptySleep — sleep time in seconds if no tasks found
      * @return void
      */
-    public function pollScheduledTasks(int $limit = 100, int $delay = 0, int $emptySleep = 10): void
+    public function poll(int $limit = 100, int $delay = 0, int $emptySleep = 10): void
     {
         try {
             $this->log(LogLevel::INFO, "Start polling tasks");
@@ -319,10 +319,10 @@ class Tsqm implements TsqmInterface
 
             while ($isListening) {
                 $now = (new DateTime())->modify("-$delay seconds");
-                $tasks = $this->getScheduledTasks($limit, $now);
+                $tasks = $this->list($limit, $now);
                 if (count($tasks) > 0) {
                     foreach ($tasks as $task) {
-                        $this->runTask($task);
+                        $this->run($task);
                     }
                 } else {
                     sleep($emptySleep);
@@ -342,15 +342,15 @@ class Tsqm implements TsqmInterface
      * @return void
      * @throws TsqmError
      */
-    public function listenQueuedTasks(string $taskName): void
+    public function listen(string $taskName): void
     {
         try {
             $this->log(LogLevel::INFO, "Start listening queue for $taskName");
 
             $callback = function (string $taskId): ?PersistedTask {
-                $ptask = $this->getTask($taskId);
+                $ptask = $this->get($taskId);
                 if ($ptask) {
-                    return $this->runTask($ptask);
+                    return $this->run($ptask);
                 }
                 return null;
             };
@@ -413,5 +413,50 @@ class Tsqm implements TsqmInterface
         } catch (Exception $e) {
             trigger_error("Failed to log message: " . $e->getMessage(), E_USER_WARNING);
         }
+    }
+
+    /**
+     * @deprecated
+     * @see Tsqm::run
+     */
+    public function runTask(Task $task, bool $async = false): PersistedTask
+    {
+        return $this->run($task, $async);
+    }
+
+    /**
+     * @deprecated
+     * @see Tsqm::get
+     */
+    public function getTask(string $id): ?PersistedTask
+    {
+        return $this->get($id);
+    }
+
+    /**
+     * @deprecated
+     * @see Tsqm::list
+     */
+    public function getScheduledTasks(int $limit = 100, ?DateTime $now = null): array
+    {
+        return $this->list($limit, $now);
+    }
+
+    /**
+     * @deprecated
+     * @see Tsqm::poll
+     */
+    public function pollScheduledTasks(int $limit = 100, int $delay = 0, int $emptySleep = 10): void
+    {
+        $this->poll($limit, $delay, $emptySleep);
+    }
+
+    /**
+     * @deprecated
+     * @see Tsqm::listen
+     */
+    public function listenQueuedTasks(string $taskName): void
+    {
+        $this->listen($taskName);
     }
 }
