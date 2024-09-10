@@ -7,7 +7,7 @@ services:
         context: .
     volumes:
         - ./:/tsqm-php
-        - ssh-keys:/root/.ssh
+        - dot-ssh:/root/.ssh
   db:
     container_name: tsqm-php-db
     image: mysql:8
@@ -20,9 +20,4 @@ services:
 
 volumes:
     logs:
-    ssh-keys:
-        driver: local
-        driver_opts:
-            type: none
-            device: ${HOME}/.ssh/tsqm-php
-            o: bind
+    dot-ssh:
