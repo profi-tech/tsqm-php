@@ -53,7 +53,7 @@ class TaskLoggerTest extends TestCase
             })
         );
 
-        $this->tsqm->runTask($task);
+        $this->tsqm->run($task);
     }
 
     public function testLogContextWithTrace(): void
@@ -76,7 +76,7 @@ class TaskLoggerTest extends TestCase
             })
         );
 
-        $task = $this->tsqm->runTask($task);
+        $task = $this->tsqm->run($task);
         $this->assertEquals($trace, $task->getTrace());
     }
 
@@ -101,7 +101,7 @@ class TaskLoggerTest extends TestCase
             })
         );
 
-        $task = $this->tsqm->runTask($task);
+        $task = $this->tsqm->run($task);
         $this->assertEquals($trace, $task->getTrace());
     }
 }

@@ -52,8 +52,8 @@
         "example:reset-db": "php examples/app.php reset:db",
         "example:hello-world": "php examples/app.php example:hello-world",
         "example:hello-world-simple": "php examples/app.php example:hello-world-simple",
-        "example:list-scheduled": "php examples/app.php list:scheduled",
-        "example:poll-scheduled": "php examples/app.php poll:scheduled",
-        "example:run-task": "php examples/app.php run:task"
+        "example:list": "php examples/app.php list",
+        "example:poll": "php examples/app.php poll",
+        "example:run": "php examples/app.php run"
     }
 }

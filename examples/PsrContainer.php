@@ -7,9 +7,9 @@ use DI\ContainerBuilder;
 use Examples\Commands\HelloWorldCommand;
 use Examples\Commands\HelloWorldSimpleCommand;
 use Examples\Commands\ResetDbCommand;
-use Examples\Commands\ListScheduledCommand;
-use Examples\Commands\RunTaskCommand;
-use Examples\Commands\PollScheduledCommand;
+use Examples\Commands\ListCommand;
+use Examples\Commands\RunCommand;
+use Examples\Commands\PollCommand;
 use Monolog;
 use PDO;
 use Psr\Container\ContainerInterface;
@@ -28,9 +28,9 @@ class PsrContainer
                 Application::class => static function (ContainerInterface $c): Application {
                     $app = new Application();
                     $app->add($c->get(ResetDbCommand::class));
-                    $app->add($c->get(RunTaskCommand::class));
-                    $app->add($c->get(ListScheduledCommand::class));
-                    $app->add($c->get(PollScheduledCommand::class));
+                    $app->add($c->get(RunCommand::class));
+                    $app->add($c->get(ListCommand::class));
+                    $app->add($c->get(PollCommand::class));
                     $app->add($c->get(HelloWorldCommand::class));
                     $app->add($c->get(HelloWorldSimpleCommand::class));
                     return $app;
@@ -64,7 +64,7 @@ class PsrContainer
                     return new Logger($logger);
                 },
 
-                'rawGreet' => fn () => fn (string $name) => "Hello, $name!",
+                'rawGreet' => fn() => fn(string $name) => "Hello, $name!",
 
             ])
             ->useAutowiring(true)

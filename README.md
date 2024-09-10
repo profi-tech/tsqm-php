@@ -129,9 +129,9 @@ $task = (new Tsqm\Task())
 
 ## 5. Running a task
 
-To execute a task, you need to call the `runTask` method:
+To execute a task, you need to call the `run` method:
 ```php
-$task = $tsqm->runTask($task);
+$task = $tsqm->run($task);
 ```
 
 The execution result will be available in the `$task` object:
@@ -146,24 +146,24 @@ if ($task->isFinished()) {
 }
 ```
 
-## 6. Retries
+## 6. Retries and scheduled tasks
 
 A task does not complete if:
 
 - An error occurred and the task has a retry policy set.
 - The task has a future execution time set via the `setScheduleTime` option.
 
-Tasks that need to be retried can be run through the `pollScheduledTasks` method:
+Tasks that need to be retried can be run through the `poll` method:
 
 ```php
-$tsqm->pollScheduledTasks(
+$tsqm->poll(
   100, // Number of tasks to poll
-  30 // Time in seconds to "step back" from the current time
-  10 // Time in seconds to wait before polling again if no tasks are available
+  30, // Time in seconds to "step back" from the current time (usefull for the fallback mode)
+  10 // Idle time in seconds if no tasks found
 );
 
 ```
-Although, `pollScheduledTasks` method could perform scheduled runs, for production it should be used as a fallback to the main queue-based approach:
+Although, `poll` method could perform scheduled runs, for production it should be used only as a fallback to the main queue-based approach:
 
 ## 7. Queues
 
@@ -196,10 +196,10 @@ $tsqm = new Tsqm\Tsqm(
 
 The TSQM engine will automatically call the `enqueue` method of your class if the task needs to be executed later.
 
-To recieve and handle the tasks call the `listenQueuedTasks` method in a separate script:
+To recieve and handle the tasks call the `listen` method in a separate script:
 
 ```php
-$tsqm->listenQueuedTasks($taskName);
+$tsqm->listen($taskName);
 ```
 
 
@@ -249,7 +249,7 @@ $task = (new Task())
   ->setCallable(new Greet(...))
   ->setArgs("John Doe");
 
-$task = $tsqm->runTask($task);
+$task = $tsqm->run($task);
 ```
 
 If the `purchase` task fails, the transaction execution will stop and retry according to the policy "3 attempts every 5 seconds". If all attempts fail, the `rollback` task will be executed.

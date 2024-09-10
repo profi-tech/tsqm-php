@@ -32,7 +32,7 @@ class TaskGeneratorFlowTest extends TestCase
             ->setCallable($greet)
             ->setArgs('John Doe');
 
-        $task = $this->tsqm->runTask($task);
+        $task = $this->tsqm->run($task);
 
         $now = new DateTime();
 
@@ -51,11 +51,11 @@ class TaskGeneratorFlowTest extends TestCase
             ->setCallable($greet)
             ->setArgs('John Doe');
 
-        $task = $this->tsqm->runTask($task);
+        $task = $this->tsqm->run($task);
         $now = new DateTime();
 
         for ($i = 0; $i < 3; $i++) {
-            $task = $this->tsqm->runTask($task);
+            $task = $this->tsqm->run($task);
             $this->assertDateEquals($task->getFinishedAt(), $now);
 
             $this->assertEquals("Hello, John Doe!", $task->getResult()->getText());
@@ -73,7 +73,7 @@ class TaskGeneratorFlowTest extends TestCase
             ->setCallable($greetWithFail)
             ->setArgs('John Doe');
 
-        $task = $this->tsqm->runTask($task);
+        $task = $this->tsqm->run($task);
         $now = new DateTime();
 
         $this->assertDateEquals($task->getFinishedAt(), $now);
@@ -91,7 +91,7 @@ class TaskGeneratorFlowTest extends TestCase
             ->setCallable($greetWithFail)
             ->setArgs('John Doe');
 
-        $task = $this->tsqm->runTask($task);
+        $task = $this->tsqm->run($task);
         $now = new DateTime();
 
         $this->assertDateEquals($task->getFinishedAt(), $now);
@@ -102,7 +102,7 @@ class TaskGeneratorFlowTest extends TestCase
         );
 
         for ($i = 0; $i < 3; $i++) {
-            $task = $this->tsqm->runTask($task);
+            $task = $this->tsqm->run($task);
             $this->assertDateEquals($task->getFinishedAt(), $now);
             $this->assertNull($task->getResult());
             $this->assertEquals(
@@ -120,7 +120,7 @@ class TaskGeneratorFlowTest extends TestCase
             ->setArgs('John Doe')
             ->setRetryPolicy((new RetryPolicy())->setMaxRetries(3)->setMinInterval(10000));
 
-        $task = $this->tsqm->runTask($task);
+        $task = $this->tsqm->run($task);
 
         $sheduledFor = (new DateTime())->modify("+10 second");
 
@@ -141,23 +141,23 @@ class TaskGeneratorFlowTest extends TestCase
             ->setArgs('John Doe');
 
         // First failed run
-        $task = $this->tsqm->runTask($task);
+        $task = $this->tsqm->run($task);
         $this->assertNull($task->getFinishedAt());
         $this->assertNull($task->getResult());
         $this->assertNull($task->getError());
 
         // Two failed retries
         for ($i = 0; $i < 2; $i++) {
-            $task = $this->tsqm->getTask($task->getRootId());
-            $task = $this->tsqm->runTask($task);
+            $task = $this->tsqm->get($task->getRootId());
+            $task = $this->tsqm->run($task);
             $this->assertNull($task->getFinishedAt());
             $this->assertNull($task->getResult());
             $this->assertNull($task->getError());
         }
 
         // Last success retry
-        $task = $this->tsqm->getTask($task->getRootId());
-        $task = $this->tsqm->runTask($task);
+        $task = $this->tsqm->get($task->getRootId());
+        $task = $this->tsqm->run($task);
         $this->assertDateEquals($task->getFinishedAt(), new DateTime());
 
         $this->assertEquals("Hello, John Doe!", $task->getResult()->getText());
@@ -174,21 +174,21 @@ class TaskGeneratorFlowTest extends TestCase
             ->setArgs('John Doe');
 
         // First failed run
-        $task = $this->tsqm->runTask($task);
+        $task = $this->tsqm->run($task);
         $this->assertNull($task->getFinishedAt());
         $this->assertNull($task->getResult());
         $this->assertNull($task->getError());
 
         // Failed retry
-        $task = $this->tsqm->getTask($task->getRootId());
-        $task = $this->tsqm->runTask($task);
+        $task = $this->tsqm->get($task->getRootId());
+        $task = $this->tsqm->run($task);
         $this->assertNull($task->getFinishedAt());
         $this->assertNull($task->getResult());
         $this->assertNull($task->getError());
 
         // Last failed retry
-        $task = $this->tsqm->getTask($task->getRootId());
-        $task = $this->tsqm->runTask($task);
+        $task = $this->tsqm->get($task->getRootId());
+        $task = $this->tsqm->run($task);
         $this->assertDateEquals($task->getFinishedAt(), new DateTime());
         $this->assertNull($task->getResult());
         $this->assertEquals(
@@ -203,7 +203,7 @@ class TaskGeneratorFlowTest extends TestCase
         $task = (new Task())
             ->setCallable($greetNested)
             ->setArgs('John Doe');
-        $task = $this->tsqm->runTask($task);
+        $task = $this->tsqm->run($task);
 
         $result = $task->getResult();
 
@@ -228,7 +228,7 @@ class TaskGeneratorFlowTest extends TestCase
             ->setCallable($greetScheduled)
             ->setArgs('John Doe');
 
-        $task = $this->tsqm->runTask($task);
+        $task = $this->tsqm->run($task);
 
         $this->assertFalse($task->isFinished());
         $this->assertNull($task->getResult());
@@ -241,7 +241,7 @@ class TaskGeneratorFlowTest extends TestCase
             ->setCallable($greetWithDuplicatedTask)
             ->setArgs('John Doe');
         $this->expectException(DuplicatedTask::class);
-        $this->tsqm->runTask($task);
+        $this->tsqm->run($task);
     }
 
     public function testGeneratorNameDeterminismViolation(): void
@@ -252,10 +252,10 @@ class TaskGeneratorFlowTest extends TestCase
             ->setArgs('John Doe')
             ->setRetryPolicy((new RetryPolicy())->setMaxRetries(1)->setMinInterval(0));
 
-        $task = $this->tsqm->runTask($task);
-        $task = $this->tsqm->getTask($task->getRootId());
+        $task = $this->tsqm->run($task);
+        $task = $this->tsqm->get($task->getRootId());
         $this->expectException(DeterminismViolation::class);
-        $this->tsqm->runTask($task);
+        $this->tsqm->run($task);
     }
 
     public function testGeneratorArgsDeterminismViolation(): void
@@ -266,10 +266,10 @@ class TaskGeneratorFlowTest extends TestCase
             ->setArgs('John Doe')
             ->setRetryPolicy((new RetryPolicy())->setMaxRetries(1)->setMinInterval(0));
 
-        $task = $this->tsqm->runTask($task);
-        $task = $this->tsqm->getTask($task->getRootId());
+        $task = $this->tsqm->run($task);
+        $task = $this->tsqm->get($task->getRootId());
         $this->expectException(DeterminismViolation::class);
-        $this->tsqm->runTask($task);
+        $this->tsqm->run($task);
     }
 
     public function testRecursiveGenerator(): void
@@ -280,6 +280,6 @@ class TaskGeneratorFlowTest extends TestCase
             ->setArgs('John Doe', 100);
 
         $this->expectException(NestingIsToDeep::class);
-        $this->tsqm->runTask($task);
+        $this->tsqm->run($task);
     }
 }

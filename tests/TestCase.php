@@ -73,6 +73,6 @@ class TestCase extends \PHPUnit\Framework\TestCase
         $res = $this->pdo->prepare("SELECT id FROM tsqm_tasks WHERE parent_id = :parent_id ORDER BY nid DESC LIMIT 1");
         $res->execute(['parent_id' => UuidHelper::uuid2bin($parentId)]);
         $taskId = UuidHelper::bin2uuid($res->fetchColumn());
-        return $this->tsqm->getTask($taskId);
+        return $this->tsqm->get($taskId);
     }
 }

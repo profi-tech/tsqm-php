@@ -29,13 +29,13 @@ class TaskLoadTest extends TestCase
             )
             ->setArgs('John Doe', 1000, true);
 
-        $task = $tsqm->runTask($task);
+        $task = $tsqm->run($task);
         $this->assertFalse($task->isFinished());
 
-        $task = $tsqm->runTask($task);
+        $task = $tsqm->run($task);
         $this->assertFalse($task->isFinished());
 
-        $task = $tsqm->runTask($task);
+        $task = $tsqm->run($task);
         $this->assertTrue($task->isFinished());
     }
 }

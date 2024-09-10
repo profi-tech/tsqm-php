@@ -34,7 +34,7 @@ class HelloWorldCommand extends Command
             ->setCallable($this->greetWithRandomFail)
             ->setArgs($input->getArgument("name"));
 
-        $task = $this->tsqm->runTask($task);
+        $task = $this->tsqm->run($task);
         return self::SUCCESS;
     }
 }
