@@ -20,7 +20,7 @@ class TaskRepository
     private PDO $pdo;
     private string $table;
 
-    public function __construct(PDO $pdo, string $table)
+    public function __construct(PDO $pdo, string $table = Options::DEFAULT_TABLE)
     {
         $this->pdo = $pdo;
         $this->table = $table;
@@ -143,6 +143,22 @@ class TaskRepository
         }
     }
 
+    public function isTaskExists(string $id): bool
+    {
+        try {
+            $res = $this->pdo->prepare("SELECT 1 FROM $this->table WHERE id = :id");
+            if (!$res) {
+                throw new Exception(PdoHelper::formatErrorInfo($this->pdo->errorInfo()));
+            }
+            $res->execute([
+                'id' => UuidHelper::uuid2bin($id)
+            ]);
+            return $res->fetchColumn() !== false;
+        } catch (Exception $e) {
+            throw new RepositoryError("Failed to check if task exists: " . $e->getMessage(), 0, $e);
+        }
+    }
+
     /**
      * @param int $limit
      * @param DateTime $now
@@ -247,7 +263,7 @@ class TaskRepository
         }
     }
 
-    public function deleteTask(string $id): void
+    public function deleteTaskTree(string $rootId): void
     {
         try {
             $res = $this->pdo->prepare("DELETE FROM $this->table WHERE root_id=:root_id");
@@ -255,7 +271,7 @@ class TaskRepository
                 throw new Exception(PdoHelper::formatErrorInfo($this->pdo->errorInfo()));
             }
             $res->execute([
-                'root_id' => UuidHelper::uuid2bin($id)
+                'root_id' => UuidHelper::uuid2bin($rootId)
             ]);
         } catch (Exception $e) {
             throw new RepositoryError("Failed to delete task: " . $e->getMessage(), 0, $e);

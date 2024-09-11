@@ -11,7 +11,9 @@ use Tsqm\Queue\QueueInterface;
 
 class Options
 {
-    private string $table = "tsqm_tasks";
+    public const DEFAULT_TABLE = "tsqm_tasks";
+
+    private string $table = self::DEFAULT_TABLE;
     private ?ContainerInterface $container = null;
     private ?QueueInterface $queue = null;
     private ?LoggerInterface $logger = null;
