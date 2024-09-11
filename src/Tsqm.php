@@ -432,49 +432,4 @@ class Tsqm implements TsqmInterface
             trigger_error("Failed to log message: " . $e->getMessage(), E_USER_WARNING);
         }
     }
-
-    /**
-     * @deprecated
-     * @see Tsqm::run
-     */
-    public function runTask(Task $task, bool $async = false): PersistedTask
-    {
-        return $this->run($task, $async);
-    }
-
-    /**
-     * @deprecated
-     * @see Tsqm::get
-     */
-    public function getTask(string $id): ?PersistedTask
-    {
-        return $this->get($id);
-    }
-
-    /**
-     * @deprecated
-     * @see Tsqm::list
-     */
-    public function getScheduledTasks(int $limit = 100, ?DateTime $now = null): array
-    {
-        return $this->list($limit, $now);
-    }
-
-    /**
-     * @deprecated
-     * @see Tsqm::poll
-     */
-    public function pollScheduledTasks(int $limit = 100, int $delay = 0, int $emptySleep = 10): void
-    {
-        $this->poll($limit, $delay, $emptySleep);
-    }
-
-    /**
-     * @deprecated
-     * @see Tsqm::listen
-     */
-    public function listenQueuedTasks(string $taskName): void
-    {
-        $this->listen($taskName);
-    }
 }
