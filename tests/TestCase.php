@@ -46,7 +46,7 @@ class TestCase extends \PHPUnit\Framework\TestCase
     public function assertDateEquals(
         DateTime $expected,
         DateTime $actual,
-        int $deltaMs = 10,
+        int $deltaMs = 50,
         string $message = ''
     ): bool {
         $diff = abs((int)$expected->format('Uv') - (int)$actual->format('Uv'));

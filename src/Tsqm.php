@@ -15,8 +15,10 @@ use Tsqm\Errors\EnqueueFailed;
 use Tsqm\Errors\InvalidTask;
 use Tsqm\Errors\InvalidWaitInterval;
 use Tsqm\Errors\NestingIsToDeep;
+use Tsqm\Errors\RootHasBeenDeleted;
 use Tsqm\Errors\ToManyGeneratorTasks;
 use Tsqm\Errors\TsqmError;
+use Tsqm\Errors\TsqmWarning;
 use Tsqm\Helpers\PdoHelper;
 use Tsqm\Helpers\UuidHelper;
 use Tsqm\Logger\LoggerInterface;
@@ -196,12 +198,15 @@ class Tsqm implements TsqmInterface
             $this->log(LogLevel::INFO, "Finish {$ptask->getLogId()}", ['task' => $ptask]);
 
             if ($ptask->isRoot()) {
-                $this->repository->deleteTask($ptask->getRootId());
+                $this->repository->deleteTaskTree($ptask->getRootId());
             } else {
                 $this->repository->updateTask($ptask);
             }
 
             return $ptask;
+        } catch (TsqmWarning $e) {
+            $this->log(LogLevel::WARNING, $e->getMessage(), ['exception' => $e, 'task' => $ptask]);
+            throw $e;
         } catch (TsqmError $e) {
             $this->log(LogLevel::CRITICAL, $e->getMessage(), ['exception' => $e, 'task' => $ptask]);
             throw $e;
@@ -225,7 +230,7 @@ class Tsqm implements TsqmInterface
             } else {
                 $ptask->setFinishedAt(new DateTime());
                 $this->log(LogLevel::ERROR, "Fail {$ptask->getLogId()}", ['task' => $ptask]);
-                $this->repository->deleteTask($ptask->getId());
+                $this->repository->deleteTaskTree($ptask->getId());
             }
 
             return $ptask;
@@ -267,6 +272,17 @@ class Tsqm implements TsqmInterface
         try {
             $ptask = $this->repository->createTask($ptask);
             $this->log(LogLevel::INFO, "Create {$ptask->getLogId()}", ['task' => $ptask]);
+
+            // We check if root task exists because concurrent runs are possible:
+            // 1. process A and process B runs at the same time.
+            // 2. process A successfully finishes run and delete task tree.
+            // 3. process B successfullyperforms root select before tree deletion.
+            // 4. process B creates "hanged" child tasks which does not have root.
+            if (!$ptask->isRoot() && !$this->repository->isTaskExists($ptask->getRootId())) {
+                $this->repository->deleteTaskTree($ptask->getRootId());
+                throw new RootHasBeenDeleted("Root task {$ptask->getRootId()} has been deleted");
+            }
+
             return $ptask;
         } catch (Exception $e) {
             if (PdoHelper::isIntegrityConstraintViolation($e)) {
