@@ -42,35 +42,4 @@ interface TsqmInterface
      * @param string $taskName
      */
     public function listen(string $taskName): void;
-
-    /**
-     * @deprecated
-     * @see TsqmInterface::run
-     */
-    public function runTask(Task $task, bool $async = false): PersistedTask;
-
-    /**
-     * @deprecated
-     * @see TsqmInterface::get
-     */
-    public function getTask(string $id): ?PersistedTask;
-
-    /**
-     * @deprecated
-     * @see TsqmInterface::list
-     * @return array<PersistedTask>
-     */
-    public function getScheduledTasks(int $limit = 100, ?DateTime $now = null): array;
-
-    /**
-     * @deprecated
-     * @see TsqmInterface::poll
-     */
-    public function pollScheduledTasks(int $limit = 100, int $delay = 0, int $emptySleep = 10): void;
-
-    /**
-     * @deprecated
-     * @see TsqmInterface::listen
-     */
-    public function listenQueuedTasks(string $taskName): void;
 }
