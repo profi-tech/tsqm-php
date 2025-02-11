@@ -109,8 +109,10 @@ class Tsqm implements TsqmInterface
         $isStarted = $ptask->isStarted();
         if (!$isStarted) {
             $ptask->setStartedAt(new DateTime());
-            $this->repository->updateTask($ptask);
+        } else {
+            $ptask->incRetried();
         }
+        $this->repository->updateTask($ptask);
 
         try {
             $this->log(
@@ -191,9 +193,6 @@ class Tsqm implements TsqmInterface
                 ->setFinishedAt(new DateTime())
                 ->setResult($result)
                 ->setError(null);
-            if ($isStarted) {
-                $ptask->incRetried();
-            }
 
             $this->log(LogLevel::INFO, "Finish {$ptask->getLogId()}", ['task' => $ptask]);
 
@@ -212,9 +211,6 @@ class Tsqm implements TsqmInterface
             throw $e;
         } catch (Exception $e) {
             $ptask->setError($e);
-            if ($isStarted) {
-                $ptask->incRetried();
-            }
 
             $retryAt = null;
             $retryPolicy = $ptask->getRetryPolicy();
@@ -228,9 +224,15 @@ class Tsqm implements TsqmInterface
                 $this->repository->updateTask($ptask);
                 $this->enqueue($ptask);
             } else {
-                $ptask->setFinishedAt(new DateTime());
+                if (!$ptask->isFinished()) {
+                    $ptask->setFinishedAt(new DateTime());
+                    $this->repository->updateTask($ptask);
+                }
+
                 $this->log(LogLevel::ERROR, "Fail {$ptask->getLogId()}", ['task' => $ptask]);
-                $this->repository->deleteTaskTree($ptask->getId());
+                if ($ptask->isRoot()) {
+                    $this->repository->deleteTaskTree($ptask->getId());
+                }
             }
 
             return $ptask;
