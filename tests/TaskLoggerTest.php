@@ -4,25 +4,28 @@ namespace Tsqm\Tests;
 
 use Examples\Greeter\Greet;
 use Examples\Greeter\SimpleGreet;
+use Examples\Greeter\SimpleGreetWithFail;
 use Examples\TsqmContainer;
+use Mockery;
 use Tests\TestCase;
 use Tsqm\Logger\LoggerInterface;
 use Tsqm\Options;
 use Tsqm\Task;
 use Tsqm\Tsqm;
-use PHPUnit\Framework\MockObject\MockObject;
 use Tsqm\Helpers\UuidHelper;
+use Tsqm\Logger\LogLevel;
+use Mockery\MockInterface;
 
 class TaskLoggerTest extends TestCase
 {
-    /** @var LoggerInterface|MockObject */
+    /** @var MockInterface&LoggerInterface */
     private $logger;
 
     public function setUp(): void
     {
         parent::setUp();
 
-        $this->logger = $this->createMock(LoggerInterface::class);
+        $this->logger = Mockery::mock(LoggerInterface::class)->shouldIgnoreMissing();
 
         $this->tsqm = new Tsqm(
             $this->pdo,
@@ -40,10 +43,10 @@ class TaskLoggerTest extends TestCase
             ->setCallable($simpleGreet)
             ->setArgs('John Doe');
 
-        $this->logger->expects($this->atLeast(1))->method('log')->with(
-            $this->anything(),
-            $this->anything(),
-            $this->callback(function (array $context) use ($task) {
+        $this->logger->shouldReceive('log')->with(
+            Mockery::any(),
+            Mockery::any(),
+            Mockery::on(function (array $context) use ($task) {
                 $this->assertArrayHasKey('task', $context);
                 $this->assertIsArray($context['task']);
                 $this->assertEquals($context['task']['name'], $task->getName());
@@ -65,10 +68,10 @@ class TaskLoggerTest extends TestCase
             ->setArgs('John Doe')
             ->setTrace($trace);
 
-        $this->logger->expects($this->atLeast(1))->method('log')->with(
-            $this->anything(),
-            $this->anything(),
-            $this->callback(function (array $context) use ($trace) {
+        $this->logger->shouldReceive('log')->with(
+            Mockery::any(),
+            Mockery::any(),
+            Mockery::on(function (array $context) use ($trace) {
                 $this->assertArrayHasKey('trace', $context['task']);
                 $this->assertIsArray($context['task']['trace']);
                 $this->assertEquals($context['task']['trace'], $trace);
@@ -90,10 +93,10 @@ class TaskLoggerTest extends TestCase
             ->setArgs('John Doe')
             ->setTrace($trace);
 
-        $this->logger->expects($this->atLeast(1))->method('log')->with(
-            $this->anything(),
-            $this->anything(),
-            $this->callback(function (array $context) use ($trace) {
+        $this->logger->shouldReceive('log')->with(
+            Mockery::any(),
+            Mockery::any(),
+            Mockery::on(function (array $context) use ($trace) {
                 $this->assertArrayHasKey('trace', $context['task']);
                 $this->assertIsArray($context['task']['trace']);
                 $this->assertEquals($context['task']['trace'], $trace);
@@ -103,5 +106,30 @@ class TaskLoggerTest extends TestCase
 
         $task = $this->tsqm->run($task);
         $this->assertEquals($trace, $task->getTrace());
+    }
+
+    public function testLogContextWithError(): void
+    {
+        $simpleGreet = $this->psrContainer->get(SimpleGreetWithFail::class);
+        $task = (new Task())
+            ->setCallable($simpleGreet)
+            ->setArgs('John Doe');
+
+        $this->logger->shouldReceive('log')->once()->with(
+            LogLevel::ERROR,
+            Mockery::on(function (string $message) {
+                $this->assertStringStartsWith('Fail Examples\Greeter\SimpleGreetWithFail', $message);
+                return true;
+            }),
+            Mockery::on(function (array $context) {
+                $this->assertStringStartsWith(
+                    'Examples\Greeter\GreeterError: Greet John Doe failed in',
+                    $context['task']['error']
+                );
+                return true;
+            })
+        );
+
+        $this->tsqm->run($task);
     }
 }

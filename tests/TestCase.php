@@ -7,14 +7,15 @@ use DI\Container;
 use Examples\TsqmContainer;
 use Examples\Helpers\DbHelper;
 use Examples\PsrContainer;
+use Mockery;
+use Mockery\Adapter\Phpunit\MockeryTestCase;
 use PDO;
 use Tsqm\Helpers\UuidHelper;
 use Tsqm\Options;
 use Tsqm\PersistedTask;
-use Tsqm\Task;
 use Tsqm\Tsqm;
 
-class TestCase extends \PHPUnit\Framework\TestCase
+class TestCase extends MockeryTestCase
 {
     protected PDO $pdo;
     protected DbHelper $dbHelper;
@@ -41,6 +42,12 @@ class TestCase extends \PHPUnit\Framework\TestCase
         $this->tsqm = new Tsqm($this->pdo, (new Options())->setContainer(
             new TsqmContainer($this->psrContainer)
         ));
+    }
+
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+        Mockery::close();
     }
 
     public function assertDateEquals(

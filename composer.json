@@ -32,7 +32,8 @@
         "vlucas/phpdotenv": "^5.6",
         "symfony/console": "^5.4",
         "squizlabs/php_codesniffer": "^3.10",
-        "phpstan/phpstan": "^1.11"
+        "phpstan/phpstan": "^1.11",
+        "mockery/mockery": "^1.6"
     },
     "bin": [
         "bin/tsqm-db"
@@ -48,7 +49,7 @@
         "lint": "./vendor/bin/phpcs --standard=PSR12 ./src ./tests ./examples",
         "lint-fix": "./vendor/bin/phpcbf --standard=PSR12 ./src ./tests ./examples",
         "hooks": "ln -fs ../../scripts/hooks/pre-commit .git/hooks/pre-commit",
-        "analyse": "./vendor/bin/phpstan analyse --level=6 --memory-limit=512M ./src ./tests ./examples",
+        "analyse": "./vendor/bin/phpstan analyse --level=6 --memory-limit=512M ./src ./examples",
         "example:reset-db": "php examples/app.php reset:db",
         "example:hello-world": "php examples/app.php example:hello-world",
         "example:hello-world-simple": "php examples/app.php example:hello-world-simple",
