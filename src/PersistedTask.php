@@ -362,13 +362,7 @@ class PersistedTask implements JsonSerializable
             'is_secret' => $this->isSecret,
             'args' => $this->args ? $this->hideSecret($this->args) : null,
             'result' => $this->hideSecret($this->result),
-            'error' => $this->error ? [
-                'class' => get_class($this->error),
-                'message' => $this->error->getMessage(),
-                // PDOException corrupts code while serialization / deserialization
-                // @phpstan-ignore-next-line
-                'code' => $this->error->getCode() ?? null,
-            ] : null,
+            'error' => $this->error ? $this->error->__toString() : null,
             'retry_policy' => $this->retryPolicy,
             'retried' => $this->retried,
             'trace' => $this->trace,
