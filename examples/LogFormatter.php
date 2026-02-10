@@ -14,7 +14,7 @@ class LogFormatter extends NormalizerFormatter
         parent::__construct("Y-m-d\TH:i:s.vP");
     }
 
-    public function format(LogRecord $record): string
+    public function format(LogRecord $record)
     {
         $formatted = [
             'ecs.version' => self::ECS_VERSION,
