@@ -2,6 +2,8 @@
 
 namespace Tsqm\Container;
 
+use Psr\Container\ContainerInterface;
+
 class NullContainer implements ContainerInterface
 {
     /**

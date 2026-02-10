@@ -15,7 +15,7 @@ class SmokeTest extends TestCase
 {
     public function testRunSmoke(): void
     {
-        $simpleGreet = $this->psrContainer->get(SimpleGreet::class);
+        $simpleGreet = $this->container->get(SimpleGreet::class);
         $task = (new Task())
             ->setCallable($simpleGreet)
             ->setRetryPolicy((new RetryPolicy())->setMaxRetries(3)->setMinInterval(1000))
@@ -54,7 +54,7 @@ class SmokeTest extends TestCase
 
     public function testSameTaskRunSmoke(): void
     {
-        $simpleGreet = $this->psrContainer->get(SimpleGreet::class);
+        $simpleGreet = $this->container->get(SimpleGreet::class);
         $task = (new Task())
             ->setCallable($simpleGreet)
             ->setArgs('John Doe');
@@ -69,9 +69,9 @@ class SmokeTest extends TestCase
 
     public function testDifferentTaskRunSmoke(): void
     {
-        $simpleGreet = $this->psrContainer->get(SimpleGreet::class);
-        $greet = $this->psrContainer->get(Greet::class);
-        $greetNested = $this->psrContainer->get(GreetNested::class);
+        $simpleGreet = $this->container->get(SimpleGreet::class);
+        $greet = $this->container->get(Greet::class);
+        $greetNested = $this->container->get(GreetNested::class);
 
         $task0 = $this->tsqm->run(
             (new Task())
@@ -102,7 +102,7 @@ class SmokeTest extends TestCase
 
     public function testTaskMutability(): void
     {
-        $simpleGreet = $this->psrContainer->get(SimpleGreet::class);
+        $simpleGreet = $this->container->get(SimpleGreet::class);
         $task1 = (new Task())
             ->setCallable($simpleGreet)
             ->setArgs('John Doe');

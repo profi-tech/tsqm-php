@@ -8,7 +8,6 @@ use Examples\Greeter\GreetNestedWithFail;
 use Examples\Greeter\GreetScheduled;
 use Examples\Greeter\SimpleGreet;
 use Examples\Greeter\SimpleGreetWithFail;
-use Examples\TsqmContainer;
 use Tsqm\Tsqm;
 use Tsqm\Queue\QueueInterface;
 use Tsqm\Task;
@@ -33,13 +32,13 @@ class QueueTest extends TestCase
             $this->pdo,
             (new Options())
                 ->setQueue($this->queue)
-                ->setContainer(new TsqmContainer($this->psrContainer))
+                ->setContainer($this->container)
         );
     }
 
     public function testEnqueueAsyncRun(): void
     {
-        $simpleGreet = $this->psrContainer->get(SimpleGreet::class);
+        $simpleGreet = $this->container->get(SimpleGreet::class);
         $task = (new Task())
             ->setCallable($simpleGreet)
             ->setArgs('John Doe');
@@ -59,7 +58,7 @@ class QueueTest extends TestCase
 
     public function testEnqueueScheduledTask(): void
     {
-        $simpleGreet = $this->psrContainer->get(SimpleGreet::class);
+        $simpleGreet = $this->container->get(SimpleGreet::class);
         $scheduledFor = (new DateTime())->modify('+1 day');
         $task = (new Task())
             ->setCallable($simpleGreet)
@@ -82,7 +81,7 @@ class QueueTest extends TestCase
 
     public function testEnqueueScheduledGenerator(): void
     {
-        $greetScheduled = $this->psrContainer->get(GreetScheduled::class);
+        $greetScheduled = $this->container->get(GreetScheduled::class);
 
         $scheduledFor = (new DateTime())->modify('+1 day');
         $task = (new Task())
@@ -110,7 +109,7 @@ class QueueTest extends TestCase
 
     public function testEnqueueNestedGenerator(): void
     {
-        $greetNestedWithFail = $this->psrContainer->get(GreetNestedWithFail::class);
+        $greetNestedWithFail = $this->container->get(GreetNestedWithFail::class);
 
         $task = (new Task())
             ->setCallable($greetNestedWithFail)
@@ -132,7 +131,7 @@ class QueueTest extends TestCase
 
     public function testEnqueueNestedScheduledGenerator(): void
     {
-        $greetNestedScheduled = $this->psrContainer->get(GreetNestedScheduled::class);
+        $greetNestedScheduled = $this->container->get(GreetNestedScheduled::class);
 
         $task = (new Task())
             ->setCallable($greetNestedScheduled)
@@ -154,7 +153,7 @@ class QueueTest extends TestCase
 
     public function testEnqueueFailedTask(): void
     {
-        $simpleGreetWithFail = $this->psrContainer->get(SimpleGreetWithFail::class);
+        $simpleGreetWithFail = $this->container->get(SimpleGreetWithFail::class);
 
         $task = (new Task())
             ->setCallable($simpleGreetWithFail)
@@ -181,7 +180,7 @@ class QueueTest extends TestCase
 
     public function testEnqueueAndListen(): void
     {
-        $simpleGreet = $this->psrContainer->get(SimpleGreet::class);
+        $simpleGreet = $this->container->get(SimpleGreet::class);
         $queue = [];
         $now = new DateTime();
 
@@ -220,7 +219,6 @@ class QueueTest extends TestCase
             );
 
         $this->tsqm->listen($task->getName());
-        $this->assertNotNull($queue[$task->getName()]);
         $this->assertEmpty($queue[$task->getName()]);
     }
 }

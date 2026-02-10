@@ -5,3 +5,4 @@ vendor
 .phpunit.result.cache
 .env
 examples/tsqm.db
+.php-cs-fixer.cache

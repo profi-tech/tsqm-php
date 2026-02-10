@@ -27,7 +27,7 @@ class TaskGeneratorFlowTest extends TestCase
 {
     public function testGeneratorSuccess(): void
     {
-        $greet = $this->psrContainer->get(Greet::class);
+        $greet = $this->container->get(Greet::class);
         $task = (new Task())
             ->setCallable($greet)
             ->setArgs('John Doe');
@@ -46,7 +46,7 @@ class TaskGeneratorFlowTest extends TestCase
 
     public function testGeneratorSuccessRerun(): void
     {
-        $greet = $this->psrContainer->get(Greet::class);
+        $greet = $this->container->get(Greet::class);
         $task = (new Task())
             ->setCallable($greet)
             ->setArgs('John Doe');
@@ -68,7 +68,7 @@ class TaskGeneratorFlowTest extends TestCase
 
     public function testGeneratorFailed(): void
     {
-        $greetWithFail = $this->psrContainer->get(GreetWithFail::class);
+        $greetWithFail = $this->container->get(GreetWithFail::class);
         $task = (new Task())
             ->setCallable($greetWithFail)
             ->setArgs('John Doe');
@@ -86,7 +86,7 @@ class TaskGeneratorFlowTest extends TestCase
 
     public function testGeneratorFailedRerun(): void
     {
-        $greetWithFail = $this->psrContainer->get(GreetWithFail::class);
+        $greetWithFail = $this->container->get(GreetWithFail::class);
         $task = (new Task())
             ->setCallable($greetWithFail)
             ->setArgs('John Doe');
@@ -114,7 +114,7 @@ class TaskGeneratorFlowTest extends TestCase
 
     public function testGeneratorFailedAndScheduled(): void
     {
-        $greetWithFail = $this->psrContainer->get(GreetWithFail::class);
+        $greetWithFail = $this->container->get(GreetWithFail::class);
         $task = (new Task())
             ->setCallable($greetWithFail)
             ->setArgs('John Doe')
@@ -135,7 +135,7 @@ class TaskGeneratorFlowTest extends TestCase
 
     public function testGeneratorFailedAndSuccesfullyRetried(): void
     {
-        $greetWith3PurchaseFailsAnd3Retries = $this->psrContainer->get(GreetWith3PurchaseFailsAnd3Retries::class);
+        $greetWith3PurchaseFailsAnd3Retries = $this->container->get(GreetWith3PurchaseFailsAnd3Retries::class);
         $task = (new Task())
             ->setCallable($greetWith3PurchaseFailsAnd3Retries)
             ->setArgs('John Doe');
@@ -168,7 +168,7 @@ class TaskGeneratorFlowTest extends TestCase
 
     public function testGeneratorFailedAndFailedToRetry(): void
     {
-        $greetWith3PurchaseFailsAnd2Retries = $this->psrContainer->get(GreetWith3PurchaseFailsAnd2Retries::class);
+        $greetWith3PurchaseFailsAnd2Retries = $this->container->get(GreetWith3PurchaseFailsAnd2Retries::class);
         $task = (new Task())
             ->setCallable($greetWith3PurchaseFailsAnd2Retries)
             ->setArgs('John Doe');
@@ -199,7 +199,7 @@ class TaskGeneratorFlowTest extends TestCase
 
     public function testNestedGenerator(): void
     {
-        $greetNested = $this->psrContainer->get(GreetNested::class);
+        $greetNested = $this->container->get(GreetNested::class);
         $task = (new Task())
             ->setCallable($greetNested)
             ->setArgs('John Doe');
@@ -219,9 +219,9 @@ class TaskGeneratorFlowTest extends TestCase
     public function testSheduledGenerator(): void
     {
         $greetScheduled = new GreetScheduled(
-            $this->psrContainer->get(CreateGreeting::class),
-            $this->psrContainer->get(Purchase::class),
-            $this->psrContainer->get(SendGreeting::class),
+            $this->container->get(CreateGreeting::class),
+            $this->container->get(Purchase::class),
+            $this->container->get(SendGreeting::class),
         );
 
         $task = (new Task())
@@ -236,7 +236,7 @@ class TaskGeneratorFlowTest extends TestCase
 
     public function testDuplicatedTasks(): void
     {
-        $greetWithDuplicatedTask = $this->psrContainer->get(GreetWithDuplicatedTask::class);
+        $greetWithDuplicatedTask = $this->container->get(GreetWithDuplicatedTask::class);
         $task = (new Task())
             ->setCallable($greetWithDuplicatedTask)
             ->setArgs('John Doe');
@@ -246,7 +246,7 @@ class TaskGeneratorFlowTest extends TestCase
 
     public function testGeneratorNameDeterminismViolation(): void
     {
-        $greetWithDeterministicNameFailure = $this->psrContainer->get(GreetWithDeterministicNameFailure::class);
+        $greetWithDeterministicNameFailure = $this->container->get(GreetWithDeterministicNameFailure::class);
         $task = (new Task())
             ->setCallable($greetWithDeterministicNameFailure)
             ->setArgs('John Doe')
@@ -260,7 +260,7 @@ class TaskGeneratorFlowTest extends TestCase
 
     public function testGeneratorArgsDeterminismViolation(): void
     {
-        $greetWithDeterministicArgsFailure = $this->psrContainer->get(GreetWithDeterministicArgsFailure::class);
+        $greetWithDeterministicArgsFailure = $this->container->get(GreetWithDeterministicArgsFailure::class);
         $task = (new Task())
             ->setCallable($greetWithDeterministicArgsFailure)
             ->setArgs('John Doe')
@@ -274,7 +274,7 @@ class TaskGeneratorFlowTest extends TestCase
 
     public function testRecursiveGenerator(): void
     {
-        $recusiveGreet = $this->psrContainer->get(RecursiveGreet::class);
+        $recusiveGreet = $this->container->get(RecursiveGreet::class);
         $task = (new Task())
             ->setCallable($recusiveGreet)
             ->setArgs('John Doe', 100);

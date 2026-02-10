@@ -41,7 +41,7 @@ class SerializationTest extends TestCase
         ];
 
         foreach ($checks as $code => $expected) {
-            $ptask->setError(new PDOException("Random PDO error", $code));
+            $ptask->setError(new PDOException("Random PDO error", (int)$code));
             $repository->updateTask($ptask);
             $this->assertEquals($expected, $ptask->getError()->getCode(), "Failed with code '$code'");
             $ptask = $repository->getTask($taskId);

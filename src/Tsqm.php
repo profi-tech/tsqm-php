@@ -6,7 +6,8 @@ use DateTime;
 use Exception;
 use Generator;
 use PDO;
-use Tsqm\Container\ContainerInterface;
+use Psr\Container\ContainerInterface;
+use Psr\Log\LoggerInterface;
 use Tsqm\Container\NullContainer;
 use Tsqm\Errors\DuplicatedTask;
 use Tsqm\Errors\InvalidGeneratorItem;
@@ -21,7 +22,6 @@ use Tsqm\Errors\TsqmError;
 use Tsqm\Errors\TsqmWarning;
 use Tsqm\Helpers\PdoHelper;
 use Tsqm\Helpers\UuidHelper;
-use Tsqm\Logger\LoggerInterface;
 use Tsqm\Logger\LogLevel;
 use Tsqm\Queue\QueueInterface;
 
@@ -157,12 +157,6 @@ class Tsqm implements TsqmInterface
 
                         $startedChildPtask = current($startedChildPtasks);
                         if ($startedChildPtask) {
-                            if (!$startedChildPtask instanceof PersistedTask) {
-                                throw new InvalidTask(
-                                    "Started child task {$startedChildPtask->getId()} is not a PersistedTask"
-                                );
-                            }
-
                             if ($startedChildPtask->getDeterminedUuid() != $generatedChildPtask->getDeterminedUuid()) {
                                 throw new DeterminismViolation();
                             }
@@ -422,8 +416,8 @@ class Tsqm implements TsqmInterface
     {
         try {
             if (
-                isset($context['task']) &&
-                ($context['task'] instanceof Task || $context['task'] instanceof PersistedTask)
+                isset($context['task'])
+                && ($context['task'] instanceof Task || $context['task'] instanceof PersistedTask)
             ) {
                 /** @var Task $task */
                 $task = $context['task'];

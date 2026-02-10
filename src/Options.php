@@ -3,9 +3,9 @@
 namespace Tsqm;
 
 use Errors\InvalidConfig;
-use Tsqm\Container\ContainerInterface;
+use Psr\Container\ContainerInterface;
+use Psr\Log\LoggerInterface;
 use Tsqm\Container\NullContainer;
-use Tsqm\Logger\LoggerInterface;
 use Tsqm\Logger\NullLogger;
 use Tsqm\Queue\QueueInterface;
 

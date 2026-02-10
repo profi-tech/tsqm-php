@@ -13,8 +13,8 @@ use Examples\Commands\PollCommand;
 use Monolog;
 use PDO;
 use Psr\Container\ContainerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Application;
-use Tsqm\Logger\LoggerInterface;
 use Tsqm\Options;
 use Tsqm\Tsqm;
 
@@ -24,7 +24,6 @@ class PsrContainer
     {
         return (new ContainerBuilder())
             ->addDefinitions([
-
                 Application::class => static function (ContainerInterface $c): Application {
                     $app = new Application();
                     $app->add($c->get(ResetDbCommand::class));
@@ -37,11 +36,11 @@ class PsrContainer
                 },
 
                 PDO::class => static function (): PDO {
-                    $dsn = isset($_ENV['DB_PDO_DSN']) ? $_ENV['DB_PDO_DSN'] : null;
-                    $username = isset($_ENV['DB_PDO_USERNAME']) ? $_ENV['DB_PDO_USERNAME'] : null;
-                    $password = isset($_ENV['DB_PDO_PASSWORD']) ? $_ENV['DB_PDO_PASSWORD'] : null;
+                    $dsn = $_ENV['DB_PDO_DSN'] ?? null;
+                    $username = $_ENV['DB_PDO_USERNAME'] ?? null;
+                    $password = $_ENV['DB_PDO_PASSWORD'] ?? null;
 
-                    $dsn = $dsn ?? "sqlite::memory:";
+                    $dsn ??= "sqlite::memory:";
                     $pdo = new PDO($dsn, $username, $password);
                     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
                     return $pdo;
@@ -51,7 +50,7 @@ class PsrContainer
                     return new Tsqm(
                         $c->get(PDO::class),
                         (new Options())
-                            ->setContainer(new TsqmContainer($c))
+                            ->setContainer($c)
                             ->setLogger($c->get(LoggerInterface::class))
                     );
                 },
@@ -61,7 +60,7 @@ class PsrContainer
                     $handler = new Monolog\Handler\StreamHandler('php://stdout', Monolog\Logger::DEBUG);
                     $handler->setFormatter(new LogFormatter());
                     $logger->pushHandler($handler);
-                    return new Logger($logger);
+                    return $logger;
                 },
 
                 'rawGreet' => fn() => fn(string $name) => "Hello, $name!",

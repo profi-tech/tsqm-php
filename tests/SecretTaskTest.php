@@ -9,7 +9,7 @@ class SecretTaskTest extends TestCase
 {
     public function testSecretTask(): void
     {
-        $simpleGreet = $this->psrContainer->get(SimpleGreet::class);
+        $simpleGreet = $this->container->get(SimpleGreet::class);
         $task = (new Task())
             ->setCallable($simpleGreet)
             ->setArgs('John Doe')
