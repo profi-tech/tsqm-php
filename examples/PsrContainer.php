@@ -24,7 +24,6 @@ class PsrContainer
     {
         return (new ContainerBuilder())
             ->addDefinitions([
-
                 Application::class => static function (ContainerInterface $c): Application {
                     $app = new Application();
                     $app->add($c->get(ResetDbCommand::class));
@@ -51,7 +50,7 @@ class PsrContainer
                     return new Tsqm(
                         $c->get(PDO::class),
                         (new Options())
-                            ->setContainer(new TsqmContainer($c))
+                            ->setContainer($c)
                             ->setLogger($c->get(LoggerInterface::class))
                     );
                 },

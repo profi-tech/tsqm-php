@@ -5,7 +5,6 @@ namespace Tests;
 use Examples\Greeter\Greet;
 use Examples\Greeter\GreetNested;
 use Examples\Greeter\SimpleGreetWithFail;
-use Examples\TsqmContainer;
 use Tsqm\Errors\ToManyGeneratorTasks;
 use Tsqm\Errors\NestingIsToDeep;
 use Tsqm\Options;
@@ -24,19 +23,19 @@ class OptionsTest extends TestCase
 
     public function testTableOption(): void
     {
-        $simpleGreetWithFail = $this->psrContainer->get(SimpleGreetWithFail::class);
+        $simpleGreetWithFail = $this->container->get(SimpleGreetWithFail::class);
 
         $tsqm1 = new Tsqm(
             $this->pdo,
             (new Options())
                 ->setTable('test_table1')
-                ->setContainer(new TsqmContainer($this->psrContainer))
+                ->setContainer($this->container)
         );
         $tsqm2 = new Tsqm(
             $this->pdo,
             (new Options())
                 ->setTable('test_table2')
-                ->setContainer(new TsqmContainer($this->psrContainer))
+                ->setContainer($this->container)
         );
 
         $task1 = $tsqm1->run(
@@ -67,10 +66,10 @@ class OptionsTest extends TestCase
             $this->pdo,
             (new Options())
                 ->setMaxNestingLevel(1)
-                ->setContainer(new TsqmContainer($this->psrContainer))
+                ->setContainer($this->container)
         );
 
-        $greet = $this->psrContainer->get(GreetNested::class);
+        $greet = $this->container->get(GreetNested::class);
         $task = (new Task())->setCallable($greet)->setArgs('John Doe');
 
         $this->expectException(NestingIsToDeep::class);
@@ -83,10 +82,10 @@ class OptionsTest extends TestCase
             $this->pdo,
             (new Options())
                 ->setMaxGeneratorTasks(1)
-                ->setContainer(new TsqmContainer($this->psrContainer))
+                ->setContainer($this->container)
         );
 
-        $greet = $this->psrContainer->get(Greet::class);
+        $greet = $this->container->get(Greet::class);
 
         $task = (new Task())->setCallable($greet)->setArgs('John Doe');
 

@@ -24,7 +24,8 @@
     "ext-pdo": "*",
     "ext-json": "*",
     "ext-pcntl": "*",
-    "psr/log": "^3.0"
+    "psr/log": "^3.0",
+    "psr/container": "^2.0"
   },
   "require-dev": {
     "monolog/monolog": "^3.10",

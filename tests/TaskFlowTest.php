@@ -16,7 +16,7 @@ class TaskFlowTest extends TestCase
 {
     public function testTaskSuccess(): void
     {
-        $simpleGreet = $this->psrContainer->get(SimpleGreet::class);
+        $simpleGreet = $this->container->get(SimpleGreet::class);
         $task = (new Task())
             ->setCallable($simpleGreet)
             ->setArgs('John Doe');
@@ -35,7 +35,7 @@ class TaskFlowTest extends TestCase
 
     public function testSuccessTaskCleanup(): void
     {
-        $simpleGreet = $this->psrContainer->get(SimpleGreet::class);
+        $simpleGreet = $this->container->get(SimpleGreet::class);
         $task = (new Task())
             ->setCallable($simpleGreet)
             ->setArgs('John Doe');
@@ -50,7 +50,7 @@ class TaskFlowTest extends TestCase
 
     public function testTaskSuccessRerun(): void
     {
-        $simpleGreet = $this->psrContainer->get(SimpleGreet::class);
+        $simpleGreet = $this->container->get(SimpleGreet::class);
         $task = (new Task())
             ->setCallable($simpleGreet)
             ->setArgs('John Doe');
@@ -81,7 +81,7 @@ class TaskFlowTest extends TestCase
 
     public function testTaskScheduled(): void
     {
-        $simpleGreet = $this->psrContainer->get(SimpleGreet::class);
+        $simpleGreet = $this->container->get(SimpleGreet::class);
         $task = (new Task())
             ->setCallable($simpleGreet)
             ->setArgs('John Doe')
@@ -99,7 +99,7 @@ class TaskFlowTest extends TestCase
 
     public function testTaskScheduledRerun(): void
     {
-        $simpleGreet = $this->psrContainer->get(SimpleGreet::class);
+        $simpleGreet = $this->container->get(SimpleGreet::class);
         $task = (new Task())
             ->setCallable($simpleGreet)
             ->setArgs('John Doe')
@@ -126,7 +126,7 @@ class TaskFlowTest extends TestCase
 
     public function testFailTaskScheduled(): void
     {
-        $simpleGreetWithFail = $this->psrContainer->get(SimpleGreetWithFail::class);
+        $simpleGreetWithFail = $this->container->get(SimpleGreetWithFail::class);
         $task = (new Task())
             ->setCallable($simpleGreetWithFail)
             ->setArgs('John Doe')
@@ -145,7 +145,7 @@ class TaskFlowTest extends TestCase
 
     public function testTaskFailed(): void
     {
-        $simpleGreetWithFail = $this->psrContainer->get(SimpleGreetWithFail::class);
+        $simpleGreetWithFail = $this->container->get(SimpleGreetWithFail::class);
         $task = (new Task())
             ->setCallable($simpleGreetWithFail)
             ->setArgs('John Doe');
@@ -161,7 +161,7 @@ class TaskFlowTest extends TestCase
 
     public function testFailedTaskCleanup(): void
     {
-        $simpleGreetWithFail = $this->psrContainer->get(SimpleGreetWithFail::class);
+        $simpleGreetWithFail = $this->container->get(SimpleGreetWithFail::class);
         $task = (new Task())
             ->setCallable($simpleGreetWithFail)
             ->setArgs('John Doe');
@@ -176,7 +176,7 @@ class TaskFlowTest extends TestCase
 
     public function testTaskFailedRerun(): void
     {
-        $simpleGreetWithFail = $this->psrContainer->get(SimpleGreetWithFail::class);
+        $simpleGreetWithFail = $this->container->get(SimpleGreetWithFail::class);
         $task = (new Task())
             ->setCallable($simpleGreetWithFail)
             ->setArgs('John Doe');
@@ -201,7 +201,7 @@ class TaskFlowTest extends TestCase
 
     public function testTaskFailedAndScheduled(): void
     {
-        $simpleGreetWithFail = $this->psrContainer->get(SimpleGreetWithFail::class);
+        $simpleGreetWithFail = $this->container->get(SimpleGreetWithFail::class);
         $task = (new Task())
             ->setCallable($simpleGreetWithFail)
             ->setArgs('John Doe')
@@ -223,7 +223,7 @@ class TaskFlowTest extends TestCase
 
     public function testTaskFailedAndSuccesfullyRetried(): void
     {
-        $simpleGreetWith3Fails = $this->psrContainer->get(SimpleGreetWith3Fails::class);
+        $simpleGreetWith3Fails = $this->container->get(SimpleGreetWith3Fails::class);
         $task = (new Task())
             ->setCallable($simpleGreetWith3Fails)
             ->setArgs('John Doe')
@@ -264,7 +264,7 @@ class TaskFlowTest extends TestCase
 
     public function testTaskFailedAndFailedToRetry(): void
     {
-        $simpleGreetWith3Fails = $this->psrContainer->get(SimpleGreetWith3Fails::class);
+        $simpleGreetWith3Fails = $this->container->get(SimpleGreetWith3Fails::class);
         $task = (new Task())
             ->setCallable($simpleGreetWith3Fails)
             ->setArgs('John Doe')
@@ -300,7 +300,7 @@ class TaskFlowTest extends TestCase
 
     public function testTsqmErrorDoesntAffectRetried(): void
     {
-        $simpleGreetWithTsqmFail = $this->psrContainer->get(SimpleGreetWithTsqmFail::class);
+        $simpleGreetWithTsqmFail = $this->container->get(SimpleGreetWithTsqmFail::class);
         $task = (new Task())
             ->setCallable($simpleGreetWithTsqmFail)
             ->setRetryPolicy((new RetryPolicy())->setMaxRetries(1));

@@ -4,21 +4,19 @@ namespace Tests;
 
 use DateTime;
 use DI\Container;
-use Examples\TsqmContainer;
 use Examples\Helpers\DbHelper;
 use Examples\PsrContainer;
 use PDO;
 use Tsqm\Helpers\UuidHelper;
 use Tsqm\Options;
 use Tsqm\PersistedTask;
-use Tsqm\Task;
 use Tsqm\Tsqm;
 
 class TestCase extends \PHPUnit\Framework\TestCase
 {
     protected PDO $pdo;
     protected DbHelper $dbHelper;
-    protected Container $psrContainer;
+    protected Container $container;
 
     protected Tsqm $tsqm;
 
@@ -36,11 +34,8 @@ class TestCase extends \PHPUnit\Framework\TestCase
         $this->dbHelper = new DbHelper($this->pdo);
         $this->dbHelper->resetDb();
 
-        $this->psrContainer = PsrContainer::build();
-
-        $this->tsqm = new Tsqm($this->pdo, (new Options())->setContainer(
-            new TsqmContainer($this->psrContainer)
-        ));
+        $this->container = PsrContainer::build();
+        $this->tsqm = new Tsqm($this->pdo, (new Options())->setContainer($this->container));
     }
 
     public function assertDateEquals(
@@ -49,7 +44,7 @@ class TestCase extends \PHPUnit\Framework\TestCase
         int $deltaMs = 50,
         string $message = ''
     ): bool {
-        $diff = abs((int)$expected->format('Uv') - (int)$actual->format('Uv'));
+        $diff = abs((int) $expected->format('Uv') - (int) $actual->format('Uv'));
         $this->assertLessThanOrEqual(
             $deltaMs,
             $diff,
@@ -61,7 +56,7 @@ class TestCase extends \PHPUnit\Framework\TestCase
 
     public function assertUuid(string $uuid): bool
     {
-        $isValid = (bool)preg_match('/' . UuidHelper::VALID_PATTERN . '/D', $uuid);
+        $isValid = (bool) preg_match('/' . UuidHelper::VALID_PATTERN . '/D', $uuid);
         if (!$isValid) {
             $this->fail("Failed asserting that '$uuid' is a valid UUID");
         }

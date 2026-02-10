@@ -2,7 +2,6 @@
 
 namespace Tests;
 
-use DateTime;
 use Examples\Greeter\Greet;
 use Tsqm\Errors\RootHasBeenDeleted;
 use Tsqm\Helpers\UuidHelper;
@@ -13,7 +12,7 @@ class ConcurrencyTest extends TestCase
 {
     public function testRootConcurrentDeletion(): void
     {
-        $greet = $this->psrContainer->get(Greet::class);
+        $greet = $this->container->get(Greet::class);
         $task = (new Task())->setCallable($greet)->setArgs('John Doe');
 
         // process A starts and finishes task

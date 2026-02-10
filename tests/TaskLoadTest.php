@@ -3,7 +3,6 @@
 namespace Tests;
 
 use Examples\Greeter\RecursiveGreet;
-use Examples\TsqmContainer;
 use Tsqm\Options;
 use Tsqm\RetryPolicy;
 use Tsqm\Task;
@@ -16,12 +15,12 @@ class TaskLoadTest extends TestCase
         $tsqm = new Tsqm(
             $this->pdo,
             (new Options())
-                ->setContainer(new TsqmContainer($this->psrContainer))
+                ->setContainer($this->container)
                 ->setMaxNestingLevel(1001)
                 ->setForceSyncRuns(true)
         );
 
-        $recusiveGreet = $this->psrContainer->get(RecursiveGreet::class);
+        $recusiveGreet = $this->container->get(RecursiveGreet::class);
         $task = (new Task())
             ->setCallable($recusiveGreet)
             ->setRetryPolicy(

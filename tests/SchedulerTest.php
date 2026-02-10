@@ -8,7 +8,6 @@ use Examples\Greeter\GreetWithPurchaseFailAndRetryInterval;
 use Examples\Greeter\SimpleGreet;
 use Examples\Greeter\SimpleGreetWith3Fails;
 use Examples\Greeter\SimpleGreetWithFail;
-use Examples\TsqmContainer;
 use Generator;
 use Tsqm\Options;
 use Tsqm\PersistedTask;
@@ -20,7 +19,7 @@ class SchedulerTest extends TestCase
 {
     public function testDefaultScheduledFor(): void
     {
-        $simpleGreet = $this->psrContainer->get(SimpleGreet::class);
+        $simpleGreet = $this->container->get(SimpleGreet::class);
         $task = (new Task())
             ->setCallable($simpleGreet)
             ->setArgs('John Doe');
@@ -32,7 +31,7 @@ class SchedulerTest extends TestCase
 
     public function testForceAsync(): void
     {
-        $simpleGreet = $this->psrContainer->get(SimpleGreet::class);
+        $simpleGreet = $this->container->get(SimpleGreet::class);
         $task = (new Task())
             ->setCallable($simpleGreet)
             ->setArgs('John Doe');
@@ -44,11 +43,11 @@ class SchedulerTest extends TestCase
 
     public function testForcedSyncRunsWithAsync(): void
     {
-        $simpleGreet = $this->psrContainer->get(SimpleGreet::class);
+        $simpleGreet = $this->container->get(SimpleGreet::class);
         $tsqm = new Tsqm(
             $this->pdo,
             (new Options())
-                ->setContainer(new TsqmContainer($this->psrContainer))
+                ->setContainer(($this->container))
                 ->setForceSyncRuns(true)
         );
 
@@ -64,11 +63,11 @@ class SchedulerTest extends TestCase
 
     public function testForcedSyncRunsWithScheduledFor(): void
     {
-        $simpleGreet = $this->psrContainer->get(SimpleGreet::class);
+        $simpleGreet = $this->container->get(SimpleGreet::class);
         $tsqm = new Tsqm(
             $this->pdo,
             (new Options())
-                ->setContainer(new TsqmContainer($this->psrContainer))
+                ->setContainer(($this->container))
                 ->setForceSyncRuns(true)
         );
 
@@ -85,7 +84,7 @@ class SchedulerTest extends TestCase
 
     public function testScheduledFor(): void
     {
-        $simpleGreet = $this->psrContainer->get(SimpleGreet::class);
+        $simpleGreet = $this->container->get(SimpleGreet::class);
         $scheduleFor = (new DateTime())->modify('+1 day');
 
         $task = (new Task())
@@ -101,7 +100,7 @@ class SchedulerTest extends TestCase
 
     public function testRetryScheduleFor(): void
     {
-        $simpleGreetWith3Fails = $this->psrContainer->get(SimpleGreetWith3Fails::class);
+        $simpleGreetWith3Fails = $this->container->get(SimpleGreetWith3Fails::class);
         $task = (new Task())
             ->setCallable($simpleGreetWith3Fails)
             ->setArgs('John Doe')
@@ -122,7 +121,7 @@ class SchedulerTest extends TestCase
 
     public function testRunScheduledTask(): void
     {
-        $simpleGreet = $this->psrContainer->get(SimpleGreet::class);
+        $simpleGreet = $this->container->get(SimpleGreet::class);
         $task = (new Task())
             ->setCallable($simpleGreet)
             ->setArgs('John Doe');
@@ -132,7 +131,7 @@ class SchedulerTest extends TestCase
 
     public function testListScheduledTasks(): void
     {
-        $simpleGreetWith3Fails = $this->psrContainer->get(SimpleGreetWith3Fails::class);
+        $simpleGreetWith3Fails = $this->container->get(SimpleGreetWith3Fails::class);
         $scheduledFor = (new DateTime())->modify('+10 second');
         $task = (new Task())
             ->setCallable($simpleGreetWith3Fails)
@@ -153,7 +152,7 @@ class SchedulerTest extends TestCase
 
     public function testListScheduledTasksUntil(): void
     {
-        $simpleGreetWithFail = $this->psrContainer->get(SimpleGreetWithFail::class);
+        $simpleGreetWithFail = $this->container->get(SimpleGreetWithFail::class);
         $task = (new Task())
             ->setCallable($simpleGreetWithFail)
             ->setRetryPolicy((new RetryPolicy())->setMaxRetries(1)->setMinInterval(0))
@@ -169,7 +168,7 @@ class SchedulerTest extends TestCase
 
     public function testListScheduledTasksLimit(): void
     {
-        $simpleGreetWith3Fails = $this->psrContainer->get(SimpleGreetWith3Fails::class);
+        $simpleGreetWith3Fails = $this->container->get(SimpleGreetWith3Fails::class);
         $scheduledFor = (new DateTime())->modify('+10 second');
         $task = (new Task())
             ->setCallable($simpleGreetWith3Fails)
@@ -189,7 +188,7 @@ class SchedulerTest extends TestCase
 
     public function testListScheduledTasksWithScheduledChildren(): void
     {
-        $greetWithPurchaseFailAndRetryInterval = $this->psrContainer->get(
+        $greetWithPurchaseFailAndRetryInterval = $this->container->get(
             GreetWithPurchaseFailAndRetryInterval::class
         );
         $task = (new Task())
@@ -204,7 +203,7 @@ class SchedulerTest extends TestCase
 
     public function testWaitInterval(): void
     {
-        $simpleGreet = $this->psrContainer->get(SimpleGreet::class);
+        $simpleGreet = $this->container->get(SimpleGreet::class);
 
         $cases = [
             '10 second' => (new DateTime())->modify('+10 second'),
@@ -226,14 +225,14 @@ class SchedulerTest extends TestCase
 
     public function testWaitIntervalGenerator(): void
     {
-        $simpleGreet = $this->psrContainer->get(SimpleGreet::class);
+        $simpleGreet = $this->container->get(SimpleGreet::class);
 
         $generator = function () use ($simpleGreet): Generator {
             yield (new Task())->setCallable($simpleGreet)->setArgs('John Doe 1');
             yield (new Task())->setCallable($simpleGreet)->setArgs('John Doe 2')->setWaitInterval('1 day');
             yield (new Task())->setCallable($simpleGreet)->setArgs('John Doe 3');
         };
-        $this->psrContainer->set(Closure::class, fn() => $generator);
+        $this->container->set(Closure::class, fn() => $generator);
         $task = $this->tsqm->run(
             (new Task())->setCallable($generator)
         );
