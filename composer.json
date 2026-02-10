@@ -26,13 +26,13 @@
     "ext-pcntl": "*"
   },
   "require-dev": {
-    "monolog/monolog": "^2.9",
-    "php-di/php-di": "^6.4",
+    "monolog/monolog": "^3.10",
+    "php-di/php-di": "^7.1",
     "phpunit/phpunit": "^9.6",
     "vlucas/phpdotenv": "^5.6",
-    "symfony/console": "^5.4",
-    "squizlabs/php_codesniffer": "^3.10",
-    "phpstan/phpstan": "^1.11"
+    "symfony/console": "^7.2",
+    "squizlabs/php_codesniffer": "^4.0",
+    "phpstan/phpstan": "^2.1"
   },
   "bin": [
     "bin/tsqm-db"
@@ -57,4 +57,3 @@
     "example:run": "php examples/app.php run"
   }
 }
-
