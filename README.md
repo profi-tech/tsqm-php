@@ -57,7 +57,7 @@ $tsqm = new Tsqm\Tsqm(
   (new Tsqm\Options())
     ->setTable("my_tsqm_table") // Name of the table where tasks are stored
     ->setLogger(new MyLogger()) // PSR-3 compatible logger
-    ->setContainer(new MyContainer()) // DI container
+    ->setContainer($container) // DI container e.g. PHP-DI
     ->setQueue(new MyQueue()) // Queue implementation
     ->setForceSyncRuns(true) // Force synchronous runs for debugging and unit testing
     ->setMaxNestingLevel(10) // Maximum number of nested transactions
@@ -81,7 +81,8 @@ The argument for `setCallable` could be:
 - Name of static method along with its class name e.g. `MyClass::myMethod`
 - Name of global functions e.g. `MyGlobalFunction` (highly not recommended). 
 
-:warning: If you use callable objects, you need to set a DI container for the TSQM engine that implements `Tsqm\Container\ContainerInterface`. The callable object must be accessible in the container by its class name.
+:warning: If you use callable objects, you need to set a DI container for the TSQM engine that implements `Psr\Container\ContainerInterface`.
+The callable object must be accessible in the container by its class name.
 
 Task supports the following options:
 - `setScheduledFor` — DateTime object with the scheduled execution time.
@@ -105,7 +106,7 @@ class Greeter {
   }
 }
 
-class MyContainer implements Tsqm\Container\ContainerInterface {
+class MyContainer implements Psr\Container\ContainerInterface {
   ...
 }
 
@@ -258,20 +259,17 @@ If the `purchase` task fails, the transaction execution will stop and retry acco
 
 ## 9. Logging
 
-TSQM logs every step of task and transaction execution. To access these logs, you need to connect a class that implements the `Tsqm\Logger\LoggerInterface` interface:
+TSQM logs every step of task and transaction execution. 
+To access these logs, you need to connect a class that implements `Psr\Log\LoggerInterface` e.g. [Monolog](https://github.com/Seldaek/monolog)
  
  ```php
-class MyLogger implements Tsqm\Logger\LoggerInterface {
-    ...
-    public function log($level, string $message, array $context = []): void {
-      // Your log implementation here
-    }
-}
 
 $tsqm = new Tsqm\Tsqm(
   $pdo,
   (new Tsqm\Options())
-    ->setLogger(new MyLogger())
+    ->setLogger(
+      // instance of logger
+    )
 );
 
 ```
@@ -285,9 +283,6 @@ $tsqm = new Tsqm\Tsqm(
 - For errors, only the class, message, and code are stored.
 
 - TSQM is lightweight and fast but has not been tested under heavy loads.
-
-- TSQM uses its own interfaces for container, queue, logger, etc., to avoid dependencies on external libraries, which have mostly moved to PHP 8. TSQM needs to support all PHP versions starting from 7.4.
-
 
 
 
