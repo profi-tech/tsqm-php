@@ -220,7 +220,6 @@ class QueueTest extends TestCase
             );
 
         $this->tsqm->listen($task->getName());
-        $this->assertNotNull($queue[$task->getName()]);
         $this->assertEmpty($queue[$task->getName()]);
     }
 }

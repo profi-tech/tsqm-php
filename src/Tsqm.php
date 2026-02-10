@@ -157,12 +157,6 @@ class Tsqm implements TsqmInterface
 
                         $startedChildPtask = current($startedChildPtasks);
                         if ($startedChildPtask) {
-                            if (!$startedChildPtask instanceof PersistedTask) {
-                                throw new InvalidTask(
-                                    "Started child task {$startedChildPtask->getId()} is not a PersistedTask"
-                                );
-                            }
-
                             if ($startedChildPtask->getDeterminedUuid() != $generatedChildPtask->getDeterminedUuid()) {
                                 throw new DeterminismViolation();
                             }
@@ -422,8 +416,8 @@ class Tsqm implements TsqmInterface
     {
         try {
             if (
-                isset($context['task']) &&
-                ($context['task'] instanceof Task || $context['task'] instanceof PersistedTask)
+                isset($context['task'])
+                && ($context['task'] instanceof Task || $context['task'] instanceof PersistedTask)
             ) {
                 /** @var Task $task */
                 $task = $context['task'];

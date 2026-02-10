@@ -3,6 +3,7 @@
 namespace Examples;
 
 use Monolog\Formatter\NormalizerFormatter;
+use Monolog\LogRecord;
 
 class LogFormatter extends NormalizerFormatter
 {
@@ -13,7 +14,7 @@ class LogFormatter extends NormalizerFormatter
         parent::__construct("Y-m-d\TH:i:s.vP");
     }
 
-    public function format(array $record): string
+    public function format(LogRecord $record): string
     {
         $formatted = [
             'ecs.version' => self::ECS_VERSION,
