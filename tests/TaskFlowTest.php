@@ -156,7 +156,7 @@ class TaskFlowTest extends TestCase
 
         $this->assertDateEquals($task->getFinishedAt(), $now);
         $this->assertEquals(new GreeterError("Greet John Doe failed", 1717414866), $task->getError());
-        $this->assertNull($this->getResult());
+        $this->assertNull($task->getResult());
     }
 
     public function testFailedTaskCleanup(): void
@@ -187,14 +187,14 @@ class TaskFlowTest extends TestCase
 
         $this->assertDateEquals($task->getFinishedAt(), $now);
         $this->assertEquals(new GreeterError("Greet John Doe failed", 1717414866), $task->getError());
-        $this->assertNull($this->getResult());
+        $this->assertNull($task->getResult());
         $this->assertEquals(0, $task->getRetried());
 
         for ($i = 0; $i < 3; $i++) {
             $task = $this->tsqm->run($task);
             $this->assertDateEquals($task->getFinishedAt(), $now);
             $this->assertEquals(new GreeterError("Greet John Doe failed", 1717414866), $task->getError());
-            $this->assertNull($this->getResult());
+            $this->assertNull($task->getResult());
             $this->assertEquals(0, $task->getRetried());
         }
     }
