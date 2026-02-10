@@ -6,11 +6,11 @@ use Examples\Greeter\Greet;
 use Examples\Greeter\SimpleGreet;
 use Examples\TsqmContainer;
 use Tests\TestCase;
-use Tsqm\Logger\LoggerInterface;
 use Tsqm\Options;
 use Tsqm\Task;
 use Tsqm\Tsqm;
 use PHPUnit\Framework\MockObject\MockObject;
+use Psr\Log\LoggerInterface;
 use Tsqm\Helpers\UuidHelper;
 
 class TaskLoggerTest extends TestCase

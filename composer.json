@@ -23,7 +23,8 @@
     "php": ">=8.2",
     "ext-pdo": "*",
     "ext-json": "*",
-    "ext-pcntl": "*"
+    "ext-pcntl": "*",
+    "psr/log": "^3.0"
   },
   "require-dev": {
     "monolog/monolog": "^3.10",

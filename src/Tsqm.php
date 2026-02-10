@@ -6,6 +6,7 @@ use DateTime;
 use Exception;
 use Generator;
 use PDO;
+use Psr\Log\LoggerInterface;
 use Tsqm\Container\ContainerInterface;
 use Tsqm\Container\NullContainer;
 use Tsqm\Errors\DuplicatedTask;
@@ -21,7 +22,6 @@ use Tsqm\Errors\TsqmError;
 use Tsqm\Errors\TsqmWarning;
 use Tsqm\Helpers\PdoHelper;
 use Tsqm\Helpers\UuidHelper;
-use Tsqm\Logger\LoggerInterface;
 use Tsqm\Logger\LogLevel;
 use Tsqm\Queue\QueueInterface;
 
