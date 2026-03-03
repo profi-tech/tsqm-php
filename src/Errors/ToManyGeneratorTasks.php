@@ -2,6 +2,4 @@
 
 namespace Tsqm\Errors;
 
-class ToManyGeneratorTasks extends TsqmError
-{
-}
+class ToManyGeneratorTasks extends TsqmError {}

@@ -2,6 +2,4 @@
 
 namespace Tsqm\Errors;
 
-class DuplicatedTask extends TsqmError
-{
-}
+class DuplicatedTask extends TsqmError {}

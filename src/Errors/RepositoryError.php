@@ -2,6 +2,4 @@
 
 namespace Tsqm\Errors;
 
-class RepositoryError extends TsqmError
-{
-}
+class RepositoryError extends TsqmError {}

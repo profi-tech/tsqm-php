@@ -2,6 +2,4 @@
 
 namespace Tsqm\Errors;
 
-class EnqueueFailed extends TsqmError
-{
-}
+class EnqueueFailed extends TsqmError {}

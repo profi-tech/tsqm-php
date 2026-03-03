@@ -18,7 +18,7 @@ class DbHelper
     {
         $driver = $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
         $code = 0;
-        $output = array();
+        $output = [];
         exec(__DIR__ . "/../../bin/tsqm-db $driver $table", $output, $code);
         $output = implode("\n", $output);
         if ($code !== 0) {

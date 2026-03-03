@@ -2,6 +2,4 @@
 
 namespace Tsqm\Errors;
 
-class SerializationError extends TsqmError
-{
-}
+class SerializationError extends TsqmError {}

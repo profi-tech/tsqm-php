@@ -2,6 +2,4 @@
 
 namespace Tsqm\Errors;
 
-class NestingIsToDeep extends TsqmError
-{
-}
+class NestingIsToDeep extends TsqmError {}
