@@ -2,6 +2,4 @@
 
 namespace Tsqm\Errors;
 
-class InvalidTask extends TsqmError
-{
-}
+class InvalidTask extends TsqmError {}

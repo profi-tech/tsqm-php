@@ -47,9 +47,9 @@ class RetryPolicy implements JsonSerializable
                 throw new InvalidRetryPolicy("Invalid now value: $nowSeconds.$nowMicroseconds");
             }
 
-            $now = (float)$nowDt->format('U.u');
-            $mod = (float)$nowDt->modify($minInterval)->format('U.u');
-            $this->minInterval = (int)round(($mod - $now) * 1000);
+            $now = (float) $nowDt->format('U.u');
+            $mod = (float) $nowDt->modify($minInterval)->format('U.u');
+            $this->minInterval = (int) round(($mod - $now) * 1000);
 
             return $this;
         } elseif (is_int($minInterval)) {

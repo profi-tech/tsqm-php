@@ -2,6 +2,4 @@
 
 namespace Tsqm\Errors;
 
-class RootHasBeenDeleted extends TsqmWarning
-{
-}
+class RootHasBeenDeleted extends TsqmWarning {}

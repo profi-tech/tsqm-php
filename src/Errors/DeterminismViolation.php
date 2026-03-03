@@ -2,6 +2,4 @@
 
 namespace Tsqm\Errors;
 
-class DeterminismViolation extends TsqmError
-{
-}
+class DeterminismViolation extends TsqmError {}

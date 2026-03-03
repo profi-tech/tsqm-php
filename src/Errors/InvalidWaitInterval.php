@@ -2,6 +2,4 @@
 
 namespace Tsqm\Errors;
 
-class InvalidWaitInterval extends TsqmError
-{
-}
+class InvalidWaitInterval extends TsqmError {}

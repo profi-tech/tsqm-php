@@ -2,6 +2,4 @@
 
 namespace Tsqm\Errors;
 
-class UuidError extends TsqmError
-{
-}
+class UuidError extends TsqmError {}

@@ -67,14 +67,14 @@ class TaskRepository
                 'created_at' => $ptask->getCreatedAt()->format(self::MICROSECONDS_TS),
                 'scheduled_for' => $ptask->getScheduledFor()->format(self::MICROSECONDS_TS),
                 'name' => $ptask->getName(),
-                'is_secret' => (int)$ptask->getIsSecret(),
+                'is_secret' => (int) $ptask->getIsSecret(),
                 'args' => $ptask->getArgs(),
                 'retry_policy' => $ptask->getRetryPolicy(),
                 'trace' => $ptask->getTrace(),
             ]);
             $res->execute($row);
             $nid = $this->pdo->lastInsertId();
-            return $ptask->setNid((int)$nid);
+            return $ptask->setNid((int) $nid);
         } catch (Exception $e) {
             throw new RepositoryError("Failed to create task: " . $e->getMessage(), 0, $e);
         }
@@ -131,7 +131,7 @@ class TaskRepository
                 throw new Exception(PdoHelper::formatErrorInfo($this->pdo->errorInfo()));
             }
             $res->execute([
-                'id' => UuidHelper::uuid2bin($id)
+                'id' => UuidHelper::uuid2bin($id),
             ]);
             $row = $res->fetch(PDO::FETCH_ASSOC);
             if (!$row) {
@@ -151,7 +151,7 @@ class TaskRepository
                 throw new Exception(PdoHelper::formatErrorInfo($this->pdo->errorInfo()));
             }
             $res->execute([
-                'id' => UuidHelper::uuid2bin($id)
+                'id' => UuidHelper::uuid2bin($id),
             ]);
             return $res->fetchColumn() !== false;
         } catch (Exception $e) {
@@ -223,7 +223,7 @@ class TaskRepository
                 throw new Exception(PdoHelper::formatErrorInfo($this->pdo->errorInfo()));
             }
             $res->execute([
-                'parent_id' => UuidHelper::uuid2bin($parentId)
+                'parent_id' => UuidHelper::uuid2bin($parentId),
             ]);
 
             while ($row = $res->fetch(PDO::FETCH_ASSOC)) {
@@ -251,7 +251,7 @@ class TaskRepository
                 throw new Exception(PdoHelper::formatErrorInfo($this->pdo->errorInfo()));
             }
             $res->execute([
-                'root_id' => UuidHelper::uuid2bin($rootId)
+                'root_id' => UuidHelper::uuid2bin($rootId),
             ]);
             $row = $res->fetch(PDO::FETCH_ASSOC);
             if (!$row || is_null($row['finished_at'])) {
@@ -271,7 +271,7 @@ class TaskRepository
                 throw new Exception(PdoHelper::formatErrorInfo($this->pdo->errorInfo()));
             }
             $res->execute([
-                'root_id' => UuidHelper::uuid2bin($rootId)
+                'root_id' => UuidHelper::uuid2bin($rootId),
             ]);
         } catch (Exception $e) {
             throw new RepositoryError("Failed to delete task: " . $e->getMessage(), 0, $e);
@@ -285,7 +285,7 @@ class TaskRepository
     {
         $ptask = new PersistedTask();
         if (isset($row['nid'])) {
-            $ptask->setNid((int)$row['nid']);
+            $ptask->setNid((int) $row['nid']);
         }
         if (isset($row['id'])) {
             $id = UuidHelper::bin2uuid($row['id']);
@@ -315,7 +315,7 @@ class TaskRepository
             $ptask->setName($row['name']);
         }
         if (isset($row['is_secret'])) {
-            $ptask->setIsSecret((bool)$row['is_secret']);
+            $ptask->setIsSecret((bool) $row['is_secret']);
         }
         if (isset($row['args'])) {
             $ptask->setArgs(...SerializationHelper::unserialize($row['args']));

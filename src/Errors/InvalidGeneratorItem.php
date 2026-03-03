@@ -2,6 +2,4 @@
 
 namespace Tsqm\Errors;
 
-class InvalidGeneratorItem extends TsqmError
-{
-}
+class InvalidGeneratorItem extends TsqmError {}

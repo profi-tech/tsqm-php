@@ -2,6 +2,4 @@
 
 namespace Tsqm\Errors;
 
-class InvalidRetryPolicy extends TsqmError
-{
-}
+class InvalidRetryPolicy extends TsqmError {}
