@@ -101,6 +101,7 @@ class SerializationHelper
         return $error;
     }
 
+    /** @param ReflectionClass<Exception> $ref */
     private static function setExceptionProperty(ReflectionClass $ref, Exception $error, string $name, mixed $value): void
     {
         if ($ref->hasProperty($name)) {
