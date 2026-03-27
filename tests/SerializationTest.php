@@ -5,11 +5,11 @@ namespace Tests;
 use DateTime;
 use Exception;
 use PDOException;
+use Examples\Greeter\GreeterError;
 use Tsqm\Errors\SerializationError;
 use Tsqm\Helpers\SerializationHelper;
 use Tsqm\Helpers\UuidHelper;
 use Tsqm\PersistedTask;
-use Tsqm\Task;
 use Tsqm\TaskRepository;
 
 class SerializationTest extends TestCase
@@ -45,6 +45,7 @@ class SerializationTest extends TestCase
             $repository->updateTask($ptask);
             $this->assertEquals($expected, $ptask->getError()->getCode(), "Failed with code '$code'");
             $ptask = $repository->getTask($taskId);
+            $this->assertInstanceOf(PDOException::class, $ptask->getError(), "Failed instanceof with code '$code'");
             $this->assertEquals($expected, $ptask->getError()->getCode(), "Failed with code '$code'");
         }
 
@@ -98,5 +99,29 @@ class SerializationTest extends TestCase
         $unserialized = SerializationHelper::unserializeError($serialized);
 
         $this->assertNull($unserialized->getPrevious(), "Previous exception is not null after serialization");
+    }
+
+    public function testErrorInstanceOfPreservedAfterRoundtrip(): void
+    {
+        $error = new GreeterError("Greet failed", 42);
+
+        $serialized = SerializationHelper::serializeError($error);
+        $unserialized = SerializationHelper::unserializeError($serialized);
+
+        $this->assertInstanceOf(GreeterError::class, $unserialized);
+        $this->assertEquals("Greet failed", $unserialized->getMessage());
+        $this->assertEquals(42, $unserialized->getCode());
+    }
+
+    public function testPdoExceptionInstanceOfPreservedAfterRoundtrip(): void
+    {
+        $error = new PDOException("Connection failed", 123);
+
+        $serialized = SerializationHelper::serializeError($error);
+        $unserialized = SerializationHelper::unserializeError($serialized);
+
+        $this->assertInstanceOf(PDOException::class, $unserialized);
+        $this->assertEquals("Connection failed", $unserialized->getMessage());
+        $this->assertEquals(123, $unserialized->getCode());
     }
 }

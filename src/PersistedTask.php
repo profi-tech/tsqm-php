@@ -365,7 +365,7 @@ class PersistedTask implements JsonSerializable
             'error' => $this->error ? [
                 'class' => get_class($this->error),
                 'message' => $this->error->getMessage(),
-                'code' => $this->error->getCode() ?? null, // @phpstan-ignore nullCoalesce.expr
+                'code' => $this->error->getCode(),
             ] : null,
             'retry_policy' => $this->retryPolicy,
             'retried' => $this->retried,

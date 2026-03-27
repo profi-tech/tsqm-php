@@ -4,7 +4,7 @@ namespace Tsqm\Helpers;
 
 use __PHP_Incomplete_Class;
 use Exception;
-use ReflectionObject;
+use ReflectionClass;
 use Tsqm\Errors\SerializationError;
 
 class SerializationHelper
@@ -58,43 +58,56 @@ class SerializationHelper
 
     public static function serializeError(Exception $error): string
     {
-        $reflection = new ReflectionObject($error);
-
-        // Traverse up the inheritance chain to find the 'trace' property
-        while (!$reflection->hasProperty('trace') && $reflection->getParentClass()) {
-            $reflection = $reflection->getParentClass();
-        }
-
-        if ($reflection->hasProperty('trace')) {
-            $traceProp = $reflection->getProperty('trace');
-            $traceProp->setAccessible(true);
-            $traceProp->setValue($error, array_slice($error->getTrace(), 0, self::MAX_TRACE_LENGTH));
-        }
-
-        // Traverse up the inheritance chain to find the 'previous' property
-        $reflection = new ReflectionObject($error);
-        while (!$reflection->hasProperty('previous') && $reflection->getParentClass()) {
-            $reflection = $reflection->getParentClass();
-        }
-
-        if ($reflection->hasProperty('previous')) {
-            $previousProp = $reflection->getProperty('previous');
-            $previousProp->setAccessible(true);
-            $previousProp->setValue($error, null);
-        }
-
-        return self::serialize($error);
+        $data = [
+            'class' => get_class($error),
+            'message' => $error->getMessage(),
+            'code' => $error->getCode(),
+            'file' => $error->getFile(),
+            'line' => $error->getLine(),
+            'trace' => array_slice($error->getTrace(), 0, self::MAX_TRACE_LENGTH),
+        ];
+        return self::serialize($data);
     }
 
     public static function unserializeError(string $value): Exception
     {
-        $error = self::unserialize($value);
-        if (is_array($error)) { // Old serialization format
-            return new $error['class']($error['message']);
-        } elseif ($error instanceof Exception) {
-            return $error;
-        } else {
-            throw new SerializationError("Invalid error class");
+        $data = self::unserialize($value);
+
+        // Backward compatibility: old format stored serialized Exception objects
+        if ($data instanceof Exception) {
+            return $data;
+        }
+
+        if (!is_array($data) || !isset($data['class'])) {
+            throw new SerializationError("Invalid error format");
+        }
+
+        $class = $data['class'];
+        if (!class_exists($class) || !is_a($class, Exception::class, true)) {
+            $class = Exception::class;
+        }
+
+        $ref = new ReflectionClass($class);
+        /** @var Exception $error */
+        $error = $ref->newInstanceWithoutConstructor();
+
+        foreach (['message', 'code', 'file', 'line', 'trace'] as $prop) {
+            if (!array_key_exists($prop, $data)) {
+                continue;
+            }
+            self::setExceptionProperty($ref, $error, $prop, $data[$prop]);
+        }
+
+        return $error;
+    }
+
+    /** @param ReflectionClass<Exception> $ref */
+    private static function setExceptionProperty(ReflectionClass $ref, Exception $error, string $name, mixed $value): void
+    {
+        if ($ref->hasProperty($name)) {
+            $prop = $ref->getProperty($name);
+            $prop->setAccessible(true);
+            $prop->setValue($error, $value);
         }
     }
 }
