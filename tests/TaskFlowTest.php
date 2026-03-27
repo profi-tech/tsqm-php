@@ -155,6 +155,7 @@ class TaskFlowTest extends TestCase
         $now = new DateTime();
 
         $this->assertDateEquals($task->getFinishedAt(), $now);
+        $this->assertInstanceOf(GreeterError::class, $task->getError());
         $this->assertEquals(new GreeterError("Greet John Doe failed", 1717414866), $task->getError());
         $this->assertNull($task->getResult());
     }
@@ -235,15 +236,17 @@ class TaskFlowTest extends TestCase
 
         // Initial failed run
         $task = $this->tsqm->run($task);
+        $this->assertInstanceOf(GreeterError::class, $task->getError());
         $this->assertEquals(new GreeterError("Greet failed", 1700403919), $task->getError());
         $this->assertNull($task->getFinishedAt());
         $this->assertNull($task->getResult());
         $this->assertEquals(0, $task->getRetried());
 
-        // Two failed retries
+        // Two failed retries (error deserialized from DB)
         for ($i = 0; $i < 2; $i++) {
             $task = $this->tsqm->get($task->getRootId());
             $task = $this->tsqm->run($task);
+            $this->assertInstanceOf(GreeterError::class, $task->getError(), "step $i");
             $this->assertEquals(new GreeterError("Greet failed", 1700403919), $task->getError(), "step $i");
             $this->assertNull($task->getFinishedAt(), "step $i");
             $this->assertNull($task->getResult(), "step $i");
