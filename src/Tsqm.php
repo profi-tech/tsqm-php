@@ -258,7 +258,7 @@ class Tsqm implements TsqmInterface
                     : CarbonImmutable::now();
                 try {
                     $scheduledFor = $lastFinishedAtCarbon->modify($ptask->getWaitInterval());
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     throw new InvalidWaitInterval("Invalid wait interval", 1720430537, $e);
                 }
                 $ptask->setScheduledFor($scheduledFor);
