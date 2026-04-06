@@ -2,8 +2,8 @@
 
 namespace Tests;
 
+use Carbon\CarbonImmutable;
 use Closure;
-use DateTime;
 use Examples\Greeter\GreetWithPurchaseFailAndRetryInterval;
 use Examples\Greeter\SimpleGreet;
 use Examples\Greeter\SimpleGreetWith3Fails;
@@ -25,7 +25,7 @@ class SchedulerTest extends TestCase
             ->setArgs('John Doe');
 
         $task = $this->tsqm->run($task);
-        $this->assertDateEquals($task->getScheduledFor(), new DateTime(), 50);
+        $this->assertDateEquals($task->getScheduledFor(), CarbonImmutable::now(), 50);
         $this->assertTrue($task->isFinished());
     }
 
@@ -37,7 +37,7 @@ class SchedulerTest extends TestCase
             ->setArgs('John Doe');
 
         $task = $this->tsqm->run($task, true);
-        $this->assertDateEquals($task->getScheduledFor(), new DateTime(), 50);
+        $this->assertDateEquals($task->getScheduledFor(), CarbonImmutable::now(), 50);
         $this->assertFalse($task->isFinished());
     }
 
@@ -56,7 +56,7 @@ class SchedulerTest extends TestCase
             ->setArgs('John Doe');
 
         $task = $tsqm->run($task, true);
-        $this->assertDateEquals($task->getStartedAt(), new DateTime(), 50);
+        $this->assertDateEquals($task->getStartedAt(), CarbonImmutable::now(), 50);
         $this->assertNotNull($task->getResult());
         $this->assertTrue($task->isFinished());
     }
@@ -74,10 +74,10 @@ class SchedulerTest extends TestCase
         $task = (new Task())
             ->setCallable($simpleGreet)
             ->setArgs('John Doe')
-            ->setScheduledFor((new DateTime())->modify('+1 day'));
+            ->setScheduledFor((CarbonImmutable::now())->modify('+1 day'));
 
         $task = $tsqm->run($task);
-        $this->assertDateEquals($task->getStartedAt(), new DateTime(), 50);
+        $this->assertDateEquals($task->getStartedAt(), CarbonImmutable::now(), 50);
         $this->assertNotNull($task->getResult());
         $this->assertTrue($task->isFinished());
     }
@@ -85,7 +85,7 @@ class SchedulerTest extends TestCase
     public function testScheduledFor(): void
     {
         $simpleGreet = $this->container->get(SimpleGreet::class);
-        $scheduleFor = (new DateTime())->modify('+1 day');
+        $scheduleFor = (CarbonImmutable::now())->modify('+1 day');
 
         $task = (new Task())
             ->setCallable($simpleGreet)
@@ -114,7 +114,7 @@ class SchedulerTest extends TestCase
 
         $this->assertDateEquals(
             $task->getScheduledFor(),
-            (new DateTime())->modify('+1500 milliseconds')
+            (CarbonImmutable::now())->modify('+1500 milliseconds')
         );
         $this->assertFalse($task->isFinished());
     }
@@ -132,7 +132,7 @@ class SchedulerTest extends TestCase
     public function testListScheduledTasks(): void
     {
         $simpleGreetWith3Fails = $this->container->get(SimpleGreetWith3Fails::class);
-        $scheduledFor = (new DateTime())->modify('+10 second');
+        $scheduledFor = (CarbonImmutable::now())->modify('+10 second');
         $task = (new Task())
             ->setCallable($simpleGreetWith3Fails)
             ->setArgs('John Doe')
@@ -162,14 +162,14 @@ class SchedulerTest extends TestCase
         $this->tsqm->run($task);
         $this->tsqm->run($task);
 
-        $scheduledTasks = $this->tsqm->list(10, (new DateTime())->modify("-10 second"));
+        $scheduledTasks = $this->tsqm->list(10, (CarbonImmutable::now())->modify("-10 second"));
         $this->assertCount(0, $scheduledTasks);
     }
 
     public function testListScheduledTasksLimit(): void
     {
         $simpleGreetWith3Fails = $this->container->get(SimpleGreetWith3Fails::class);
-        $scheduledFor = (new DateTime())->modify('+10 second');
+        $scheduledFor = (CarbonImmutable::now())->modify('+10 second');
         $task = (new Task())
             ->setCallable($simpleGreetWith3Fails)
             ->setArgs('John Doe')
@@ -206,10 +206,10 @@ class SchedulerTest extends TestCase
         $simpleGreet = $this->container->get(SimpleGreet::class);
 
         $cases = [
-            '10 second' => (new DateTime())->modify('+10 second'),
-            '+10 second' => (new DateTime())->modify('+10 second'),
-            '-10 second' => (new DateTime())->modify('-10 second'),
-            '1 day' => (new DateTime())->modify('+1 day'),
+            '10 second' => (CarbonImmutable::now())->modify('+10 second'),
+            '+10 second' => (CarbonImmutable::now())->modify('+10 second'),
+            '-10 second' => (CarbonImmutable::now())->modify('-10 second'),
+            '1 day' => (CarbonImmutable::now())->modify('+1 day'),
         ];
 
         foreach ($cases as $waitInterval => $expectedScheduledFor) {
@@ -242,6 +242,6 @@ class SchedulerTest extends TestCase
         $lastTask = $this->getLastTaskByParentId($task->getId());
         $this->assertNotNull($lastTask);
         $this->assertFalse($lastTask->isFinished());
-        $this->assertDateEquals((new DateTime())->modify('+1 day'), $lastTask->getScheduledFor(), 50);
+        $this->assertDateEquals((CarbonImmutable::now())->modify('+1 day'), $lastTask->getScheduledFor(), 50);
     }
 }

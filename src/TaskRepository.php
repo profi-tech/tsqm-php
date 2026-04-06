@@ -2,7 +2,8 @@
 
 namespace Tsqm;
 
-use DateTime;
+use Carbon\CarbonImmutable;
+use DateTimeInterface;
 use Exception;
 use PDO;
 use Tsqm\Errors\RepositoryError;
@@ -161,11 +162,11 @@ class TaskRepository
 
     /**
      * @param int $limit
-     * @param DateTime $now
+     * @param DateTimeInterface $now
      * @return array<PersistedTask>
      * @throws RepositoryError
      */
-    public function getScheduledTasks(int $limit, DateTime $now): array
+    public function getScheduledTasks(int $limit, DateTimeInterface $now): array
     {
         try {
             // MySQL strict mode fix
@@ -236,7 +237,7 @@ class TaskRepository
         }
     }
 
-    public function getLastFinishedAt(string $rootId): ?DateTime
+    public function getLastFinishedAt(string $rootId): ?DateTimeInterface
     {
         try {
             $res = $this->pdo->prepare("
@@ -257,7 +258,7 @@ class TaskRepository
             if (!$row || is_null($row['finished_at'])) {
                 return null;
             }
-            return new DateTime($row['finished_at']);
+            return CarbonImmutable::parse($row['finished_at']);
         } catch (Exception $e) {
             throw new RepositoryError("Failed to get last finished at: " . $e->getMessage(), 0, $e);
         }
@@ -300,16 +301,16 @@ class TaskRepository
             $ptask->setRootId($rootId);
         }
         if (isset($row['created_at'])) {
-            $ptask->setCreatedAt(new DateTime($row['created_at']));
+            $ptask->setCreatedAt(CarbonImmutable::parse($row['created_at']));
         }
         if (isset($row['scheduled_for'])) {
-            $ptask->setScheduledFor(new DateTime($row['scheduled_for']));
+            $ptask->setScheduledFor(CarbonImmutable::parse($row['scheduled_for']));
         }
         if (isset($row['started_at'])) {
-            $ptask->setStartedAt(new DateTime($row['started_at']));
+            $ptask->setStartedAt(CarbonImmutable::parse($row['started_at']));
         }
         if (isset($row['finished_at'])) {
-            $ptask->setFinishedAt(new DateTime($row['finished_at']));
+            $ptask->setFinishedAt(CarbonImmutable::parse($row['finished_at']));
         }
         if (isset($row['name'])) {
             $ptask->setName($row['name']);

@@ -2,7 +2,7 @@
 
 namespace Tests;
 
-use DateTime;
+use Carbon\CarbonImmutable;
 use Examples\Greeter\GreeterError;
 use Examples\Greeter\SimpleGreet;
 use Examples\Greeter\SimpleGreetWith3Fails;
@@ -23,7 +23,7 @@ class TaskFlowTest extends TestCase
 
         $task = $this->tsqm->run($task);
 
-        $now = new DateTime();
+        $now = CarbonImmutable::now();
 
         $this->assertDateEquals($task->getFinishedAt(), $now);
 
@@ -55,7 +55,7 @@ class TaskFlowTest extends TestCase
             ->setCallable($simpleGreet)
             ->setArgs('John Doe');
 
-        $now = new DateTime();
+        $now = CarbonImmutable::now();
 
         $task = $this->tsqm->run($task);
 
@@ -85,11 +85,11 @@ class TaskFlowTest extends TestCase
         $task = (new Task())
             ->setCallable($simpleGreet)
             ->setArgs('John Doe')
-            ->setScheduledFor((new DateTime())->modify("+10 second"));
+            ->setScheduledFor((CarbonImmutable::now())->modify("+10 second"));
 
         $task = $this->tsqm->run($task);
 
-        $scheduledFor = (new DateTime())->modify("+10 second");
+        $scheduledFor = (CarbonImmutable::now())->modify("+10 second");
 
         $this->assertDateEquals($task->getScheduledFor(), $scheduledFor);
         $this->assertNull($task->getFinishedAt());
@@ -103,11 +103,11 @@ class TaskFlowTest extends TestCase
         $task = (new Task())
             ->setCallable($simpleGreet)
             ->setArgs('John Doe')
-            ->setScheduledFor((new DateTime())->modify("+10 second"));
+            ->setScheduledFor((CarbonImmutable::now())->modify("+10 second"));
 
         $task = $this->tsqm->run($task);
 
-        $scheduledFor = (new DateTime())->modify("+10 second");
+        $scheduledFor = (CarbonImmutable::now())->modify("+10 second");
 
         $this->assertDateEquals($task->getScheduledFor(), $scheduledFor);
         $this->assertNull($task->getFinishedAt());
@@ -130,11 +130,11 @@ class TaskFlowTest extends TestCase
         $task = (new Task())
             ->setCallable($simpleGreetWithFail)
             ->setArgs('John Doe')
-            ->setScheduledFor((new DateTime())->modify("+10 second"));
+            ->setScheduledFor((CarbonImmutable::now())->modify("+10 second"));
 
         $task = $this->tsqm->run($task);
 
-        $scheduledFor = (new DateTime())->modify("+10 second");
+        $scheduledFor = (CarbonImmutable::now())->modify("+10 second");
 
         $this->assertDateEquals($task->getScheduledFor(), $scheduledFor);
         $this->assertNull($task->getFinishedAt());
@@ -152,7 +152,7 @@ class TaskFlowTest extends TestCase
 
         $task = $this->tsqm->run($task);
 
-        $now = new DateTime();
+        $now = CarbonImmutable::now();
 
         $this->assertDateEquals($task->getFinishedAt(), $now);
         $this->assertInstanceOf(GreeterError::class, $task->getError());
@@ -184,7 +184,7 @@ class TaskFlowTest extends TestCase
 
         $task = $this->tsqm->run($task);
 
-        $now = new DateTime();
+        $now = CarbonImmutable::now();
 
         $this->assertDateEquals($task->getFinishedAt(), $now);
         $this->assertEquals(new GreeterError("Greet John Doe failed", 1717414866), $task->getError());
@@ -214,7 +214,7 @@ class TaskFlowTest extends TestCase
 
         $task = $this->tsqm->run($task);
 
-        $scheduledFor = (new DateTime())->modify("+10 second");
+        $scheduledFor = (CarbonImmutable::now())->modify("+10 second");
 
         $this->assertDateEquals($task->getScheduledFor(), $scheduledFor);
         $this->assertNull($task->getFinishedAt());

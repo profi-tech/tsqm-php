@@ -2,4 +2,4 @@
 
 set -e
 
-composer check
+make check

@@ -2,7 +2,8 @@
 
 namespace Tests;
 
-use DateTime;
+use Carbon\CarbonImmutable;
+use DateTimeInterface;
 use Examples\Greeter\GreetNestedScheduled;
 use Examples\Greeter\GreetNestedWithFail;
 use Examples\Greeter\GreetScheduled;
@@ -46,8 +47,8 @@ class QueueTest extends TestCase
         $this->queue->expects($this->once())->method('enqueue')->with(
             $task->getName(),
             $this->callback(fn(string $taskId) => $this->assertUuid($taskId)),
-            $this->callback(fn(DateTime $scheduledFor) => $this->assertDateEquals(
-                (new DateTime())->modify('+1 second'),
+            $this->callback(fn(DateTimeInterface $scheduledFor) => $this->assertDateEquals(
+                (CarbonImmutable::now())->modify('+1 second'),
                 $scheduledFor,
                 50
             ))
@@ -59,7 +60,7 @@ class QueueTest extends TestCase
     public function testEnqueueScheduledTask(): void
     {
         $simpleGreet = $this->container->get(SimpleGreet::class);
-        $scheduledFor = (new DateTime())->modify('+1 day');
+        $scheduledFor = (CarbonImmutable::now())->modify('+1 day');
         $task = (new Task())
             ->setCallable($simpleGreet)
             ->setArgs('John Doe')
@@ -69,7 +70,7 @@ class QueueTest extends TestCase
             $task->getName(),
             $this->callback(fn(string $taskId) => $this->assertUuid($taskId)),
             $this->callback(
-                fn(DateTime $actualScheduledFor) => $this->assertDateEquals(
+                fn(DateTimeInterface $actualScheduledFor) => $this->assertDateEquals(
                     $scheduledFor->modify('+1 second'),
                     $actualScheduledFor
                 )
@@ -83,7 +84,7 @@ class QueueTest extends TestCase
     {
         $greetScheduled = $this->container->get(GreetScheduled::class);
 
-        $scheduledFor = (new DateTime())->modify('+1 day');
+        $scheduledFor = (CarbonImmutable::now())->modify('+1 day');
         $task = (new Task())
             ->setCallable($greetScheduled)
             ->setArgs('John Doe');
@@ -97,7 +98,7 @@ class QueueTest extends TestCase
                 return true;
             }),
             $this->callback(
-                fn(DateTime $actualScheduledFor) => $this->assertDateEquals(
+                fn(DateTimeInterface $actualScheduledFor) => $this->assertDateEquals(
                     $scheduledFor->modify('+1 second'),
                     $actualScheduledFor
                 )
@@ -168,8 +169,8 @@ class QueueTest extends TestCase
             $task->getName(),
             $this->callback(fn(string $taskId) => $this->assertUuid($taskId)),
             $this->callback(
-                fn(DateTime $actualScheduledFor) => $this->assertDateEquals(
-                    (new DateTime())->modify('+11 seconds'), // 10 seconds + leap second
+                fn(DateTimeInterface $actualScheduledFor) => $this->assertDateEquals(
+                    (CarbonImmutable::now())->modify('+11 seconds'), // 10 seconds + leap second
                     $actualScheduledFor
                 )
             )
@@ -182,7 +183,7 @@ class QueueTest extends TestCase
     {
         $simpleGreet = $this->container->get(SimpleGreet::class);
         $queue = [];
-        $now = new DateTime();
+        $now = CarbonImmutable::now();
 
         $task = (new Task())
             ->setCallable($simpleGreet)
@@ -192,7 +193,7 @@ class QueueTest extends TestCase
         $this->queue->expects($this->once())->method('enqueue')
             ->withAnyParameters()
             ->willReturnCallback(
-                function (string $taskName, string $taskId, DateTime $scheduledFor) use (&$queue, $now) {
+                function (string $taskName, string $taskId, DateTimeInterface $scheduledFor) use (&$queue, $now) {
                     $this->assertDateEquals($now->modify("+1 second"), $scheduledFor, 50);
                     if (!isset($queue[$taskName])) {
                         $queue[$taskName] = [];

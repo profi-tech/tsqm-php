@@ -2,7 +2,8 @@
 
 namespace Tsqm;
 
-use DateTime;
+use Carbon\CarbonImmutable;
+use DateTimeInterface;
 use JsonSerializable;
 use Tsqm\Errors\InvalidRetryPolicy;
 
@@ -33,23 +34,16 @@ class RetryPolicy implements JsonSerializable
 
     /**
      * Set the minimum time between retries in milliseconds
-     * @param int|string $minInterval — miliseconds or a string that can be parsed by DateTime::modify
+     * @param int|string $minInterval — milliseconds or a string that can be parsed by CarbonImmutable::modify
      * @return RetryPolicy
      */
     public function setMinInterval($minInterval): self
     {
         if (is_string($minInterval)) {
-            $nowMicrotime = explode(' ', microtime());
-            $nowMicroseconds = floatval($nowMicrotime[0]) * 1000000;
-            $nowSeconds = $nowMicrotime[1];
-            $nowDt = DateTime::createFromFormat('U.u', "$nowSeconds.$nowMicroseconds");
-            if ($nowDt === false) {
-                throw new InvalidRetryPolicy("Invalid now value: $nowSeconds.$nowMicroseconds");
-            }
-
-            $now = (float) $nowDt->format('U.u');
-            $mod = (float) $nowDt->modify($minInterval)->format('U.u');
-            $this->minInterval = (int) round(($mod - $now) * 1000);
+            $now = CarbonImmutable::now();
+            $nowTs = (float) $now->format('U.u');
+            $modTs = (float) $now->modify($minInterval)->format('U.u');
+            $this->minInterval = (int) round(($modTs - $nowTs) * 1000);
 
             return $this;
         } elseif (is_int($minInterval)) {
@@ -90,7 +84,7 @@ class RetryPolicy implements JsonSerializable
         return $this->useJitter;
     }
 
-    public function getRetryAt(int $retriesSoFar): ?DateTime
+    public function getRetryAt(int $retriesSoFar): ?DateTimeInterface
     {
         if ($retriesSoFar < $this->getMaxRetries()) {
             $interval = $this->getMinInterval() * ($this->getBackoffFactor() ** $retriesSoFar);
@@ -98,7 +92,7 @@ class RetryPolicy implements JsonSerializable
                 $jitterFactor = mt_rand(500, 1500) / 1000; // Jitter from 0.5 to 1.5 times the interval
                 $interval = round($interval * $jitterFactor);
             }
-            return (new DateTime())->modify("+$interval milliseconds");
+            return CarbonImmutable::now()->addMilliseconds((int) $interval);
         } else {
             return null;
         }

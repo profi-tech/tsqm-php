@@ -2,13 +2,14 @@
 
 namespace Tsqm;
 
-use DateTime;
+use Carbon\CarbonImmutable;
+use DateTimeInterface;
 use JsonSerializable;
 use Tsqm\Errors\InvalidTask;
 
 class Task implements JsonSerializable
 {
-    private ?DateTime $scheduledFor = null;
+    private ?CarbonImmutable $scheduledFor = null;
 
     private ?string $waitInterval = null;
 
@@ -42,9 +43,9 @@ class Task implements JsonSerializable
         return $this;
     }
 
-    public function setScheduledFor(DateTime $scheduledFor): self
+    public function setScheduledFor(DateTimeInterface $scheduledFor): self
     {
-        $this->scheduledFor = $scheduledFor;
+        $this->scheduledFor = CarbonImmutable::instance($scheduledFor);
         return $this;
     }
 
@@ -53,7 +54,7 @@ class Task implements JsonSerializable
         return !is_null($this->scheduledFor);
     }
 
-    public function getScheduledFor(): ?DateTime
+    public function getScheduledFor(): ?DateTimeInterface
     {
         return $this->scheduledFor;
     }

@@ -2,7 +2,7 @@
 
 namespace Tsqm;
 
-use DateTime;
+use DateTimeInterface;
 
 interface TsqmInterface
 {
@@ -24,10 +24,10 @@ interface TsqmInterface
     /**
      * Lists scheduled tasks.
      * @param int $limit
-     * @param DateTime|null $now
+     * @param DateTimeInterface|null $now
      * @return array<PersistedTask>
      */
-    public function list(int $limit = 100, ?DateTime $now = null): array;
+    public function list(int $limit = 100, ?DateTimeInterface $now = null): array;
 
     /**
      * Runs scheduled tasks in a polling mode.

@@ -2,7 +2,7 @@
 
 namespace Tests;
 
-use DateTime;
+use Carbon\CarbonImmutable;
 use Examples\Greeter\Greet;
 use Examples\Greeter\GreetNested;
 use Examples\Greeter\SimpleGreet;
@@ -23,7 +23,7 @@ class SmokeTest extends TestCase
 
         $task = $this->tsqm->run($task);
 
-        $now = new DateTime();
+        $now = CarbonImmutable::now();
 
         $this->assertUuid($task->getId());
         $this->assertNull($task->getParentId());

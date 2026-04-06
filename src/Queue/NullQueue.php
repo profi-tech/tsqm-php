@@ -2,11 +2,11 @@
 
 namespace Tsqm\Queue;
 
-use DateTime;
+use DateTimeInterface;
 
 class NullQueue implements QueueInterface
 {
-    public function enqueue(string $taskName, string $taskId, DateTime $scheduledFor): void
+    public function enqueue(string $taskName, string $taskId, DateTimeInterface $scheduledFor): void
     {
         // Do nothing
     }

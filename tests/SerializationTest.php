@@ -2,7 +2,7 @@
 
 namespace Tests;
 
-use DateTime;
+use Carbon\CarbonImmutable;
 use Exception;
 use PDOException;
 use Examples\Greeter\GreeterError;
@@ -28,8 +28,8 @@ class SerializationTest extends TestCase
         $ptask = (new PersistedTask())
             ->setId($taskId)
             ->setRootId($taskId)
-            ->setCreatedAt(new DateTime())
-            ->setScheduledFor(new DateTime())
+            ->setCreatedAt(CarbonImmutable::now())
+            ->setScheduledFor(CarbonImmutable::now())
             ->setName("Random task name");
         $ptask = $repository->createTask($ptask);
 

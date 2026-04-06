@@ -2,7 +2,8 @@
 
 namespace Tsqm;
 
-use DateTime;
+use Carbon\CarbonImmutable;
+use DateTimeInterface;
 use Exception;
 use Generator;
 use PDO;
@@ -99,7 +100,7 @@ class Tsqm implements TsqmInterface
         }
 
         if (!$this->options->isSyncRunsForced()) {
-            if ($async || $ptask->getScheduledFor() > new DateTime()) {
+            if ($async || $ptask->getScheduledFor() > CarbonImmutable::now()) {
                 $this->log(LogLevel::INFO, "Schedule {$ptask->getLogId()}", ['task' => $ptask]);
                 $this->enqueue($ptask);
                 return $ptask;
@@ -108,7 +109,7 @@ class Tsqm implements TsqmInterface
 
         $isStarted = $ptask->isStarted();
         if (!$isStarted) {
-            $ptask->setStartedAt(new DateTime());
+            $ptask->setStartedAt(CarbonImmutable::now());
         } else {
             $ptask->incRetried();
         }
@@ -184,7 +185,7 @@ class Tsqm implements TsqmInterface
             }
 
             $ptask
-                ->setFinishedAt(new DateTime())
+                ->setFinishedAt(CarbonImmutable::now())
                 ->setResult($result)
                 ->setError(null);
 
@@ -219,7 +220,7 @@ class Tsqm implements TsqmInterface
                 $this->enqueue($ptask);
             } else {
                 if (!$ptask->isFinished()) {
-                    $ptask->setFinishedAt(new DateTime());
+                    $ptask->setFinishedAt(CarbonImmutable::now());
                     $this->repository->updateTask($ptask);
                 }
 
@@ -246,18 +247,19 @@ class Tsqm implements TsqmInterface
             $ptask->setId($taskId);
         }
 
-        $ptask->setCreatedAt(new DateTime());
+        $ptask->setCreatedAt(CarbonImmutable::now());
 
         // Calculating scheduledFor if not set
         if (!$ptask->isScheduled()) {
             if ($ptask->hasWaitInterval()) {
                 $lastFinishedAt = $this->repository->getLastFinishedAt($ptask->getRootId());
-                if (is_null($lastFinishedAt)) {
-                    $lastFinishedAt = new DateTime();
-                }
-                $scheduledFor = $lastFinishedAt->modify($ptask->getWaitInterval());
-                if ($scheduledFor === false) {
-                    throw new InvalidWaitInterval("Invalid wait interval", 1720430537);
+                $lastFinishedAtCarbon = $lastFinishedAt
+                    ? CarbonImmutable::instance($lastFinishedAt)
+                    : CarbonImmutable::now();
+                try {
+                    $scheduledFor = $lastFinishedAtCarbon->modify($ptask->getWaitInterval());
+                } catch (\Exception $e) {
+                    throw new InvalidWaitInterval("Invalid wait interval", 1720430537, $e);
                 }
                 $ptask->setScheduledFor($scheduledFor);
             } else {
@@ -301,10 +303,10 @@ class Tsqm implements TsqmInterface
     /**
      * @return array<PersistedTask>
      */
-    public function list(int $limit = 100, ?DateTime $now = null): array
+    public function list(int $limit = 100, ?DateTimeInterface $now = null): array
     {
         if (is_null($now)) {
-            $now = new DateTime();
+            $now = CarbonImmutable::now();
         }
         return $this->repository->getScheduledTasks($limit, $now);
     }
@@ -332,7 +334,7 @@ class Tsqm implements TsqmInterface
             pcntl_signal(SIGQUIT, $signalHandler);
 
             while ($isListening) {
-                $now = (new DateTime())->modify("-$delay seconds");
+                $now = CarbonImmutable::now()->subSeconds($delay);
                 $tasks = $this->list($limit, $now);
                 if (count($tasks) > 0) {
                     foreach ($tasks as $task) {
@@ -385,8 +387,8 @@ class Tsqm implements TsqmInterface
 
             // Some queue implementations could operate at seconds resolution, but scheduledFor stored in microseconds.
             // So we need to add some leap-interval to prevent tasks to be delivered earlier than scheduledFor
-            $scheduledFor = (clone $ptask->getScheduledFor())
-                ->modify("+" . self::LEAP_INTERVAL . " seconds");
+            $scheduledFor = CarbonImmutable::instance($ptask->getScheduledFor())
+                ->addSeconds(self::LEAP_INTERVAL);
 
             // For child tasks we enqueue root tasks with the scheduledFor of child task
             // becasue TSQM suppose to run only root tasks
