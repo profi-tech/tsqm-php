@@ -39,18 +39,18 @@ Wait for completion before continuing.
 
 ---
 
-## Step 3 — Plan and implement
+## Step 3 — Plan
 
-Enter plan mode. Present a plan that covers:
+Run skill `/architect` via the Agent tool (`subagent_type: "general-purpose"`).
+Pass the full task description. Example prompt: `"Load skill /architect and
+follow it. Task: add configurable retry backoff for failed tasks"`.
 
-- Key design decisions and trade-offs
-- Files to create or modify
-- Implementation steps
+Wait for completion. The architect will enter plan mode, get the user's
+approval, and save the plan to `docs/plans/`.
 
-**[checkpoint]** — wait for the user to approve the plan before proceeding
-with implementation.
+## Step 4 — Implement
 
-Once approved, implement the plan step by step.
+Read the plan file the architect saved. Implement it step by step.
 
 ---
 
