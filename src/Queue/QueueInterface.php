@@ -2,7 +2,7 @@
 
 namespace Tsqm\Queue;
 
-use DateTime;
+use DateTimeInterface;
 use Tsqm\Task;
 
 interface QueueInterface
@@ -10,10 +10,10 @@ interface QueueInterface
     /**
      * @param string $taskName
      * @param string $taskId
-     * @param DateTime $scheduledFor
+     * @param DateTimeInterface $scheduledFor
      * @return void
      */
-    public function enqueue(string $taskName, string $taskId, DateTime $scheduledFor): void;
+    public function enqueue(string $taskName, string $taskId, DateTimeInterface $scheduledFor): void;
 
     /**
      * @param string $taskName

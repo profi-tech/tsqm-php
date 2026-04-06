@@ -2,7 +2,7 @@
 
 namespace Tests;
 
-use DateTime;
+use DateTimeInterface;
 use DI\Container;
 use Examples\Helpers\DbHelper;
 use Examples\PsrContainer;
@@ -39,8 +39,8 @@ class TestCase extends \PHPUnit\Framework\TestCase
     }
 
     public function assertDateEquals(
-        DateTime $expected,
-        DateTime $actual,
+        DateTimeInterface $expected,
+        DateTimeInterface $actual,
         int $deltaMs = 50,
         string $message = ''
     ): bool {
@@ -48,7 +48,7 @@ class TestCase extends \PHPUnit\Framework\TestCase
         $this->assertLessThanOrEqual(
             $deltaMs,
             $diff,
-            "Failed asserting that two DateTime instances are equal with $deltaMs ms delta."
+            "Failed asserting that two dates are equal with $deltaMs ms delta."
                 . ($message ? " $message" : "")
         );
         return $diff <= $deltaMs;

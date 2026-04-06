@@ -2,7 +2,8 @@
 
 namespace Tsqm;
 
-use DateTime;
+use Carbon\CarbonImmutable;
+use DateTimeInterface;
 use Exception;
 use JsonSerializable;
 use Tsqm\Errors\InvalidTask;
@@ -19,15 +20,15 @@ class PersistedTask implements JsonSerializable
 
     private ?string $rootId = null;
 
-    private ?DateTime $createdAt = null;
+    private ?CarbonImmutable $createdAt = null;
 
-    private ?DateTime $scheduledFor = null;
+    private ?CarbonImmutable $scheduledFor = null;
 
     private ?string $waitInterval = null;
 
-    private ?DateTime $startedAt = null;
+    private ?CarbonImmutable $startedAt = null;
 
-    private ?DateTime $finishedAt = null;
+    private ?CarbonImmutable $finishedAt = null;
 
     private ?string $name = null;
 
@@ -126,9 +127,9 @@ class PersistedTask implements JsonSerializable
         return $this->getId() === $this->getRootId();
     }
 
-    public function setCreatedAt(?DateTime $createdAt): self
+    public function setCreatedAt(?DateTimeInterface $createdAt): self
     {
-        $this->createdAt = $createdAt;
+        $this->createdAt = $createdAt ? CarbonImmutable::instance($createdAt) : null;
         return $this;
     }
 
@@ -137,7 +138,7 @@ class PersistedTask implements JsonSerializable
         return !is_null($this->createdAt);
     }
 
-    public function getCreatedAt(): ?DateTime
+    public function getCreatedAt(): ?DateTimeInterface
     {
         if (!$this->isCreated()) {
             throw new InvalidTask("Task was not created yet");
@@ -145,9 +146,9 @@ class PersistedTask implements JsonSerializable
         return $this->createdAt;
     }
 
-    public function setScheduledFor(?DateTime $scheduledFor): self
+    public function setScheduledFor(?DateTimeInterface $scheduledFor): self
     {
-        $this->scheduledFor = $scheduledFor;
+        $this->scheduledFor = $scheduledFor ? CarbonImmutable::instance($scheduledFor) : null;
         return $this;
     }
 
@@ -156,7 +157,7 @@ class PersistedTask implements JsonSerializable
         return !is_null($this->scheduledFor);
     }
 
-    public function getScheduledFor(): ?DateTime
+    public function getScheduledFor(): ?DateTimeInterface
     {
         if (!$this->isScheduled()) {
             throw new InvalidTask("Task was not scheduled yet");
@@ -180,9 +181,9 @@ class PersistedTask implements JsonSerializable
         return $this->waitInterval;
     }
 
-    public function setStartedAt(?DateTime $startedAt): self
+    public function setStartedAt(?DateTimeInterface $startedAt): self
     {
-        $this->startedAt = $startedAt;
+        $this->startedAt = $startedAt ? CarbonImmutable::instance($startedAt) : null;
         return $this;
     }
 
@@ -191,14 +192,14 @@ class PersistedTask implements JsonSerializable
         return !is_null($this->startedAt);
     }
 
-    public function getStartedAt(): ?DateTime
+    public function getStartedAt(): ?DateTimeInterface
     {
         return $this->startedAt;
     }
 
-    public function setFinishedAt(?DateTime $finishedAt): self
+    public function setFinishedAt(?DateTimeInterface $finishedAt): self
     {
-        $this->finishedAt = $finishedAt;
+        $this->finishedAt = $finishedAt ? CarbonImmutable::instance($finishedAt) : null;
         return $this;
     }
 
@@ -207,7 +208,7 @@ class PersistedTask implements JsonSerializable
         return !is_null($this->finishedAt);
     }
 
-    public function getFinishedAt(): ?DateTime
+    public function getFinishedAt(): ?DateTimeInterface
     {
         return $this->finishedAt;
     }

@@ -2,7 +2,7 @@
 
 namespace Tests;
 
-use DateTime;
+use Carbon\CarbonImmutable;
 use Tsqm\RetryPolicy;
 
 class RetryPolicyTest extends TestCase
@@ -57,13 +57,13 @@ class RetryPolicyTest extends TestCase
         $retryPolicy->setMinInterval(300);
 
         $retryAt = $retryPolicy->getRetryAt(0);
-        $this->assertDateEquals((new DateTime())->modify('+300 milliseconds'), $retryAt);
+        $this->assertDateEquals((CarbonImmutable::now())->modify('+300 milliseconds'), $retryAt);
 
         $retryAt = $retryPolicy->getRetryAt(1);
-        $this->assertDateEquals((new DateTime())->modify('+300 milliseconds'), $retryAt);
+        $this->assertDateEquals((CarbonImmutable::now())->modify('+300 milliseconds'), $retryAt);
 
         $retryAt = $retryPolicy->getRetryAt(4);
-        $this->assertDateEquals((new DateTime())->modify('+300 milliseconds'), $retryAt);
+        $this->assertDateEquals((CarbonImmutable::now())->modify('+300 milliseconds'), $retryAt);
 
         $retryAt = $retryPolicy->getRetryAt(5);
         $this->assertNull($retryAt);
@@ -90,16 +90,16 @@ class RetryPolicyTest extends TestCase
         $retryPolicy->setBackoffFactor(2);
 
         $retryAt = $retryPolicy->getRetryAt(0);
-        $this->assertDateEquals((new DateTime())->modify('+300 milliseconds'), $retryAt);
+        $this->assertDateEquals((CarbonImmutable::now())->modify('+300 milliseconds'), $retryAt);
 
         $retryAt = $retryPolicy->getRetryAt(1);
-        $this->assertDateEquals((new DateTime())->modify('+600 milliseconds'), $retryAt);
+        $this->assertDateEquals((CarbonImmutable::now())->modify('+600 milliseconds'), $retryAt);
 
         $retryAt = $retryPolicy->getRetryAt(2);
-        $this->assertDateEquals((new DateTime())->modify('+1200 milliseconds'), $retryAt);
+        $this->assertDateEquals((CarbonImmutable::now())->modify('+1200 milliseconds'), $retryAt);
 
         $retryAt = $retryPolicy->getRetryAt(4);
-        $this->assertDateEquals((new DateTime())->modify('+4800 milliseconds'), $retryAt);
+        $this->assertDateEquals((CarbonImmutable::now())->modify('+4800 milliseconds'), $retryAt);
 
         $retryAt = $retryPolicy->getRetryAt(5);
         $this->assertNull($retryAt);
@@ -113,16 +113,16 @@ class RetryPolicyTest extends TestCase
         $retryPolicy->setBackoffFactor(1.2);
 
         $retryAt = $retryPolicy->getRetryAt(0);
-        $this->assertDateEquals((new DateTime())->modify('+300 milliseconds'), $retryAt);
+        $this->assertDateEquals((CarbonImmutable::now())->modify('+300 milliseconds'), $retryAt);
 
         $retryAt = $retryPolicy->getRetryAt(1);
-        $this->assertDateEquals((new DateTime())->modify('+360 milliseconds'), $retryAt);
+        $this->assertDateEquals((CarbonImmutable::now())->modify('+360 milliseconds'), $retryAt);
 
         $retryAt = $retryPolicy->getRetryAt(2);
-        $this->assertDateEquals((new DateTime())->modify('+432 milliseconds'), $retryAt);
+        $this->assertDateEquals((CarbonImmutable::now())->modify('+432 milliseconds'), $retryAt);
 
         $retryAt = $retryPolicy->getRetryAt(4);
-        $this->assertDateEquals((new DateTime())->modify('+622 milliseconds'), $retryAt, 1000);
+        $this->assertDateEquals((CarbonImmutable::now())->modify('+622 milliseconds'), $retryAt, 1000);
 
         $retryAt = $retryPolicy->getRetryAt(5);
         $this->assertNull($retryAt);
@@ -136,13 +136,13 @@ class RetryPolicyTest extends TestCase
             ->setUseJitter(true);
 
         $retryAt = $retryPolicy->getRetryAt(0);
-        $this->assertDateEquals((new DateTime())->modify('+300 milliseconds'), $retryAt, 160);
+        $this->assertDateEquals((CarbonImmutable::now())->modify('+300 milliseconds'), $retryAt, 160);
 
         $retryAt = $retryPolicy->getRetryAt(1);
-        $this->assertDateEquals((new DateTime())->modify('+300 milliseconds'), $retryAt, 160);
+        $this->assertDateEquals((CarbonImmutable::now())->modify('+300 milliseconds'), $retryAt, 160);
 
         $retryAt = $retryPolicy->getRetryAt(4);
-        $this->assertDateEquals((new DateTime())->modify('+300 milliseconds'), $retryAt, 160);
+        $this->assertDateEquals((CarbonImmutable::now())->modify('+300 milliseconds'), $retryAt, 160);
 
         $retryAt = $retryPolicy->getRetryAt(5);
         $this->assertNull($retryAt);
@@ -157,13 +157,13 @@ class RetryPolicyTest extends TestCase
             ->setUseJitter(true);
 
         $retryAt = $retryPolicy->getRetryAt(0);
-        $this->assertDateEquals((new DateTime())->modify('+300 milliseconds'), $retryAt, 160);
+        $this->assertDateEquals((CarbonImmutable::now())->modify('+300 milliseconds'), $retryAt, 160);
 
         $retryAt = $retryPolicy->getRetryAt(1);
-        $this->assertDateEquals((new DateTime())->modify('+600 milliseconds'), $retryAt, 310);
+        $this->assertDateEquals((CarbonImmutable::now())->modify('+600 milliseconds'), $retryAt, 310);
 
         $retryAt = $retryPolicy->getRetryAt(4);
-        $this->assertDateEquals((new DateTime())->modify('+4800 milliseconds'), $retryAt, 2410);
+        $this->assertDateEquals((CarbonImmutable::now())->modify('+4800 milliseconds'), $retryAt, 2410);
 
         $retryAt = $retryPolicy->getRetryAt(5);
         $this->assertNull($retryAt);

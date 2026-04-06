@@ -2,12 +2,12 @@
 
 namespace Examples\Greeter;
 
-use DateTime;
+use Carbon\CarbonImmutable;
 use JsonSerializable;
 
 class Greeting implements JsonSerializable
 {
-    private DateTime $createdAt;
+    private CarbonImmutable $createdAt;
     private string $text;
     private bool $purchased = false;
     private bool $sent = false;
@@ -15,11 +15,11 @@ class Greeting implements JsonSerializable
 
     public function __construct(string $text)
     {
-        $this->createdAt = new DateTime();
+        $this->createdAt = CarbonImmutable::now();
         $this->text = $text;
     }
 
-    public function getCreatedAt(): DateTime
+    public function getCreatedAt(): CarbonImmutable
     {
         return $this->createdAt;
     }

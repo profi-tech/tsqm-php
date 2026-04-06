@@ -25,7 +25,8 @@
     "ext-json": "*",
     "ext-pcntl": "*",
     "psr/log": "^3.0",
-    "psr/container": "^2.0"
+    "psr/container": "^2.0",
+    "nesbot/carbon": "^3.11"
   },
   "require-dev": {
     "monolog/monolog": "^3.10",

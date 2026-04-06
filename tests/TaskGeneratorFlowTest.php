@@ -2,7 +2,7 @@
 
 namespace Tests;
 
-use DateTime;
+use Carbon\CarbonImmutable;
 use Examples\Greeter\CreateGreeting;
 use Examples\Greeter\Greet;
 use Examples\Greeter\GreeterError;
@@ -34,7 +34,7 @@ class TaskGeneratorFlowTest extends TestCase
 
         $task = $this->tsqm->run($task);
 
-        $now = new DateTime();
+        $now = CarbonImmutable::now();
 
         $this->assertDateEquals($task->getFinishedAt(), $now);
         $this->assertEquals("Hello, John Doe!", $task->getResult()->getText());
@@ -52,7 +52,7 @@ class TaskGeneratorFlowTest extends TestCase
             ->setArgs('John Doe');
 
         $task = $this->tsqm->run($task);
-        $now = new DateTime();
+        $now = CarbonImmutable::now();
 
         for ($i = 0; $i < 3; $i++) {
             $task = $this->tsqm->run($task);
@@ -74,7 +74,7 @@ class TaskGeneratorFlowTest extends TestCase
             ->setArgs('John Doe');
 
         $task = $this->tsqm->run($task);
-        $now = new DateTime();
+        $now = CarbonImmutable::now();
 
         $this->assertDateEquals($task->getFinishedAt(), $now);
         $this->assertNull($task->getResult());
@@ -92,7 +92,7 @@ class TaskGeneratorFlowTest extends TestCase
             ->setArgs('John Doe');
 
         $task = $this->tsqm->run($task);
-        $now = new DateTime();
+        $now = CarbonImmutable::now();
 
         $this->assertDateEquals($task->getFinishedAt(), $now);
         $this->assertNull($task->getResult());
@@ -122,7 +122,7 @@ class TaskGeneratorFlowTest extends TestCase
 
         $task = $this->tsqm->run($task);
 
-        $sheduledFor = (new DateTime())->modify("+10 second");
+        $sheduledFor = (CarbonImmutable::now())->modify("+10 second");
 
         $this->assertNull($task->getFinishedAt());
         $this->assertDateEquals($task->getScheduledFor(), $sheduledFor);
@@ -158,7 +158,7 @@ class TaskGeneratorFlowTest extends TestCase
         // Last success retry
         $task = $this->tsqm->get($task->getRootId());
         $task = $this->tsqm->run($task);
-        $this->assertDateEquals($task->getFinishedAt(), new DateTime());
+        $this->assertDateEquals($task->getFinishedAt(), CarbonImmutable::now());
 
         $this->assertEquals("Hello, John Doe!", $task->getResult()->getText());
         $this->assertTrue($task->getResult()->getSent());
@@ -189,7 +189,7 @@ class TaskGeneratorFlowTest extends TestCase
         // Last failed retry
         $task = $this->tsqm->get($task->getRootId());
         $task = $this->tsqm->run($task);
-        $this->assertDateEquals($task->getFinishedAt(), new DateTime());
+        $this->assertDateEquals($task->getFinishedAt(), CarbonImmutable::now());
         $this->assertNull($task->getResult());
         $this->assertEquals(
             new GreeterError("Purchase failed", 1700410299),
