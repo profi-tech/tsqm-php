@@ -4,16 +4,20 @@ namespace Tests;
 
 use DateTimeInterface;
 use DI\Container;
+use Examples\Helpers\DbHelper;
 use Examples\PsrContainer;
+use PDO;
 use Tsqm\Helpers\UuidHelper;
 use Tsqm\Options;
 use Tsqm\PersistedTask;
-use Tsqm\Repository\InMemoryRepository;
+use Tsqm\Repository\PdoRepository;
 use Tsqm\Repository\RepositoryInterface;
 use Tsqm\Tsqm;
 
 class TestCase extends \PHPUnit\Framework\TestCase
 {
+    protected PDO $pdo;
+    protected DbHelper $dbHelper;
     protected RepositoryInterface $repository;
     protected Container $container;
 
@@ -23,7 +27,17 @@ class TestCase extends \PHPUnit\Framework\TestCase
     {
         parent::setUp();
 
-        $this->repository = new InMemoryRepository();
+        $dsn = getenv("TSQM_USE_MYSQL") ? "mysql:host=db;dbname=tsqm;" : "sqlite::memory:";
+        $username = "root";
+        $password = "root";
+
+        $this->pdo = new PDO($dsn, $username, $password);
+        $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+        $this->dbHelper = new DbHelper($this->pdo);
+        $this->dbHelper->resetDb();
+
+        $this->repository = new PdoRepository($this->pdo);
         $this->container = PsrContainer::build();
         $this->tsqm = new Tsqm(
             (new Options())
@@ -59,10 +73,9 @@ class TestCase extends \PHPUnit\Framework\TestCase
 
     public function getLastTaskByParentId(string $parentId): ?PersistedTask
     {
-        $tasks = $this->repository->getTasksByParentId($parentId);
-        if (empty($tasks)) {
-            return null;
-        }
-        return end($tasks);
+        $res = $this->pdo->prepare("SELECT id FROM tsqm_tasks WHERE parent_id = :parent_id ORDER BY nid DESC LIMIT 1");
+        $res->execute(['parent_id' => UuidHelper::uuid2bin($parentId)]);
+        $taskId = UuidHelper::bin2uuid($res->fetchColumn());
+        return $this->tsqm->get($taskId);
     }
 }
