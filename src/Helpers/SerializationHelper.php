@@ -64,7 +64,7 @@ class SerializationHelper
             'code' => $error->getCode(),
             'file' => $error->getFile(),
             'line' => $error->getLine(),
-            'trace' => array_slice($error->getTrace(), 0, self::MAX_TRACE_LENGTH),
+            'trace' => self::sanitizeTrace(array_slice($error->getTrace(), 0, self::MAX_TRACE_LENGTH)),
         ];
         return self::serialize($data);
     }
@@ -99,6 +99,18 @@ class SerializationHelper
         }
 
         return $error;
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $trace
+     * @return array<int, array<string, mixed>>
+     */
+    private static function sanitizeTrace(array $trace): array
+    {
+        $allowedKeys = ['file', 'line', 'function', 'class', 'type'];
+        return array_map(function (array $frame) use ($allowedKeys): array {
+            return array_intersect_key($frame, array_flip($allowedKeys));
+        }, $trace);
     }
 
     /** @param ReflectionClass<Exception> $ref */
