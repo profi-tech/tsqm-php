@@ -8,13 +8,13 @@ use Examples\PsrContainer;
 use Tsqm\Helpers\UuidHelper;
 use Tsqm\Options;
 use Tsqm\PersistedTask;
-use Tsqm\Repository\InMemoryTaskRepository;
-use Tsqm\Repository\TaskRepositoryInterface;
+use Tsqm\Repository\InMemoryRepository;
+use Tsqm\Repository\RepositoryInterface;
 use Tsqm\Tsqm;
 
 class TestCase extends \PHPUnit\Framework\TestCase
 {
-    protected TaskRepositoryInterface $repository;
+    protected RepositoryInterface $repository;
     protected Container $container;
 
     protected Tsqm $tsqm;
@@ -23,7 +23,7 @@ class TestCase extends \PHPUnit\Framework\TestCase
     {
         parent::setUp();
 
-        $this->repository = new InMemoryTaskRepository();
+        $this->repository = new InMemoryRepository();
         $this->container = PsrContainer::build();
         $this->tsqm = new Tsqm(
             (new Options())

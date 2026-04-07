@@ -5,16 +5,16 @@ namespace Tests;
 use Carbon\CarbonImmutable;
 use Tsqm\Helpers\UuidHelper;
 use Tsqm\PersistedTask;
-use Tsqm\Repository\InMemoryTaskRepository;
+use Tsqm\Repository\InMemoryRepository;
 
 class InMemoryTaskRepositoryTest extends \PHPUnit\Framework\TestCase
 {
-    private InMemoryTaskRepository $repository;
+    private InMemoryRepository $repository;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->repository = new InMemoryTaskRepository();
+        $this->repository = new InMemoryRepository();
     }
 
     public function testCreateAndGetTask(): void

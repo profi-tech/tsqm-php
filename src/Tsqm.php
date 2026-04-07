@@ -24,7 +24,7 @@ use Tsqm\Helpers\PdoHelper;
 use Tsqm\Helpers\UuidHelper;
 use Tsqm\Logger\LogLevel;
 use Tsqm\Queue\QueueInterface;
-use Tsqm\Repository\TaskRepositoryInterface;
+use Tsqm\Repository\RepositoryInterface;
 
 class Tsqm implements TsqmInterface
 {
@@ -32,7 +32,7 @@ class Tsqm implements TsqmInterface
     // at seconds resolution
     private const LEAP_INTERVAL = 1;
 
-    private TaskRepositoryInterface $repository;
+    private RepositoryInterface $repository;
     private ContainerInterface $container;
     private QueueInterface $queue;
     private LoggerInterface $logger;

@@ -5,7 +5,7 @@ namespace Tsqm\Repository;
 use DateTimeInterface;
 use Tsqm\PersistedTask;
 
-interface TaskRepositoryInterface
+interface RepositoryInterface
 {
     public function createTask(PersistedTask $ptask): PersistedTask;
 

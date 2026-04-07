@@ -8,15 +8,15 @@ use Psr\Log\LoggerInterface;
 use Tsqm\Container\NullContainer;
 use Tsqm\Logger\NullLogger;
 use Tsqm\Queue\QueueInterface;
-use Tsqm\Repository\InMemoryTaskRepository;
-use Tsqm\Repository\TaskRepositoryInterface;
+use Tsqm\Repository\InMemoryRepository;
+use Tsqm\Repository\RepositoryInterface;
 
 class Options
 {
     public const DEFAULT_TABLE = "tsqm_tasks";
 
     private string $table = self::DEFAULT_TABLE;
-    private ?TaskRepositoryInterface $repository = null;
+    private ?RepositoryInterface $repository = null;
     private ?ContainerInterface $container = null;
     private ?QueueInterface $queue = null;
     private ?LoggerInterface $logger = null;
@@ -47,18 +47,18 @@ class Options
         return $this->table;
     }
 
-    public function setRepository(TaskRepositoryInterface $repository): self
+    public function setRepository(RepositoryInterface $repository): self
     {
         $this->repository = $repository;
         return $this;
     }
 
-    public function getRepository(): TaskRepositoryInterface
+    public function getRepository(): RepositoryInterface
     {
         if (!is_null($this->repository)) {
             return $this->repository;
         }
-        return new InMemoryTaskRepository();
+        return new InMemoryRepository();
     }
 
     public function setContainer(ContainerInterface $container): self

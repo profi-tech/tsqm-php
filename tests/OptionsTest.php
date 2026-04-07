@@ -8,7 +8,7 @@ use Examples\Greeter\SimpleGreetWithFail;
 use Tsqm\Errors\ToManyGeneratorTasks;
 use Tsqm\Errors\NestingIsToDeep;
 use Tsqm\Options;
-use Tsqm\Repository\InMemoryTaskRepository;
+use Tsqm\Repository\InMemoryRepository;
 use Tsqm\RetryPolicy;
 use Tsqm\Task;
 use Tsqm\Tsqm;
@@ -19,8 +19,8 @@ class OptionsTest extends TestCase
     {
         $simpleGreetWithFail = $this->container->get(SimpleGreetWithFail::class);
 
-        $repo1 = new InMemoryTaskRepository();
-        $repo2 = new InMemoryTaskRepository();
+        $repo1 = new InMemoryRepository();
+        $repo2 = new InMemoryRepository();
 
         $tsqm1 = new Tsqm(
             (new Options())

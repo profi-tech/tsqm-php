@@ -16,7 +16,7 @@ use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Application;
 use Tsqm\Options;
-use Tsqm\Repository\TaskRepository;
+use Tsqm\Repository\PdoRepository;
 use Tsqm\Tsqm;
 
 class PsrContainer
@@ -50,7 +50,7 @@ class PsrContainer
                 Tsqm::class => function (ContainerInterface $c) {
                     return new Tsqm(
                         (new Options())
-                            ->setRepository(new TaskRepository($c->get(PDO::class)))
+                            ->setRepository(new PdoRepository($c->get(PDO::class)))
                             ->setContainer($c)
                             ->setLogger($c->get(LoggerInterface::class))
                     );

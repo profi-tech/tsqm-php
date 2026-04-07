@@ -14,7 +14,7 @@ use Tsqm\Options;
 use Tsqm\PersistedTask;
 use Tsqm\RetryPolicy;
 
-class TaskRepository implements TaskRepositoryInterface
+class PdoRepository implements RepositoryInterface
 {
     public const MYSQL_VENDOR = 'mysql';
     public const SQLITE_VENDOR = 'sqlite';

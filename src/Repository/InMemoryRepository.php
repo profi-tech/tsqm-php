@@ -11,7 +11,7 @@ use Tsqm\PersistedTask;
  * Non-persistent task repository that stores everything in a PHP array.
  * Intended for unit/integration tests so they can run without a database.
  */
-class InMemoryTaskRepository implements TaskRepositoryInterface
+class InMemoryRepository implements RepositoryInterface
 {
     /** @var array<string, PersistedTask> */
     private array $tasks = [];
