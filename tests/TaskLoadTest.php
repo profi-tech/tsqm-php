@@ -13,8 +13,8 @@ class TaskLoadTest extends TestCase
     public function testRecursiveDeepGenerator(): void
     {
         $tsqm = new Tsqm(
-            $this->pdo,
             (new Options())
+                ->setRepository($this->repository)
                 ->setContainer($this->container)
                 ->setMaxNestingLevel(1001)
                 ->setForceSyncRuns(true)

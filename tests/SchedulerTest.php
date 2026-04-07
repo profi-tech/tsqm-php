@@ -45,8 +45,8 @@ class SchedulerTest extends TestCase
     {
         $simpleGreet = $this->container->get(SimpleGreet::class);
         $tsqm = new Tsqm(
-            $this->pdo,
             (new Options())
+                ->setRepository($this->repository)
                 ->setContainer(($this->container))
                 ->setForceSyncRuns(true)
         );
@@ -65,8 +65,8 @@ class SchedulerTest extends TestCase
     {
         $simpleGreet = $this->container->get(SimpleGreet::class);
         $tsqm = new Tsqm(
-            $this->pdo,
             (new Options())
+                ->setRepository($this->repository)
                 ->setContainer(($this->container))
                 ->setForceSyncRuns(true)
         );

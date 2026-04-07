@@ -10,12 +10,15 @@ use PDO;
 use Tsqm\Helpers\UuidHelper;
 use Tsqm\Options;
 use Tsqm\PersistedTask;
+use Tsqm\Repository\PdoRepository;
+use Tsqm\Repository\RepositoryInterface;
 use Tsqm\Tsqm;
 
 class TestCase extends \PHPUnit\Framework\TestCase
 {
     protected PDO $pdo;
     protected DbHelper $dbHelper;
+    protected RepositoryInterface $repository;
     protected Container $container;
 
     protected Tsqm $tsqm;
@@ -34,8 +37,13 @@ class TestCase extends \PHPUnit\Framework\TestCase
         $this->dbHelper = new DbHelper($this->pdo);
         $this->dbHelper->resetDb();
 
+        $this->repository = new PdoRepository($this->pdo);
         $this->container = PsrContainer::build();
-        $this->tsqm = new Tsqm($this->pdo, (new Options())->setContainer($this->container));
+        $this->tsqm = new Tsqm(
+            (new Options())
+                ->setRepository($this->repository)
+                ->setContainer($this->container)
+        );
     }
 
     public function assertDateEquals(

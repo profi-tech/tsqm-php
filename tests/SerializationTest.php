@@ -10,7 +10,6 @@ use Tsqm\Errors\SerializationError;
 use Tsqm\Helpers\SerializationHelper;
 use Tsqm\Helpers\UuidHelper;
 use Tsqm\PersistedTask;
-use Tsqm\TaskRepository;
 
 class SerializationTest extends TestCase
 {
@@ -24,7 +23,7 @@ class SerializationTest extends TestCase
         error_reporting(E_ALL & ~E_NOTICE);
 
         $taskId = UuidHelper::random();
-        $repository = new TaskRepository($this->pdo, "tsqm_tasks");
+        $repository = $this->repository;
         $ptask = (new PersistedTask())
             ->setId($taskId)
             ->setRootId($taskId)
