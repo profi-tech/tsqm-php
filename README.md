@@ -6,7 +6,7 @@ TSQM is a low-level PHP library for transactional and reliable execution of code
 
 ## How low is "low-level"?
 
-One of the main requirements for the library was its ability to integrate into any PHP codebase starting from version 7.4. TSQM provides basic classes and methods that can be embedded into almost any project or framework. The main classes are:
+One of the main requirements for the library was its ability to integrate into any PHP codebase. TSQM requires PHP 8.2+ and provides basic classes and methods that can be embedded into almost any project or framework. The main classes are:
 - **Task**: A class-wrapper for PHP code, allowing to specify retry policies, arguments and other execution options.
 - **TSQM Engine**: Schedules, executes, retries, and handles errors for tasks.
 
@@ -39,31 +39,35 @@ Run the generated SQL on the database you want TSQM to work with.
 
 ## 3. Configuring TSQM engine
 
+TSQM engine is configured via the `Tsqm\Options` object:
+
 ```php
+use Tsqm\Tsqm;
+use Tsqm\Options;
+use Tsqm\Repository\PdoRepository;
+
 $dsn = "<PDO dsn of database where you created a table>";
 $username = "<your username>";
 $password = "<your password>";
 $pdo = new PDO($dsn, $username, $password);
 
-$tsqm = new Tsqm\Tsqm($pdo);
-...
-```
-
-You could tune TSQM engine by passing an instance of `Tsqm\Options` to the constructor:
-
-```php
-$tsqm = new Tsqm\Tsqm(
-  $pdo,
-  (new Tsqm\Options())
-    ->setTable("my_tsqm_table") // Name of the table where tasks are stored
+$tsqm = new Tsqm(
+  (new Options())
+    ->setRepository(new PdoRepository($pdo)) // Repository for task persistence (default: InMemoryRepository)
     ->setLogger(new MyLogger()) // PSR-3 compatible logger
-    ->setContainer($container) // DI container e.g. PHP-DI
+    ->setContainer($container) // PSR-11 DI container e.g. PHP-DI
     ->setQueue(new MyQueue()) // Queue implementation
     ->setForceSyncRuns(true) // Force synchronous runs for debugging and unit testing
     ->setMaxNestingLevel(10) // Maximum number of nested transactions
-    ->setMaxGeneratorTasks(10) // Maximum number of tasks in a generator
+    ->setMaxGeneratorTasks(1000) // Maximum number of tasks in a generator
 );
 ```
+
+Available repository implementations:
+- `Tsqm\Repository\PdoRepository` — persists tasks to a MySQL or SQLite database via PDO.
+- `Tsqm\Repository\InMemoryRepository` — stores tasks in memory (default, useful for testing).
+
+You can also implement `Tsqm\Repository\RepositoryInterface` for custom storage backends.
 
 
 ## 4. Creating a task
@@ -81,12 +85,12 @@ The argument for `setCallable` could be:
 - Name of static method along with its class name e.g. `MyClass::myMethod`
 - Name of global functions e.g. `MyGlobalFunction` (strongly not recommended).
 
-:warning: If you use callable objects, you need to set a DI container for the TSQM engine that implements `Psr\Container\ContainerInterface`.
+:warning: If you use callable objects, you need to set a DI container for the TSQM engine that implements `Psr\Container\ContainerInterface` (PSR-11).
 The callable object must be accessible in the container by its class name.
 
 Task supports the following options:
-- `setScheduledFor` — DateTime object with the scheduled execution time.
-- `setWaitInterval` — Time interval to wait before starting a task.
+- `setScheduledFor` — DateTimeInterface object with the scheduled execution time.
+- `setWaitInterval` — Time interval to wait before starting a task (string compatible with `DateTime::modify()`).
 - `setIsSecret` — if true, task args and results will be logged as secrets.
 - `setTrace` — trace object to trace task execution via logs.
 
@@ -111,8 +115,8 @@ class MyContainer implements Psr\Container\ContainerInterface {
 }
 
 $tsqm = new Tsqm\Tsqm(
-  $pdo,
   (new Tsqm\Options())
+    ->setRepository(new Tsqm\Repository\PdoRepository($pdo))
     ->setContainer(new MyContainer())
 );
 
@@ -132,17 +136,17 @@ $task = (new Tsqm\Task())
 
 To execute a task, you need to call the `run` method:
 ```php
-$task = $tsqm->run($task);
+$persistedTask = $tsqm->run($task);
 ```
 
-The execution result will be available in the `$task` object:
+The `run` method returns a `PersistedTask` object with the execution state:
 ```php
-echo "Task id: ".$task->getId();
-if ($task->isFinished()) {
-    if (!$task->hasError()) {
-      $result = $task->getResult();
+echo "Task id: ".$persistedTask->getId();
+if ($persistedTask->isFinished()) {
+    if (!$persistedTask->hasError()) {
+      $result = $persistedTask->getResult();
     } else {
-      $error = $task->getError();
+      $error = $persistedTask->getError();
     }	
 }
 ```
@@ -174,7 +178,7 @@ To integrate queues in TSQM, you need to implement the `Tsqm\Queue\QueueInterfac
 ```php
 class MyQueue implements Tsqm\Queue\QueueInterface {
 
-  public function enqueue(string $taskName, string $taskId, DateTime $scheduledFor): void {
+  public function enqueue(string $taskName, string $taskId, DateTimeInterface $scheduledFor): void {
     ... put $taskId into your favorite message broker like RabbitMQ, Apache Kafka etc.
   }
 
@@ -188,8 +192,8 @@ class MyQueue implements Tsqm\Queue\QueueInterface {
 }
 
 $tsqm = new Tsqm\Tsqm(
-  $pdo,
   (new Tsqm\Options())
+    ->setRepository(new Tsqm\Repository\PdoRepository($pdo))
     ->setQueue(new MyQueue())
 );
 
@@ -265,10 +269,10 @@ To access these logs, you need to provide a class that implements `Psr\Log\Logge
  ```php
 
 $tsqm = new Tsqm\Tsqm(
-  $pdo,
   (new Tsqm\Options())
+    ->setRepository(new Tsqm\Repository\PdoRepository($pdo))
     ->setLogger(
-      // instance of logger
+      // PSR-3 LoggerInterface instance, e.g. Monolog
     )
 );
 
@@ -280,7 +284,7 @@ $tsqm = new Tsqm\Tsqm(
 
 - Task data is deleted from the database after execution, as the persistent storage is used only to ensure transactional consistency.
 
-- For errors, only the class, message, and code are stored.
+- For errors, the class, message, code, and trace are stored as structured data (not serialized PHP objects).
 
 - TSQM is lightweight and fast but has not been tested under heavy loads.
 
