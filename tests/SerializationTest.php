@@ -6,6 +6,7 @@ use Carbon\CarbonImmutable;
 use Exception;
 use PDOException;
 use Examples\Greeter\GreeterError;
+use stdClass;
 use Tsqm\Errors\SerializationError;
 use Tsqm\Helpers\SerializationHelper;
 use Tsqm\Helpers\UuidHelper;
@@ -110,6 +111,22 @@ class SerializationTest extends TestCase
         $this->assertInstanceOf(GreeterError::class, $unserialized);
         $this->assertEquals("Greet failed", $unserialized->getMessage());
         $this->assertEquals(42, $unserialized->getCode());
+    }
+
+    public function testSerializeErrorWithUnserializableTraceArgs(): void
+    {
+        $closure = function (mixed $arg): Exception {
+            return new Exception("Exception with unserializable arg in trace");
+        };
+        $e = $closure(new stdClass());
+
+        $serialized = SerializationHelper::serializeError($e);
+        $unserialized = SerializationHelper::unserializeError($serialized);
+
+        $this->assertEquals($e->getMessage(), $unserialized->getMessage());
+        foreach ($unserialized->getTrace() as $frame) {
+            $this->assertArrayNotHasKey('args', $frame, "Trace frame should not contain 'args'");
+        }
     }
 
     public function testPdoExceptionInstanceOfPreservedAfterRoundtrip(): void
