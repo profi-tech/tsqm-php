@@ -8,33 +8,28 @@ use Examples\Greeter\SimpleGreetWithFail;
 use Tsqm\Errors\ToManyGeneratorTasks;
 use Tsqm\Errors\NestingIsToDeep;
 use Tsqm\Options;
+use Tsqm\Repository\InMemoryTaskRepository;
 use Tsqm\RetryPolicy;
 use Tsqm\Task;
 use Tsqm\Tsqm;
 
 class OptionsTest extends TestCase
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->dbHelper->resetDb("test_table1");
-        $this->dbHelper->resetDb("test_table2");
-    }
-
-    public function testTableOption(): void
+    public function testRepositoryIsolation(): void
     {
         $simpleGreetWithFail = $this->container->get(SimpleGreetWithFail::class);
 
+        $repo1 = new InMemoryTaskRepository();
+        $repo2 = new InMemoryTaskRepository();
+
         $tsqm1 = new Tsqm(
-            $this->pdo,
             (new Options())
-                ->setTable('test_table1')
+                ->setRepository($repo1)
                 ->setContainer($this->container)
         );
         $tsqm2 = new Tsqm(
-            $this->pdo,
             (new Options())
-                ->setTable('test_table2')
+                ->setRepository($repo2)
                 ->setContainer($this->container)
         );
 
@@ -63,8 +58,8 @@ class OptionsTest extends TestCase
     public function testMaxNestedLevels(): void
     {
         $tsqm = new Tsqm(
-            $this->pdo,
             (new Options())
+                ->setRepository($this->repository)
                 ->setMaxNestingLevel(1)
                 ->setContainer($this->container)
         );
@@ -79,8 +74,8 @@ class OptionsTest extends TestCase
     public function testMaxGeneratorTasks(): void
     {
         $tsqm = new Tsqm(
-            $this->pdo,
             (new Options())
+                ->setRepository($this->repository)
                 ->setMaxGeneratorTasks(1)
                 ->setContainer($this->container)
         );

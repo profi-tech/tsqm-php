@@ -1,6 +1,6 @@
 <?php
 
-namespace Tsqm;
+namespace Tsqm\Repository;
 
 use Carbon\CarbonImmutable;
 use DateTimeInterface;
@@ -10,8 +10,11 @@ use Tsqm\Errors\RepositoryError;
 use Tsqm\Helpers\PdoHelper;
 use Tsqm\Helpers\SerializationHelper;
 use Tsqm\Helpers\UuidHelper;
+use Tsqm\Options;
+use Tsqm\PersistedTask;
+use Tsqm\RetryPolicy;
 
-class TaskRepository
+class TaskRepository implements TaskRepositoryInterface
 {
     public const MYSQL_VENDOR = 'mysql';
     public const SQLITE_VENDOR = 'sqlite';
@@ -31,7 +34,7 @@ class TaskRepository
     {
         try {
             $res = $this->pdo->prepare("
-                INSERT INTO $this->table 
+                INSERT INTO $this->table
                     (
                         id,
                         parent_id,
@@ -44,7 +47,7 @@ class TaskRepository
                         retry_policy,
                         trace
                     )
-                VALUES 
+                VALUES
                     (
                         :id,
                         :parent_id,
@@ -89,14 +92,14 @@ class TaskRepository
             }
 
             $res = $this->pdo->prepare("
-            UPDATE $this->table SET 
+            UPDATE $this->table SET
                 scheduled_for=:scheduled_for,
                 started_at=:started_at,
                 finished_at=:finished_at,
                 result=:result,
                 error=:error,
                 retried=:retried
-            WHERE id = :id 
+            WHERE id = :id
         ");
             if (!$res) {
                 throw new Exception(PdoHelper::formatErrorInfo($this->pdo->errorInfo()));

@@ -6,7 +6,6 @@ use Carbon\CarbonImmutable;
 use DateTimeInterface;
 use Exception;
 use Generator;
-use PDO;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use Tsqm\Container\NullContainer;
@@ -25,6 +24,7 @@ use Tsqm\Helpers\PdoHelper;
 use Tsqm\Helpers\UuidHelper;
 use Tsqm\Logger\LogLevel;
 use Tsqm\Queue\QueueInterface;
+use Tsqm\Repository\TaskRepositoryInterface;
 
 class Tsqm implements TsqmInterface
 {
@@ -32,19 +32,19 @@ class Tsqm implements TsqmInterface
     // at seconds resolution
     private const LEAP_INTERVAL = 1;
 
-    private TaskRepository $repository;
+    private TaskRepositoryInterface $repository;
     private ContainerInterface $container;
     private QueueInterface $queue;
     private LoggerInterface $logger;
 
     private Options $options;
 
-    public function __construct(PDO $pdo, ?Options $options = null)
+    public function __construct(?Options $options = null)
     {
         $this->options = $options ?? new Options();
 
         $this->container = $this->options->getContainer();
-        $this->repository = new TaskRepository($pdo, $this->options->getTable());
+        $this->repository = $this->options->getRepository();
         $this->logger = $this->options->getLogger();
         $this->queue = $this->options->getQueue();
     }

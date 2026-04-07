@@ -24,8 +24,8 @@ class TaskLoggerTest extends TestCase
         $this->logger = $this->createMock(LoggerInterface::class);
 
         $this->tsqm = new Tsqm(
-            $this->pdo,
             (new Options())
+                ->setRepository($this->repository)
                 ->setLogger($this->logger)
                 ->setContainer($this->container)
         );

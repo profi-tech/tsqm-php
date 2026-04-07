@@ -4,18 +4,17 @@ namespace Tests;
 
 use DateTimeInterface;
 use DI\Container;
-use Examples\Helpers\DbHelper;
 use Examples\PsrContainer;
-use PDO;
 use Tsqm\Helpers\UuidHelper;
 use Tsqm\Options;
 use Tsqm\PersistedTask;
+use Tsqm\Repository\InMemoryTaskRepository;
+use Tsqm\Repository\TaskRepositoryInterface;
 use Tsqm\Tsqm;
 
 class TestCase extends \PHPUnit\Framework\TestCase
 {
-    protected PDO $pdo;
-    protected DbHelper $dbHelper;
+    protected TaskRepositoryInterface $repository;
     protected Container $container;
 
     protected Tsqm $tsqm;
@@ -24,18 +23,13 @@ class TestCase extends \PHPUnit\Framework\TestCase
     {
         parent::setUp();
 
-        $dsn = getenv("TSQM_USE_MYSQL") ? "mysql:host=db;dbname=tsqm;" : "sqlite::memory:";
-        $username = "root";
-        $password = "root";
-
-        $this->pdo = new PDO($dsn, $username, $password);
-        $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-        $this->dbHelper = new DbHelper($this->pdo);
-        $this->dbHelper->resetDb();
-
+        $this->repository = new InMemoryTaskRepository();
         $this->container = PsrContainer::build();
-        $this->tsqm = new Tsqm($this->pdo, (new Options())->setContainer($this->container));
+        $this->tsqm = new Tsqm(
+            (new Options())
+                ->setRepository($this->repository)
+                ->setContainer($this->container)
+        );
     }
 
     public function assertDateEquals(
@@ -65,9 +59,10 @@ class TestCase extends \PHPUnit\Framework\TestCase
 
     public function getLastTaskByParentId(string $parentId): ?PersistedTask
     {
-        $res = $this->pdo->prepare("SELECT id FROM tsqm_tasks WHERE parent_id = :parent_id ORDER BY nid DESC LIMIT 1");
-        $res->execute(['parent_id' => UuidHelper::uuid2bin($parentId)]);
-        $taskId = UuidHelper::bin2uuid($res->fetchColumn());
-        return $this->tsqm->get($taskId);
+        $tasks = $this->repository->getTasksByParentId($parentId);
+        if (empty($tasks)) {
+            return null;
+        }
+        return end($tasks);
     }
 }
